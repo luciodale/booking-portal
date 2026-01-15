@@ -1,0 +1,43 @@
+{
+  "name": "booking-portal",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro build && wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:generate": "drizzle-kit generate --name",
+    "db:studio": "drizzle-kit studio",
+    "db:migrate:local": "wrangler d1 migrations apply booking-portal-db --local",
+    "db:migrate:remote": "wrangler d1 migrations apply booking-portal-db --remote",
+    "db:types": "wrangler types",
+    "type-check": "tsc --noEmit",
+    "lint": "biome lint .",
+    "lint:fix": "biome lint --write .",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^12.6.3",
+    "@astrojs/react": "^4.3.0",
+    "@tailwindcss/vite": "^4.1.11",
+    "@tanstack/react-router": "^1.127.8",
+    "@tanstack/router-vite-plugin": "^1.127.8",
+    "astro": "^5.12.9",
+    "drizzle-orm": "^0.44.3",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@cloudflare/workers-types": "^4.20241106.0",
+    "@tanstack/react-router-devtools": "^1.127.8",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
+    "drizzle-kit": "^0.31.4",
+    "wrangler": "^4.28.1"
+  }
+}
