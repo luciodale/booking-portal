@@ -1,38 +1,25 @@
 {
-	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "booking-portal",
-	"compatibility_date": "2025-04-05",
-	"compatibility_flags": [
-		"nodejs_compat"
-	],
-	"main": "./dist/_worker.js/index.js",
-	"assets": {
-		"directory": "./dist",
-		"binding": "ASSETS"
-	},
-	"d1_databases": [
-		{
-			"binding": "DB",
-			"database_name": "booking-portal-db",
-			"database_id": "placeholder",
-			"migrations_dir": "drizzle/migrations"
-		},
-		{
-			"binding": "booking_portal_db",
-			"database_name": "booking-portal-db",
-			"database_id": "e1558ae6-6caf-481c-b975-1ccdcca5f5dc",
-			"remote": true
-		}
-	],
-	"r2_buckets": [
-		{
-			"binding": "R2_IMAGES_BUCKET",
-			"bucket_name": "booking-portal-images"
-		},
-		{
-			"bucket_name": "booking-portal-images",
-			"binding": "booking_portal_images",
-			"remote": true
-		}
-	]
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "booking-portal",
+  "compatibility_date": "2025-01-15",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "./dist/_worker.js/index.js",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "booking-portal-db",
+      "database_id": "e1558ae6-6caf-481c-b975-1ccdcca5f5dc",
+      "migrations_dir": "drizzle/migrations"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "R2_IMAGES_BUCKET",
+      "bucket_name": "booking-portal-images"
+    }
+  ]
 }
