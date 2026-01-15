@@ -2,7 +2,7 @@
   "name": "booking-portal",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && cp public/.assetsignore dist/.assetsignore 2>/dev/null || true",
+    "build": "astro build",
     "preview": "astro build && wrangler dev",
     "deploy": "wrangler deploy",
     "db:generate": "drizzle-kit generate --name",
