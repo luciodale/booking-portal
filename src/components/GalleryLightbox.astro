@@ -1,0 +1,279 @@
+---
+/* GalleryLightbox.astro - Global singleton lightbox component */
+---
+
+<dialog
+    id="global-lightbox"
+    class="fixed inset-0 z-[9999] w-full h-full bg-black/95 border-0 p-0 m-0 backdrop-blur-sm hidden open:flex items-center justify-center"
+>
+    <!-- Close Button -->
+    <button
+        id="lb-close"
+        class="absolute top-6 right-6 z-20 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+        aria-label="Close gallery"
+    >
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M18 6 6 18"></path>
+            <path d="m6 6 12 12"></path>
+        </svg>
+    </button>
+
+    <!-- Previous Button -->
+    <button
+        id="lb-prev"
+        class="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-20 p-3 md:p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+        aria-label="Previous image"
+    >
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="m15 18-6-6 6-6"></path>
+        </svg>
+    </button>
+
+    <!-- Next Button -->
+    <button
+        id="lb-next"
+        class="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-20 p-3 md:p-4 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors"
+        aria-label="Next image"
+    >
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="m9 18 6-6-6-6"></path>
+        </svg>
+    </button>
+
+    <!-- Image Container -->
+    <div class="w-full h-full p-4 md:p-16 flex items-center justify-center">
+        <img
+            id="lb-img"
+            src=""
+            alt="Gallery Preview"
+            class="max-w-full max-h-full object-contain rounded-lg shadow-2xl transition-opacity duration-300"
+        />
+    </div>
+
+    <!-- Counter -->
+    <div
+        class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-black/50 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm font-medium"
+    >
+        <span id="lb-current">1</span> / <span id="lb-total">1</span>
+    </div>
+
+    <!-- Thumbnail Strip (Desktop) -->
+    <div
+        id="lb-thumbnails"
+        class="hidden md:flex absolute bottom-20 left-1/2 -translate-x-1/2 gap-2 max-w-[80vw] overflow-x-auto pb-2"
+    >
+        <!-- Thumbnails inserted by JS -->
+    </div>
+</dialog>
+
+<script>
+    // Global Lightbox Controller - runs once per page load
+    const dialog = document.getElementById(
+        "global-lightbox",
+    ) as HTMLDialogElement | null;
+    const imgElement = document.getElementById(
+        "lb-img",
+    ) as HTMLImageElement | null;
+    const currentSpan = document.getElementById("lb-current");
+    const totalSpan = document.getElementById("lb-total");
+    const thumbnailsContainer = document.getElementById("lb-thumbnails");
+
+    let currentImages: string[] = [];
+    let currentIndex = 0;
+    let touchStartX = 0;
+    let touchEndX = 0;
+
+    function updateImage() {
+        if (!imgElement) return;
+
+        // Fade effect
+        imgElement.style.opacity = "0";
+
+        setTimeout(() => {
+            imgElement.src = currentImages[currentIndex];
+            imgElement.alt = `Image ${currentIndex + 1} of ${currentImages.length}`;
+            if (currentSpan) currentSpan.textContent = String(currentIndex + 1);
+            if (totalSpan) totalSpan.textContent = String(currentImages.length);
+            imgElement.style.opacity = "1";
+
+            // Update thumbnails
+            updateThumbnails();
+        }, 150);
+    }
+
+    function updateThumbnails() {
+        if (!thumbnailsContainer) return;
+
+        thumbnailsContainer
+            .querySelectorAll(".lb-thumb")
+            .forEach((thumb, idx) => {
+                if (idx === currentIndex) {
+                    thumb.classList.add("ring-primary");
+                    thumb.classList.remove("ring-transparent");
+                    (thumb as HTMLElement).scrollIntoView({
+                        behavior: "smooth",
+                        inline: "center",
+                        block: "nearest",
+                    });
+                } else {
+                    thumb.classList.remove("ring-primary");
+                    thumb.classList.add("ring-transparent");
+                }
+            });
+    }
+
+    function buildThumbnails() {
+        if (!thumbnailsContainer) return;
+
+        thumbnailsContainer.innerHTML = currentImages
+            .map(
+                (img, idx) => `
+      <button 
+        type="button"
+        class="lb-thumb shrink-0 w-16 h-12 rounded-lg overflow-hidden ring-2 transition-all cursor-pointer ${idx === currentIndex ? "ring-primary" : "ring-transparent hover:ring-white/50"}"
+        data-thumb-index="${idx}"
+      >
+        <img src="${img}" alt="Thumbnail ${idx + 1}" class="w-full h-full object-cover" />
+      </button>
+    `,
+            )
+            .join("");
+
+        // Add click handlers
+        thumbnailsContainer.querySelectorAll(".lb-thumb").forEach((thumb) => {
+            thumb.addEventListener("click", () => {
+                const idx = parseInt(
+                    (thumb as HTMLElement).dataset.thumbIndex || "0",
+                );
+                currentIndex = idx;
+                updateImage();
+            });
+        });
+    }
+
+    function closeLightbox() {
+        if (!dialog) return;
+        dialog.close();
+        dialog.classList.add("hidden");
+        document.body.style.overflow = "";
+    }
+
+    function nextImage() {
+        currentIndex = (currentIndex + 1) % currentImages.length;
+        updateImage();
+    }
+
+    function prevImage() {
+        currentIndex =
+            (currentIndex - 1 + currentImages.length) % currentImages.length;
+        updateImage();
+    }
+
+    function handleSwipe() {
+        const threshold = 50;
+        const diff = touchStartX - touchEndX;
+
+        if (Math.abs(diff) > threshold) {
+            if (diff > 0) {
+                nextImage();
+            } else {
+                prevImage();
+            }
+        }
+    }
+
+    // Listen for custom event from any gallery component
+    document.addEventListener("open-gallery", ((e: CustomEvent) => {
+        if (!dialog) return;
+
+        const { images, index } = e.detail;
+        currentImages = images;
+        currentIndex = index;
+
+        buildThumbnails();
+        updateImage();
+
+        dialog.classList.remove("hidden");
+        dialog.showModal();
+        document.body.style.overflow = "hidden";
+    }) as EventListener);
+
+    // Close button
+    document
+        .getElementById("lb-close")
+        ?.addEventListener("click", closeLightbox);
+
+    // Navigation buttons
+    document.getElementById("lb-next")?.addEventListener("click", nextImage);
+    document.getElementById("lb-prev")?.addEventListener("click", prevImage);
+
+    // Close on backdrop click
+    dialog?.addEventListener("click", (e) => {
+        if (e.target === dialog) closeLightbox();
+    });
+
+    // Keyboard navigation
+    document.addEventListener("keydown", (e) => {
+        if (!dialog || dialog.classList.contains("hidden")) return;
+
+        switch (e.key) {
+            case "Escape":
+                closeLightbox();
+                break;
+            case "ArrowLeft":
+                prevImage();
+                break;
+            case "ArrowRight":
+                nextImage();
+                break;
+        }
+    });
+
+    // Touch/swipe navigation
+    dialog?.addEventListener(
+        "touchstart",
+        (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        },
+        { passive: true },
+    );
+
+    dialog?.addEventListener(
+        "touchend",
+        (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        },
+        { passive: true },
+    );
+</script>

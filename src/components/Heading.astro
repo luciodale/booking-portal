@@ -1,0 +1,25 @@
+---
+interface Props {
+  level?: 1 | 2 | 3;
+  gradient?: boolean;
+  class?: string;
+}
+
+const { level = 2, gradient = false, class: className } = Astro.props;
+
+const sizeClasses = {
+  1: 'text-5xl md:text-6xl font-bold',
+  2: 'text-3xl md:text-4xl font-bold',
+  3: 'text-2xl font-semibold section-title',
+};
+
+const Tag = `h${level}` as 'h1' | 'h2' | 'h3';
+---
+
+<Tag class:list={[sizeClasses[level], className]}>
+  {gradient ? (
+    <span class="text-gradient"><slot /></span>
+  ) : (
+    <slot />
+  )}
+</Tag>

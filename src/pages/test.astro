@@ -1,0 +1,10 @@
+---
+import { TestApp } from "@/react/TestApp";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="React Test">
+  <TestApp client:only="react" />
+</BaseLayout>

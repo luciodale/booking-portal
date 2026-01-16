@@ -1,0 +1,68 @@
+---
+const currentPath = Astro.url.pathname;
+
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/elite", label: "Elite" },
+  { href: "/experiences", label: "Experiences" },
+  { href: "/about", label: "About" },
+];
+---
+
+<header class="fixed top-0 left-0 right-0 z-50 glass">
+  <nav class="container mx-auto px-6 py-4">
+    <div class="flex items-center justify-between">
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-2 group">
+        <div
+          class="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-accent flex items-center justify-center"
+        >
+          <span class="text-primary-foreground font-bold text-sm">E</span>
+        </div>
+        <span class="text-xl font-semibold tracking-tight">
+          <span class="text-foreground">Elite</span>
+          <span class="text-primary">Stay</span>
+        </span>
+      </a>
+
+      <!-- Navigation Links -->
+      <div class="hidden md:flex items-center gap-8">
+        {
+          navLinks.map((link) => (
+            <a
+              href={link.href}
+              class:list={[
+                "relative text-sm font-medium transition-colors duration-200 group",
+                currentPath === link.href
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              ]}
+            >
+              {link.label}
+              <span
+                class:list={[
+                  "absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300",
+                  currentPath === link.href
+                    ? "w-full"
+                    : "w-0 group-hover:w-full",
+                ]}
+              />
+            </a>
+          ))
+        }
+      </div>
+
+      <!-- Auth Buttons -->
+      <div class="flex items-center gap-4">
+        <button
+          class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
+        >
+          Sign In
+        </button>
+        <a href="/signup" class="btn-primary text-sm !px-4 !py-2">
+          Get Started
+        </a>
+      </div>
+    </div>
+  </nav>
+</header>

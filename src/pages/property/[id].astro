@@ -1,0 +1,398 @@
+---
+import Badge from '../../components/Badge.astro';
+import Button from '../../components/Button.astro';
+import ImageGallery from '../../components/ImageGallery.astro';
+import { experienceCategoryLabels, getAssetById, getLinkedExperiences, getPriceInUnits } from '../../data/helpers';
+import PageLayout from '../../layouts/PageLayout.astro';
+
+// Server-rendered dynamic route
+export const prerender = false;
+
+// Get property ID from URL
+const { id } = Astro.params;
+
+// Get property from centralized mock data
+const asset = getAssetById(id || '3');
+
+if (!asset) {
+  return Astro.redirect('/');
+}
+
+// Redirect Elite properties to the Elite route
+if (asset.tier === 'elite') {
+  return Astro.redirect(`/elite/${asset.id}`);
+}
+
+// Prepare property object for template (JSON fields are auto-parsed by Drizzle)
+const property = {
+  id: asset.id,
+  title: asset.title,
+  location: asset.location,
+  address: asset.address ?? asset.location,
+  tier: asset.tier,
+  description: asset.description ?? '',
+  price: getPriceInUnits(asset.basePrice),
+  currency: asset.currency.toUpperCase(),
+  bedrooms: asset.bedrooms ?? 0,
+  bathrooms: asset.bathrooms ?? 0,
+  maxGuests: asset.maxGuests ?? 2,
+  sqMeters: asset.sqMeters ?? 0,
+  images: asset.images,
+  amenities: asset.amenities ?? [],
+  highlights: asset.highlights ?? [],
+  views: asset.views ?? [],
+};
+
+// Get linked experiences with discounts
+const rawLinkedExperiences = getLinkedExperiences(asset.id);
+const linkedExperiences = rawLinkedExperiences.map(exp => ({
+  id: exp.id,
+  title: exp.title,
+  location: exp.city ?? exp.location,
+  imageUrl: exp.imageUrl ?? '',
+  price: getPriceInUnits(exp.basePrice),
+  duration: exp.duration ?? '',
+  category: exp.category ? experienceCategoryLabels[exp.category] : 'Other',
+  discountPercent: exp.discountPercent,
+}));
+---
+
+<PageLayout 
+  title={`${property.title} | Properties`}
+  description={property.description.substring(0, 160)}
+>
+  <!-- Back Navigation -->
+  <section class="pt-8 px-6">
+    <div class="container mx-auto">
+      <a href="/" class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Properties
+      </a>
+    </div>
+  </section>
+
+  <!-- Hero Image Gallery -->
+  <section class="py-10 px-6">
+    <div class="container mx-auto">
+      <!-- Tier Badge Above Gallery -->
+      <div class="mb-6">
+        <Badge variant={property.tier} />
+      </div>
+      
+      <ImageGallery images={property.images} title={property.title} variant="standard" />
+    </div>
+  </section>
+
+  <!-- Main Content Grid -->
+  <section class="py-8 px-6">
+    <div class="container mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        
+        <!-- Left Column - Property Details -->
+        <div class="lg:col-span-2 space-y-10">
+          
+          <!-- Title & Location -->
+          <div>
+            <h1 class="text-3xl md:text-4xl font-bold text-foreground mb-3">
+              {property.title}
+            </h1>
+            <div class="flex items-center gap-2 text-muted-foreground">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>{property.location}</span>
+            </div>
+          </div>
+          
+          <!-- Key Stats -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-8 p-8 bg-card rounded-2xl">
+            <div class="text-center">
+              <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
+                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+              </div>
+              <div class="text-2xl font-bold text-foreground mb-1">{property.bedrooms}</div>
+              <div class="text-sm text-muted-foreground">Bedrooms</div>
+            </div>
+            <div class="text-center">
+              <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
+                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                </svg>
+              </div>
+              <div class="text-2xl font-bold text-foreground mb-1">{property.bathrooms}</div>
+              <div class="text-sm text-muted-foreground">Bathrooms</div>
+            </div>
+            <div class="text-center">
+              <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
+                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div class="text-2xl font-bold text-foreground mb-1">{property.maxGuests}</div>
+              <div class="text-sm text-muted-foreground">Guests</div>
+            </div>
+            <div class="text-center">
+              <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
+                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+              </div>
+              <div class="text-2xl font-bold text-foreground mb-1">{property.sqMeters}</div>
+              <div class="text-sm text-muted-foreground">m²</div>
+            </div>
+          </div>
+          
+          <div class="divider-elegant"></div>
+          
+          <!-- Highlights -->
+          <div>
+            <h2 class="text-xl font-semibold text-foreground mb-4">Highlights</h2>
+            <div class="flex flex-wrap gap-3">
+              {property.highlights.map(highlight => (
+                <span class="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                  {highlight}
+                </span>
+              ))}
+            </div>
+          </div>
+          
+          <!-- Description -->
+          <div>
+            <h2 class="text-xl font-semibold text-foreground mb-4">About This Property</h2>
+            <div class="prose prose-invert max-w-none">
+              {property.description.split('\n\n').map(paragraph => (
+                <p class="text-muted-foreground leading-relaxed mb-4">{paragraph}</p>
+              ))}
+            </div>
+          </div>
+          
+          <div class="divider-elegant"></div>
+          
+          <!-- Amenities -->
+          <div>
+            <h2 class="text-xl font-semibold text-foreground mb-6">Amenities</h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {property.amenities.map(amenity => (
+                <div class="flex items-center gap-4 px-4 py-3.5 bg-card rounded-xl border border-border/50">
+                  <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
+                    <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                  <span class="text-foreground text-sm font-medium">{amenity}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div class="divider-elegant"></div>
+          
+          <!-- Views -->
+          <div>
+            <h2 class="text-xl font-semibold text-foreground mb-4">Views</h2>
+            <div class="flex flex-wrap gap-3">
+              {property.views.map(view => (
+                <span class="amenity-chip">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                  {view}
+                </span>
+              ))}
+            </div>
+          </div>
+          
+        </div>
+        
+        <!-- Right Column - Booking Sidebar -->
+        <div class="lg:col-span-1">
+          <div class="sticky top-28">
+            <div class="p-7 rounded-2xl bg-card border border-border">
+              <!-- Price -->
+              <div class="mb-8">
+                <div class="flex items-baseline gap-2">
+                  <span class="text-3xl font-bold text-foreground">{property.currency} {property.price.toLocaleString()}</span>
+                  <span class="text-muted-foreground">/ night</span>
+                </div>
+
+              </div>
+              
+              <!-- Date Selection (placeholder) -->
+              <div class="space-y-5 mb-8">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm text-muted-foreground mb-2.5 font-medium">Check-in</label>
+                    <button class="w-full px-4 py-3.5 bg-secondary rounded-xl text-left text-foreground hover:bg-card-hover transition-colors border border-border/50">
+                      Select date
+                    </button>
+                  </div>
+                  <div>
+                    <label class="block text-sm text-muted-foreground mb-2.5 font-medium">Check-out</label>
+                    <button class="w-full px-4 py-3.5 bg-secondary rounded-xl text-left text-foreground hover:bg-card-hover transition-colors border border-border/50">
+                      Select date
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm text-muted-foreground mb-2.5 font-medium">Guests</label>
+                  <select class="w-full px-4 py-3.5 bg-secondary rounded-xl text-foreground border border-border/50 focus:ring-2 focus:ring-primary focus:border-primary appearance-none cursor-pointer">
+                    {Array.from({ length: property.maxGuests }, (_, i) => i + 1).map(count => (
+                      <option value={count}>{count} guest{count !== 1 ? 's' : ''}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <!-- Reserve Button -->
+              <Button class="w-full py-4! text-base">Reserve Now</Button>
+              
+              <p class="text-center text-sm text-muted-foreground mt-5">
+                You won't be charged yet
+              </p>
+              
+              <!-- Price Breakdown Preview -->
+              <div class="mt-8 pt-6 border-t border-border space-y-4">
+                <div class="flex justify-between text-sm">
+                  <span class="text-muted-foreground">{property.currency} {property.price.toLocaleString()} × 5 nights</span>
+                  <span class="text-foreground font-medium">{property.currency} {(property.price * 5).toLocaleString()}</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-muted-foreground">Cleaning fee</span>
+                  <span class="text-foreground font-medium">{property.currency} 250</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                  <span class="text-muted-foreground">Service fee</span>
+                  <span class="text-foreground font-medium">{property.currency} {Math.round(property.price * 5 * 0.12).toLocaleString()}</span>
+                </div>
+                <div class="flex justify-between pt-4 border-t border-border font-semibold text-base">
+                  <span class="text-foreground">Total</span>
+                  <span class="text-foreground">{property.currency} {(property.price * 5 + 250 + Math.round(property.price * 5 * 0.12)).toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Contact Host -->
+            <div class="mt-5 p-5 rounded-xl bg-card border border-border">
+              <button class="w-full flex items-center justify-center gap-3 py-2 text-foreground hover:text-primary transition-colors font-medium">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                Contact Host
+              </button>
+            </div>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+  
+  <!-- Linked Experiences Section -->
+  {linkedExperiences.length > 0 && (
+    <section class="py-16 px-6 bg-card/50">
+      <div class="container mx-auto">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h2 class="text-2xl font-bold text-foreground mb-2">Enhance Your Stay</h2>
+            <p class="text-muted-foreground">Exclusive experiences available with this property</p>
+          </div>
+          <a href="/experiences" class="text-primary hover:text-primary-hover transition-colors text-sm font-medium">
+            View all experiences →
+          </a>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {linkedExperiences.map((exp) => (
+            <div class="group rounded-2xl overflow-hidden bg-card card-hover border border-border">
+              <!-- Image -->
+              <div class="relative aspect-[16/9] overflow-hidden">
+                <img
+                  src={exp.imageUrl}
+                  alt={exp.title}
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                
+                <!-- Discount Badge -->
+                {exp.discountPercent > 0 && (
+                  <div class="absolute top-4 right-4">
+                    <span class="px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                      {exp.discountPercent}% OFF
+                    </span>
+                  </div>
+                )}
+                
+                <!-- Category Badge -->
+                <div class="absolute top-4 left-4">
+                  <span class="badge-elite">{exp.category}</span>
+                </div>
+                
+                <!-- Duration -->
+                <div class="absolute bottom-4 right-4">
+                  <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm">
+                    {exp.duration}
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Content -->
+              <div class="p-5">
+                <h3 class="text-lg font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
+                  {exp.title}
+                </h3>
+                <p class="text-muted-foreground text-sm mb-4 flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  {exp.location}
+                </p>
+                <div class="flex items-center justify-between">
+                  <div>
+                    {exp.discountPercent > 0 ? (
+                      <div class="flex items-center gap-2">
+                        <span class="text-xl font-bold text-foreground">€{Math.round(exp.price * (1 - exp.discountPercent / 100)).toLocaleString()}</span>
+                        <span class="text-sm text-muted-foreground line-through">€{exp.price.toLocaleString()}</span>
+                      </div>
+                    ) : (
+                      <span class="text-xl font-bold text-foreground">€{exp.price.toLocaleString()}</span>
+                    )}
+                    <span class="text-muted-foreground text-sm"> / person</span>
+                  </div>
+                  <button class="btn-secondary text-sm py-2 px-4">Add</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+  
+  <!-- Location Map Placeholder -->
+  <section class="py-16 px-6">
+    <div class="container mx-auto">
+      <h2 class="text-2xl font-bold text-foreground mb-6">Location</h2>
+      <div class="aspect-[2/1] rounded-2xl bg-card border border-border flex items-center justify-center">
+        <div class="text-center">
+          <svg class="w-16 h-16 text-muted-foreground mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <p class="text-muted-foreground">{property.address}</p>
+          <p class="text-sm text-muted-foreground mt-2">Interactive map coming soon</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+</PageLayout>

@@ -1,5 +1,5 @@
 ---
-import { App } from "@/react/App";
+import { TestApp } from "@/react/TestApp";
 import "@/styles/global.css";
 
 export const prerender = false;
@@ -13,6 +13,6 @@ export const prerender = false;
     <title>Booking Portal</title>
   </head>
   <body>
-    <App client:only="react" />
+    <TestApp client:only="react" />
   </body>
 </html>

@@ -1,0 +1,109 @@
+---
+import Button from "../components/Button.astro";
+import Hero from "../components/Hero.astro";
+import PropertyCard from "../components/PropertyCard.astro";
+import { getEliteAssets, getPriceInUnits } from "../data/helpers";
+import PageLayout from "../layouts/PageLayout.astro";
+
+// Get elite properties and transform to PropertyCard format
+const eliteProperties = getEliteAssets().map((asset) => ({
+  id: asset.id,
+  title: asset.title,
+  location: asset.location,
+  tier: asset.tier,
+  imageUrl: asset.images[0],
+  price: getPriceInUnits(asset.basePrice),
+  bedrooms: asset.bedrooms ?? 0,
+  bathrooms: asset.bathrooms ?? 0,
+  maxGuests: asset.maxGuests ?? 0,
+}));
+
+const filters = [
+  "Beachfront",
+  "Mountain",
+  "City Center",
+  "Pool",
+  "5+ Bedrooms",
+];
+---
+
+<PageLayout
+  title="Elite Collection"
+  description="Discover our curated selection of the world's most extraordinary luxury properties."
+  showMarble
+>
+  <!-- Hero -->
+  <Hero
+    badge="Curated Excellence"
+    title="Elite Collection"
+    titleGradient="Elite"
+    subtitle="A handpicked selection of the world's most extraordinary properties. Each residence meets our rigorous standards for luxury, location, and exceptional service."
+    height="medium"
+  />
+
+  <!-- Filters Bar -->
+  <section class="sticky top-20 z-30 glass border-y border-border/50">
+    <div class="container mx-auto px-6 py-4">
+      <div class="flex flex-wrap items-center gap-4">
+        <button class="amenity-chip">
+          <svg
+            class="w-4 h-4"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+            ></path>
+          </svg>
+          Filters
+        </button>
+        {
+          filters.map((filter) => (
+            <button class="amenity-chip">{filter}</button>
+          ))
+        }
+
+        <div
+          class="ml-auto flex items-center gap-3 text-sm text-muted-foreground"
+        >
+          <span>{eliteProperties.length} properties</span>
+          <span class="text-border">|</span>
+          <select
+            class="bg-transparent border-none text-foreground focus:outline-none cursor-pointer"
+          >
+            <option value="featured">Featured</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Property Grid -->
+  <section class="py-16 px-6">
+    <div class="container mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {
+          eliteProperties.map((property, index) => (
+            <div
+              class="animate-slide-up opacity-0"
+              style={`animation-delay: ${0.1 + index * 0.1}s`}
+            >
+              <PropertyCard {...property} />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Load More -->
+  <section class="pb-20 px-6 text-center">
+    <Button variant="secondary">Load More Properties</Button>
+  </section>
+</PageLayout>
