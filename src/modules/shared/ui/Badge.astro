@@ -1,19 +1,23 @@
 ---
+import type { Asset } from "@/db/schema";
+
 interface Props {
-  variant: 'elite' | 'standard';
+  variant: Asset["tier"];
 }
 
 const { variant } = Astro.props;
-const isElite = variant === 'elite';
+const isElite = variant === "elite";
 ---
 
-{isElite ? (
-  <span class="badge-elite">
-    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-    </svg>
-    Elite
-  </span>
-) : (
-  <span class="badge-standard">Standard</span>
-)}
+{
+  isElite ? (
+    <span class="badge-elite">
+      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+      </svg>
+      Elite
+    </span>
+  ) : (
+    <span class="badge-standard">Standard</span>
+  )
+}

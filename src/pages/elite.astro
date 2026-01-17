@@ -1,5 +1,5 @@
 ---
-import { getEliteAssets, getPriceInUnits } from "@/data/helpers";
+import { getEliteAssets } from "@/data/helpers";
 import PageLayout from "@/layouts/PageLayout.astro";
 import Button from "@/modules/shared/ui/Button.astro";
 import Hero from "@/modules/shared/ui/Hero.astro";
@@ -7,15 +7,8 @@ import PropertyCard from "@/modules/shared/ui/PropertyCard.astro";
 
 // Get elite properties and transform to PropertyCard format
 const eliteProperties = getEliteAssets().map((asset) => ({
-  id: asset.id,
-  title: asset.title,
-  location: asset.location,
-  tier: asset.tier,
+  asset,
   imageUrl: asset.images[0],
-  price: getPriceInUnits(asset.basePrice),
-  bedrooms: asset.bedrooms ?? 0,
-  bathrooms: asset.bathrooms ?? 0,
-  maxGuests: asset.maxGuests ?? 0,
 }));
 
 const filters = [

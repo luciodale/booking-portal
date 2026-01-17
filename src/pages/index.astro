@@ -1,5 +1,4 @@
 ---
-import { getPriceInUnits } from "../data/helpers";
 import { mockAssets } from "../data/mocks";
 import PageLayout from "../layouts/PageLayout.astro";
 import Button from "../modules/shared/ui/Button.astro";
@@ -9,20 +8,15 @@ import PropertyCard from "../modules/shared/ui/PropertyCard.astro";
 
 // Transform assets to PropertyCard format
 const featuredProperties = mockAssets.slice(0, 6).map((asset) => ({
-  id: asset.id,
-  title: asset.title,
-  location: asset.location,
-  tier: asset.tier,
+  asset,
   imageUrl: asset.images[0],
-  price: getPriceInUnits(asset.basePrice),
-  bedrooms: asset.bedrooms ?? 0,
-  bathrooms: asset.bathrooms ?? 0,
-  maxGuests: asset.maxGuests ?? 0,
 }));
 
-const eliteProperties = featuredProperties.filter((p) => p.tier === "elite");
+const eliteProperties = featuredProperties.filter(
+  (p) => p.asset.tier === "elite",
+);
 const standardProperties = featuredProperties.filter(
-  (p) => p.tier === "standard",
+  (p) => p.asset.tier === "standard",
 );
 ---
 
