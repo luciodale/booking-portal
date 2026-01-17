@@ -1,11 +1,11 @@
 ---
-import Button from "../components/Button.astro";
-import Heading from "../components/Heading.astro";
-import Hero from "../components/Hero.astro";
-import PropertyCard from "../components/PropertyCard.astro";
 import { getPriceInUnits } from "../data/helpers";
 import { mockAssets } from "../data/mocks";
 import PageLayout from "../layouts/PageLayout.astro";
+import Button from "../modules/shared/ui/Button.astro";
+import Heading from "../modules/shared/ui/Heading.astro";
+import Hero from "../modules/shared/ui/Hero.astro";
+import PropertyCard from "../modules/shared/ui/PropertyCard.astro";
 
 // Transform assets to PropertyCard format
 const featuredProperties = mockAssets.slice(0, 6).map((asset) => ({

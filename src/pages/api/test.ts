@@ -1,4 +1,5 @@
 import { brokers, getDb } from "@/db";
+import { toUTCTimestamp } from "@/modules/shared/utils/dates";
 import type { APIRoute } from "astro";
 
 export const prerender = false;
@@ -11,7 +12,7 @@ export const GET: APIRoute = async ({ locals }) => {
     return new Response(
       JSON.stringify({
         message: "Test endpoint working (mock mode)",
-        timestamp: new Date().toISOString(),
+        timestamp: toUTCTimestamp(new Date()),
         brokersCount: 0,
         mock: true,
       }),
@@ -28,7 +29,7 @@ export const GET: APIRoute = async ({ locals }) => {
     return new Response(
       JSON.stringify({
         message: "Test endpoint working",
-        timestamp: new Date().toISOString(),
+        timestamp: toUTCTimestamp(new Date()),
         brokersCount: result.length,
         mock: false,
       }),
@@ -41,7 +42,7 @@ export const GET: APIRoute = async ({ locals }) => {
     return new Response(
       JSON.stringify({
         message: "Test endpoint working (mock mode - query failed)",
-        timestamp: new Date().toISOString(),
+        timestamp: toUTCTimestamp(new Date()),
         brokersCount: 0,
         mock: true,
         error: error instanceof Error ? error.message : "Unknown error",

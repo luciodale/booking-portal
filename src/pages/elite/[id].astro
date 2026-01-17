@@ -1,9 +1,9 @@
 ---
-import Badge from '../../components/Badge.astro';
-import Button from '../../components/Button.astro';
-import ImageGallery from '../../components/ImageGallery.astro';
-import { experienceCategoryLabels, getAssetById, getLinkedExperiences, getPriceInUnits } from '../../data/helpers';
-import PageLayout from '../../layouts/PageLayout.astro';
+import { experienceCategoryLabels, getAssetById, getLinkedExperiences, getPriceInUnits } from '@/data/helpers';
+import PageLayout from '@/layouts/PageLayout.astro';
+import Badge from '@/modules/shared/ui/Badge.astro';
+import Button from '@/modules/shared/ui/Button.astro';
+import ImageGallery from '@/modules/shared/ui/ImageGallery.astro';
 
 // Server-rendered dynamic route
 export const prerender = false;

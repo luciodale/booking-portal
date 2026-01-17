@@ -319,6 +319,33 @@ export const assetExperiences = sqliteTable("asset_experiences", {
 });
 
 // ============================================================================
+// Channels table - distribution channels (Direct, Airbnb, Booking.com, etc.)
+// ============================================================================
+export const channels = sqliteTable("channels", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(), // "Direct", "Airbnb", "Booking.com"
+  code: text("code").notNull().unique(), // "direct", "airbnb", "booking"
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+// ============================================================================
+// Channel Markups - per-asset per-channel price adjustments
+// ============================================================================
+export const channelMarkups = sqliteTable("channel_markups", {
+  id: text("id").primaryKey(),
+  assetId: text("asset_id")
+    .notNull()
+    .references(() => assets.id, { onDelete: "cascade" }),
+  channelId: text("channel_id")
+    .notNull()
+    .references(() => channels.id, { onDelete: "cascade" }),
+  markupPercent: integer("markup_percent").notNull().default(0), // 15 = +15%
+  active: integer("active", { mode: "boolean" }).notNull().default(true),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+// ============================================================================
 // Indexes
 // ============================================================================
 export const usersClerkIdx = index("idx_users_clerk").on(users.clerkUserId);
@@ -403,6 +430,18 @@ export const assetExperiencesAssetExpIdx = index(
   "idx_asset_experiences_asset_exp"
 ).on(assetExperiences.assetId, assetExperiences.experienceId);
 
+export const channelsCodeIdx = index("idx_channels_code").on(channels.code);
+
+export const channelMarkupsAssetIdx = index("idx_channel_markups_asset").on(
+  channelMarkups.assetId
+);
+export const channelMarkupsChannelIdx = index("idx_channel_markups_channel").on(
+  channelMarkups.channelId
+);
+export const channelMarkupsAssetChannelIdx = index(
+  "idx_channel_markups_asset_channel"
+).on(channelMarkups.assetId, channelMarkups.channelId);
+
 // ============================================================================
 // Type exports
 // ============================================================================
@@ -428,3 +467,7 @@ export type Experience = typeof experiences.$inferSelect;
 export type NewExperience = typeof experiences.$inferInsert;
 export type AssetExperience = typeof assetExperiences.$inferSelect;
 export type NewAssetExperience = typeof assetExperiences.$inferInsert;
+export type Channel = typeof channels.$inferSelect;
+export type NewChannel = typeof channels.$inferInsert;
+export type ChannelMarkup = typeof channelMarkups.$inferSelect;
+export type NewChannelMarkup = typeof channelMarkups.$inferInsert;

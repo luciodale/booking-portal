@@ -1,13 +1,16 @@
 /**
  * Helper functions for data access and formatting
  */
-import type { Experience } from "../db/schema";
-import { mockAssets, mockExperiences } from "./mocks";
+import type { Experience, PricingRule } from "../db/schema";
+import { mockAssets, mockExperiences, mockPricingRules } from "./mocks";
 import type { AssetWithImages, LinkedExperience } from "./types";
 
 // Asset lookups
 export const getAssetById = (id: string): AssetWithImages | undefined =>
   mockAssets.find((asset) => asset.id === id);
+
+export const getPricingRulesByAssetId = (assetId: string): PricingRule[] =>
+  mockPricingRules.filter((rule) => rule.assetId === assetId);
 
 export const getEliteAssets = (): AssetWithImages[] =>
   mockAssets.filter((asset) => asset.tier === "elite");

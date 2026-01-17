@@ -1,9 +1,9 @@
 ---
-import Button from "../components/Button.astro";
-import Hero from "../components/Hero.astro";
-import PropertyCard from "../components/PropertyCard.astro";
-import { getEliteAssets, getPriceInUnits } from "../data/helpers";
-import PageLayout from "../layouts/PageLayout.astro";
+import { getEliteAssets, getPriceInUnits } from "@/data/helpers";
+import PageLayout from "@/layouts/PageLayout.astro";
+import Button from "@/modules/shared/ui/Button.astro";
+import Hero from "@/modules/shared/ui/Hero.astro";
+import PropertyCard from "@/modules/shared/ui/PropertyCard.astro";
 
 // Get elite properties and transform to PropertyCard format
 const eliteProperties = getEliteAssets().map((asset) => ({

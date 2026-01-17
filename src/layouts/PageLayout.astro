@@ -1,7 +1,7 @@
 ---
-import BaseLayout from './BaseLayout.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
+import Footer from "@/modules/shared/ui/Footer.astro";
+import Header from "@/modules/shared/ui/Header.astro";
+import BaseLayout from "./BaseLayout.astro";
 
 interface Props {
   title: string;
@@ -11,15 +11,26 @@ interface Props {
   showMarble?: boolean;
 }
 
-const { title, description, ogImage, canonicalUrl, showMarble = false } = Astro.props;
+const {
+  title,
+  description,
+  ogImage,
+  canonicalUrl,
+  showMarble = false,
+} = Astro.props;
 ---
 
-<BaseLayout title={title} description={description} ogImage={ogImage} canonicalUrl={canonicalUrl}>
+<BaseLayout
+  title={title}
+  description={description}
+  ogImage={ogImage}
+  canonicalUrl={canonicalUrl}
+>
   <Header />
-  
+
   <main class:list={["pt-20 min-h-screen", { "marble-texture": showMarble }]}>
     <slot />
   </main>
-  
+
   <Footer />
 </BaseLayout>

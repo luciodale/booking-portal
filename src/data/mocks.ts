@@ -1,7 +1,7 @@
 /**
  * Mock Data - Typed with Drizzle Schema
  */
-import type { Experience } from "../db/schema";
+import type { Experience, PricingRule } from "../db/schema";
 import type { AssetWithImages } from "./types";
 
 const MOCK_BROKER_ID = "broker-001";
@@ -531,5 +531,60 @@ export const mockExperiences: Experience[] = [
     featured: false,
     createdAt: "2024-01-01T00:00:00Z",
     updatedAt: "2024-01-01T00:00:00Z",
+  },
+];
+
+/**
+ * Mock Pricing Rules - for testing dynamic pricing
+ */
+export const mockPricingRules: PricingRule[] = [
+  // Summer Peak for elite properties
+  {
+    id: "pr-1",
+    assetId: "1",
+    name: "Summer Peak",
+    startDate: "2026-07-01",
+    endDate: "2026-08-31",
+    multiplier: 150, // 1.5x
+    minNights: 5,
+    priority: 10,
+    active: true,
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "pr-2",
+    assetId: "2",
+    name: "Ski Season",
+    startDate: "2026-12-15",
+    endDate: "2027-03-15",
+    multiplier: 175, // 1.75x
+    minNights: 4,
+    priority: 10,
+    active: true,
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "pr-3",
+    assetId: "3",
+    name: "Winter Low Season",
+    startDate: "2026-01-15",
+    endDate: "2026-03-15",
+    multiplier: 80, // 0.8x (20% off)
+    minNights: null,
+    priority: 5,
+    active: true,
+    createdAt: "2024-01-01T00:00:00Z",
+  },
+  {
+    id: "pr-4",
+    assetId: "3",
+    name: "Easter Holidays",
+    startDate: "2026-04-01",
+    endDate: "2026-04-15",
+    multiplier: 130, // 1.3x
+    minNights: null,
+    priority: 15, // Higher priority than low season
+    active: true,
+    createdAt: "2024-01-01T00:00:00Z",
   },
 ];

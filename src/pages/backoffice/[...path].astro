@@ -1,5 +1,5 @@
 ---
-import { TestApp } from "@/react/TestApp";
+import BackofficeApp from "@/modules/backoffice/ui/BackofficeApp";
 import "@/styles/global.css";
 
 export const prerender = false;
@@ -10,9 +10,9 @@ export const prerender = false;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Booking Portal</title>
+    <title>Booking Portal Backoffice</title>
   </head>
   <body>
-    <TestApp client:only="react" />
+    <BackofficeApp client:only="react" />
   </body>
 </html>
