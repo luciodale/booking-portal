@@ -59,7 +59,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
   showMarble
 >
   <!-- Cinematic Hero -->
-  <section class="relative h-[85vh] min-h-[600px] overflow-hidden">
+  <section class="relative h-content-fit overflow-hidden">
     <!-- Background Image -->
     <div class="absolute inset-0">
       <img
@@ -67,8 +67,8 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
         alt={property.title}
         class="w-full h-full object-cover"
       />
-      <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/20 to-background" />
-      <div class="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
+      <div class="absolute inset-0 bg-linear-to-b from-black/30 via-black/20 to-background" />
+      <div class="absolute inset-0 bg-linear-to-b from-black/50 via-transparent to-transparent" />
     </div>
     
     <!-- Content -->
@@ -120,7 +120,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
   </section>
 
   <!-- Quick Stats Bar -->
-  <section class="sticky top-20 z-30 glass border-y border-border/50">
+  <section class="sticky top-header-height z-30 glass border-y border-border/50">
     <div class="container mx-auto px-6 py-5">
       <div class="flex flex-wrap items-center justify-between gap-6">
         <!-- Stats -->
