@@ -1,10 +1,13 @@
 ---
-import { experienceCategoryLabels, getAssetById, getLinkedExperiences, getPriceInUnits } from '@/data/helpers';
+import { experienceCategoryLabels, getLinkedExperiences, getPriceInUnits } from '@/data/helpers';
+import { assets, getDb, images } from "@/db";
 import PageLayout from '@/layouts/PageLayout.astro';
 import { getAmenityIconName } from "@/modules/shared/constants";
+import { generateImageUrl } from "@/modules/storage/r2-helpers";
 import Badge from '@/modules/ui/astro/Badge.astro';
 import Button from '@/modules/ui/astro/Button.astro';
 import ImageGallery from '@/modules/ui/astro/ImageGallery.astro';
+import { asc, eq } from "drizzle-orm";
 
 // Server-rendered dynamic route
 export const prerender = false;
@@ -12,12 +15,31 @@ export const prerender = false;
 // Get property ID from URL
 const { id } = Astro.params;
 
-// Get property from centralized mock data
-const asset = getAssetById(id || '1');
+if (!id) {
+  return Astro.redirect('/elite');
+}
+
+const db = getDb(Astro.locals.runtime.env.DB);
+
+// Get property from database
+const [asset] = await db
+  .select()
+  .from(assets)
+  .where(eq(assets.id, id))
+  .limit(1);
 
 if (!asset || asset.tier !== 'elite') {
   return Astro.redirect('/elite');
 }
+
+// Get all images for this asset
+const assetImages = await db
+  .select()
+  .from(images)
+  .where(eq(images.assetId, asset.id))
+  .orderBy(asc(images.order));
+
+const imageUrls = assetImages.map((img) => generateImageUrl(img.r2Key));
 
 // Prepare property object for template (JSON fields are auto-parsed by Drizzle)
 const property = {
@@ -26,7 +48,7 @@ const property = {
   location: asset.location,
   address: asset.address ?? asset.location,
   tier: asset.tier,
-  tagline: asset.tagline ?? 'Exceptional Luxury Awaits',
+  tagline: asset.title ?? 'Exceptional Luxury Awaits',
   description: asset.description ?? '',
   price: getPriceInUnits(asset.basePrice),
   currency: asset.currency.toUpperCase(),
@@ -34,10 +56,10 @@ const property = {
   bathrooms: asset.bathrooms ?? 0,
   maxGuests: asset.maxGuests ?? 2,
   sqMeters: asset.sqMeters ?? 0,
-  images: asset.images,
-  amenities: asset.amenities ?? [],
-  highlights: asset.highlights ?? [],
-  views: asset.views ?? [],
+  images: imageUrls,
+  amenities: (asset.amenities as string[]) ?? [],
+  highlights: (asset.highlights as string[]) ?? [],
+  views: (asset.views as string[]) ?? [],
 };
 
 // Get linked experiences with discounts
@@ -266,7 +288,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
                 <p class="text-sm text-primary/80 mt-3">Elite pricing includes premium services</p>
               </div>
               
-              <div class="h-px bg-gradient-to-r from-transparent via-border to-transparent mb-8" />
+              <div class="h-px bg-linear-to-r from-transparent via-border to-transparent mb-8" />
               
               <!-- Date Selection -->
               <div class="space-y-5 mb-8">
@@ -352,13 +374,13 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
           {linkedExperiences.map((exp) => (
             <div class="group rounded-2xl overflow-hidden bg-card card-hover border border-border">
               <!-- Image -->
-              <div class="relative aspect-[16/10] overflow-hidden">
+              <div class="relative aspect-16/10 overflow-hidden">
                 <img
                   src={exp.imageUrl}
                   alt={exp.title}
                   class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div class="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
                 
                 <!-- Discount Badge -->
                 {exp.discountPercent > 0 && (
@@ -423,7 +445,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
         <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">Location</h2>
         <p class="text-muted-foreground">{property.address}</p>
       </div>
-      <div class="aspect-[2/1] rounded-2xl bg-card border border-border flex items-center justify-center overflow-hidden">
+      <div class="aspect-2/1 rounded-2xl bg-card border border-border flex items-center justify-center overflow-hidden">
         <div class="text-center">
           <i data-lucide="map-pin" class="w-20 h-20 text-muted-foreground mx-auto mb-4"></i>
           <p class="text-sm text-muted-foreground">Interactive map coming soon</p>

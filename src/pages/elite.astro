@@ -1,6 +1,7 @@
 ---
 import { assets, getDb, images } from "@/db";
 import PageLayout from "@/layouts/PageLayout.astro";
+import { generateImageUrl } from "@/modules/storage/r2-helpers";
 import Button from "@/modules/ui/astro/Button.astro";
 import Hero from "@/modules/ui/astro/Hero.astro";
 import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
@@ -27,7 +28,7 @@ const eliteProperties = await Promise.all(
 
     return {
       asset,
-      imageUrl: primaryImage?.r2Path || "",
+      imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
     };
   }),
 );

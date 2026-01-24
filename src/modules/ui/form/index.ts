@@ -4,13 +4,13 @@
  */
 
 export { FormError } from "./FormError";
-export { ImageUploadField } from "./ImageUploadField";
 export { NumberField } from "./NumberField";
-export { PropertyImagesField, type PropertyImage } from "./PropertyImagesField";
 export { SelectField } from "./SelectField";
-export { StaticAssetPathField } from "./StaticAssetPathField";
 export { TagsField } from "./TagsField";
 export { TextareaField } from "./TextareaField";
 export { TextField } from "./TextField";
+
+// Re-export the Select component for direct use
+export { Select, type SelectOption } from "@/modules/ui/Select";
 
 export type * from "./types";

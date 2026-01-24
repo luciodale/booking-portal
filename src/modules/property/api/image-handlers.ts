@@ -120,7 +120,6 @@ export const uploadImages: APIRoute = async ({ request, locals }) => {
         .values({
           id: imageId,
           assetId,
-          r2Path: generateImageUrl(r2Key),
           r2Key,
           alt,
           isPrimary,

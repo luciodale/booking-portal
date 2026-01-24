@@ -1,43 +1,43 @@
 /**
  * Create Property Route
+ * Full form + images submitted together on save
  */
 
-import type { CreatePropertyInput } from "@/modules/property/domain/schema";
 import { useCreateProperty } from "@/modules/property/hooks/queries";
 import { rootRoute } from "@/modules/property/routes/BackofficeRoot";
-import type { PropertyImage } from "@/modules/ui/form";
-import { ElitePropertyForm } from "@/modules/ui/views/PropertyFormView";
+import {
+  CreatePropertyForm,
+  type CreatePropertyFormData,
+} from "@/modules/property/ui";
 import { createRoute, useNavigate } from "@tanstack/react-router";
-
-/** Form data extends CreatePropertyInput with images */
-interface PropertyFormData extends CreatePropertyInput {
-  images?: PropertyImage[];
-}
+import { useState } from "react";
 
 function CreatePropertyPage() {
   const navigate = useNavigate();
   const createProperty = useCreateProperty({});
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleSubmit = async (data: PropertyFormData) => {
+  const handleSubmit = async (data: CreatePropertyFormData) => {
     try {
+      // Extract images and property data
+      const { images, ...propertyData } = data;
+
       // First create the property
-      const newProperty = await createProperty.mutateAsync(data);
+      const newProperty = await createProperty.mutateAsync(propertyData);
 
-      // Then upload images if any
-      const imagesToUpload = data.images?.filter((img) => img.file) ?? [];
+      // Then upload images
+      if (images.length > 0) {
+        setIsUploading(true);
 
-      if (imagesToUpload.length > 0) {
         const formData = new FormData();
         formData.append("assetId", newProperty.id);
 
         // Find primary image index
-        const primaryIndex = imagesToUpload.findIndex((img) => img.isPrimary);
+        const primaryIndex = images.findIndex((img) => img.isPrimary);
 
-        imagesToUpload.forEach((img, index) => {
-          if (img.file) {
-            formData.append("images", img.file);
-          }
-        });
+        for (const img of images) {
+          formData.append("images", img.file);
+        }
 
         if (primaryIndex >= 0) {
           formData.append("isPrimary", String(primaryIndex));
@@ -52,15 +52,18 @@ function CreatePropertyPage() {
           console.error("Failed to upload images");
           alert("Property created but image upload failed.");
         }
+
+        setIsUploading(false);
       }
 
-      // Navigate to the property edit page after successful creation
+      // Navigate to the property edit page
       navigate({
         to: "/properties/$id/edit",
         params: { id: newProperty.id },
       });
     } catch (error) {
       console.error("Submission failed", error);
+      setIsUploading(false);
     }
   };
 
@@ -69,9 +72,9 @@ function CreatePropertyPage() {
       <h1 className="text-3xl font-bold text-foreground mb-6">
         Create New Property
       </h1>
-      <ElitePropertyForm
+      <CreatePropertyForm
         onSubmit={handleSubmit}
-        isLoading={createProperty.isPending}
+        isLoading={createProperty.isPending || isUploading}
       />
       {createProperty.isError && (
         <div className="mt-4 bg-error/10 border border-error/20 rounded-lg p-4">

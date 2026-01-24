@@ -120,7 +120,6 @@ export const images = sqliteTable("images", {
   assetId: text("asset_id")
     .notNull()
     .references(() => assets.id, { onDelete: "cascade" }),
-  r2Path: text("r2_path").notNull(),
   r2Key: text("r2_key").notNull(),
   alt: text("alt"),
   isPrimary: integer("is_primary", { mode: "boolean" })

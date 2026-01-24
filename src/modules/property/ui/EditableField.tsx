@@ -1,0 +1,379 @@
+/**
+ * EditableField - Generic inline editable field with save button
+ * Per-field update pattern for edit mode
+ */
+
+import { Select } from "@/modules/ui/Select";
+import { cn } from "@/modules/utils/cn";
+import { Check, Loader2 } from "lucide-react";
+import { type ReactNode, useState } from "react";
+
+interface EditableFieldProps<T> {
+  label: string;
+  value: T;
+  onSave: (value: T) => Promise<void>;
+  renderInput: (props: {
+    value: T;
+    onChange: (value: T) => void;
+    disabled: boolean;
+  }) => ReactNode;
+  description?: string;
+  className?: string;
+}
+
+export function EditableField<T>({
+  label,
+  value,
+  onSave,
+  renderInput,
+  description,
+  className,
+}: EditableFieldProps<T>) {
+  const [localValue, setLocalValue] = useState<T>(value);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const hasChanges = JSON.stringify(localValue) !== JSON.stringify(value);
+
+  const handleSave = async () => {
+    if (!hasChanges) return;
+
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      await onSave(localValue);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className={cn("group", className)}>
+      <div className="flex items-center justify-between mb-1">
+        <span className="block text-sm font-medium text-foreground">
+          {label}
+        </span>
+      </div>
+
+      {description && (
+        <p className="text-sm text-muted-foreground mb-2">{description}</p>
+      )}
+
+      <div className="flex items-start gap-3">
+        <div className="flex-1">
+          {renderInput({
+            value: localValue,
+            onChange: setLocalValue,
+            disabled: isSaving,
+          })}
+        </div>
+
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={!hasChanges || isSaving}
+          className={cn(
+            "p-4 rounded-lg border border-border transition-all duration-200",
+            hasChanges
+              ? "bg-primary text-primary-foreground hover:bg-primary-hover shadow-md"
+              : "bg-secondary text-muted-foreground cursor-not-allowed opacity-50"
+          )}
+        >
+          {isSaving ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Check className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+
+      {error && <p className="text-sm text-error mt-1">{error}</p>}
+    </div>
+  );
+}
+
+/** Text input variant */
+export function EditableTextField({
+  label,
+  value,
+  onSave,
+  description,
+  placeholder,
+  maxLength,
+  className,
+}: {
+  label: string;
+  value: string;
+  onSave: (value: string) => Promise<void>;
+  description?: string;
+  placeholder?: string;
+  maxLength?: number;
+  className?: string;
+}) {
+  return (
+    <EditableField
+      label={label}
+      value={value}
+      onSave={onSave}
+      description={description}
+      className={className}
+      renderInput={({ value, onChange, disabled }) => (
+        <input
+          type="text"
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          placeholder={placeholder}
+          maxLength={maxLength}
+          className={cn("input", disabled && "opacity-50")}
+        />
+      )}
+    />
+  );
+}
+
+/** Textarea variant */
+export function EditableTextareaField({
+  label,
+  value,
+  onSave,
+  description,
+  placeholder,
+  rows = 4,
+  maxLength,
+  className,
+}: {
+  label: string;
+  value: string;
+  onSave: (value: string) => Promise<void>;
+  description?: string;
+  placeholder?: string;
+  rows?: number;
+  maxLength?: number;
+  className?: string;
+}) {
+  return (
+    <EditableField
+      label={label}
+      value={value}
+      onSave={onSave}
+      description={description}
+      className={className}
+      renderInput={({ value, onChange, disabled }) => (
+        <textarea
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          placeholder={placeholder}
+          rows={rows}
+          maxLength={maxLength}
+          className={cn("input resize-none", disabled && "opacity-50")}
+        />
+      )}
+    />
+  );
+}
+
+/** Number input variant */
+export function EditableNumberField({
+  label,
+  value,
+  onSave,
+  description,
+  placeholder,
+  min,
+  max,
+  className,
+}: {
+  label: string;
+  value: number | undefined;
+  onSave: (value: number | undefined) => Promise<void>;
+  description?: string;
+  placeholder?: string;
+  min?: number;
+  max?: number;
+  className?: string;
+}) {
+  return (
+    <EditableField
+      label={label}
+      value={value}
+      onSave={onSave}
+      description={description}
+      className={className}
+      renderInput={({ value, onChange, disabled }) => (
+        <input
+          type="number"
+          value={value ?? ""}
+          onChange={(e) => {
+            const val =
+              e.target.value === "" ? undefined : Number(e.target.value);
+            onChange(val);
+          }}
+          disabled={disabled}
+          placeholder={placeholder}
+          min={min}
+          max={max}
+          className={cn("input", disabled && "opacity-50")}
+        />
+      )}
+    />
+  );
+}
+
+/** Select variant */
+export function EditableSelectField({
+  label,
+  value,
+  onSave,
+  options,
+  description,
+  className,
+}: {
+  label: string;
+  value: string;
+  onSave: (value: string) => Promise<void>;
+  options: Array<{ value: string; label: string }>;
+  description?: string;
+  className?: string;
+}) {
+  return (
+    <EditableField
+      label={label}
+      value={value}
+      onSave={onSave}
+      description={description}
+      className={className}
+      renderInput={({ value, onChange, disabled }) => (
+        <Select
+          value={value || ""}
+          onChange={onChange}
+          options={options}
+          disabled={disabled}
+        />
+      )}
+    />
+  );
+}
+
+/** Tags/array variant */
+export function EditableTagsField({
+  label,
+  value,
+  onSave,
+  options,
+  description,
+  allowCustom = true,
+  className,
+}: {
+  label: string;
+  value: string[];
+  onSave: (value: string[]) => Promise<void>;
+  options: Array<{ value: string; label: string }>;
+  description?: string;
+  allowCustom?: boolean;
+  className?: string;
+}) {
+  const [customInput, setCustomInput] = useState("");
+  const optionValues = new Set(options.map((o) => o.value));
+
+  return (
+    <EditableField
+      label={label}
+      value={value}
+      onSave={onSave}
+      description={description}
+      className={className}
+      renderInput={({ value: selectedValues, onChange, disabled }) => {
+        const customTags = selectedValues.filter((v) => !optionValues.has(v));
+
+        const toggleValue = (val: string) => {
+          if (disabled) return;
+          const newValues = selectedValues.includes(val)
+            ? selectedValues.filter((v) => v !== val)
+            : [...selectedValues, val];
+          onChange(newValues);
+        };
+
+        const addCustomTag = () => {
+          const trimmed = customInput.trim().toLowerCase().replace(/\s+/g, "-");
+          if (!trimmed || selectedValues.includes(trimmed)) return;
+          onChange([...selectedValues, trimmed]);
+          setCustomInput("");
+        };
+
+        return (
+          <div>
+            <div className="flex flex-wrap gap-2">
+              {options.map((option) => {
+                const isSelected = selectedValues.includes(option.value);
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => toggleValue(option.value)}
+                    disabled={disabled}
+                    className={cn(
+                      "px-3 py-1.5 text-sm rounded-full border transition-colors",
+                      isSelected
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-card text-foreground border-border hover:border-primary/50",
+                      disabled
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer"
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+
+              {customTags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => toggleValue(tag)}
+                  disabled={disabled}
+                  className="px-3 py-1.5 text-sm rounded-full border bg-primary text-primary-foreground border-primary flex items-center gap-1"
+                >
+                  {tag}
+                  <span className="text-xs">×</span>
+                </button>
+              ))}
+            </div>
+
+            {allowCustom && (
+              <div className="flex gap-2 mt-3">
+                <input
+                  type="text"
+                  value={customInput}
+                  onChange={(e) => setCustomInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addCustomTag();
+                    }
+                  }}
+                  placeholder="Add custom..."
+                  disabled={disabled}
+                  className="input flex-1 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={addCustomTag}
+                  disabled={disabled || !customInput.trim()}
+                  className="btn-secondary text-sm disabled:opacity-50"
+                >
+                  Add
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      }}
+    />
+  );
+}

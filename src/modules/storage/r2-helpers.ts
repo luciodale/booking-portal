@@ -5,6 +5,10 @@
 
 import { genUniqueId } from "@/modules/utils/id";
 
+export const R2_PUBLIC_URL = import.meta.env.DEV
+  ? "/api/images"
+  : "https://pub-9d13f1d66a7642979229f65d101a51c6.r2.dev";
+
 /**
  * Uploads an image buffer to R2 bucket
  * @param bucket - R2 bucket binding from Cloudflare Workers
@@ -65,15 +69,10 @@ export async function deleteImageFromR2(
 /**
  * Generates a public URL for an R2 image
  * @param key - The R2 key of the image
- * @param domain - Optional custom domain for R2 bucket (defaults to public bucket URL)
  * @returns Public URL to access the image
- *
- * @note Update this to use your actual R2 public bucket domain or custom domain
  */
-export function generateImageUrl(key: string, domain?: string): string {
-  // TODO: Update with your actual R2 public bucket URL or custom domain
-  const baseUrl = domain || "https://pub-r2-images.example.com";
-  return `${baseUrl}/${key}`;
+export function generateImageUrl(key: string): string {
+  return `${R2_PUBLIC_URL}/${key}`;
 }
 
 /**

@@ -4,6 +4,7 @@
  */
 
 import { cn } from "@/modules/utils/cn";
+import { Select } from "@/modules/ui/Select";
 import { Controller, type FieldValues } from "react-hook-form";
 import { FormError } from "./FormError";
 import type { SelectFieldProps } from "./types";
@@ -39,28 +40,14 @@ export function SelectField<TFieldValues extends FieldValues>({
             <p className="text-sm text-muted-foreground mb-2">{description}</p>
           )}
 
-          <select
-            {...field}
-            id={field.name}
-            disabled={disabled}
+          <Select
             value={field.value || ""}
-            className={cn(
-              "input",
-              fieldState.error && "border-error",
-              disabled && "opacity-50 cursor-not-allowed"
-            )}
-          >
-            {placeholder && (
-              <option value="" disabled>
-                {placeholder}
-              </option>
-            )}
-            {options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+            onChange={field.onChange}
+            options={options}
+            placeholder={placeholder}
+            disabled={disabled}
+            error={!!fieldState.error}
+          />
 
           <FormError message={fieldState.error?.message} />
         </div>

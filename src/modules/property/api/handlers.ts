@@ -13,6 +13,7 @@ import {
   createPropertySchema,
   updatePropertySchema,
 } from "@/modules/property/domain/schema";
+import { generateImageUrl } from "@/modules/storage/r2-helpers";
 import { genUniqueId } from "@/modules/utils/id";
 import type { APIRoute } from "astro";
 import { and, desc, eq, like, or } from "drizzle-orm";
@@ -102,7 +103,9 @@ export const listProperties: APIRoute = async ({ locals, url }) => {
 
         return {
           ...property,
-          primaryImageUrl: primaryImage[0]?.r2Path || undefined,
+          primaryImageUrl: primaryImage[0]
+            ? generateImageUrl(primaryImage[0].r2Key)
+            : undefined,
         };
       })
     );
