@@ -1,11 +1,11 @@
-import type { APIRoute } from "astro";
-import { getAssetById, getPricingRulesByAssetId } from "../../../data/helpers";
-import { fromISODateString } from "../../shared/utils/dates";
+import { getAssetById, getPricingRulesByAssetId } from "@/data/helpers";
 import {
   type BookingContext,
   calculatePriceBreakdown,
-} from "../domain/pricing";
-import { createBookingSchema } from "../domain/schema";
+} from "@/modules/booking/domain/pricing";
+import { createBookingSchema } from "@/modules/booking/domain/schema";
+import { fromISODateString } from "@/modules/shared/utils/dates";
+import type { APIRoute } from "astro";
 
 export const bookingHandler: APIRoute = async ({ request }) => {
   try {

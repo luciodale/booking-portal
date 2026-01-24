@@ -1,4 +1,4 @@
-import { bookingHandler } from "../../modules/booking/api/bookingHandler";
+import { bookingHandler } from "@/modules/booking/api/bookingHandler";
 
 export const prerender = false;
 

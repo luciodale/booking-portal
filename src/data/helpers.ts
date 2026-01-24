@@ -1,9 +1,9 @@
+import { mockAssets, mockExperiences, mockPricingRules } from "@/data/mocks";
+import type { AssetWithImages, LinkedExperience } from "@/data/types";
 /**
  * Helper functions for data access and formatting
  */
-import type { Experience, PricingRule } from "../db/schema";
-import { mockAssets, mockExperiences, mockPricingRules } from "./mocks";
-import type { AssetWithImages, LinkedExperience } from "./types";
+import type { Experience, PricingRule } from "@/db/schema";
 
 // Asset lookups
 export const getAssetById = (id: string): AssetWithImages | undefined =>

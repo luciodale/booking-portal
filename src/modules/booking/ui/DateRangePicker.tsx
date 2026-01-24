@@ -1,8 +1,11 @@
+import {
+  bookingStore,
+  setDateRange,
+} from "@/modules/booking/store/bookingStore";
 import { useStore } from "@nanostores/react";
 import { useState } from "react";
 import { type DateRange, DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
-import { bookingStore, setDateRange } from "../store/bookingStore";
 
 /**
  * Date range picker island for selecting check-in and check-out dates.

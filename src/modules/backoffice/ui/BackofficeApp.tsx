@@ -1,12 +1,22 @@
+import { rootRoute } from "@/modules/backoffice/routes/BackofficeRoot";
+import { indexRoute } from "@/modules/backoffice/routes/index";
+import { propertiesRoute } from "@/modules/backoffice/routes/properties";
+import { editPropertyRoute } from "@/modules/backoffice/routes/properties.$id.edit";
+import { pricingManagementRoute } from "@/modules/backoffice/routes/properties.$id.pricing";
+import { createPropertyRoute } from "@/modules/backoffice/routes/properties.new";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { rootRoute } from "../routes/BackofficeRoot";
-import { indexRoute } from "../routes/index";
 
-const routeTree = rootRoute.addChildren([indexRoute]);
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  propertiesRoute,
+  createPropertyRoute,
+  editPropertyRoute,
+  pricingManagementRoute,
+]);
 
 const router = createRouter({
   routeTree,
-  basepath: "/backoffice", // Important for hosting under /backoffice
+  basepath: "/backoffice",
 });
 
 declare module "@tanstack/react-router" {

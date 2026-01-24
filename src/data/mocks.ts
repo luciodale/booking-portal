@@ -1,8 +1,8 @@
+import type { AssetWithImages } from "@/data/types";
 /**
  * Mock Data - Typed with Drizzle Schema
  */
-import type { Experience, PricingRule } from "../db/schema";
-import type { AssetWithImages } from "./types";
+import type { Experience, PricingRule } from "@/db/schema";
 
 const MOCK_BROKER_ID = "broker-001";
 
@@ -53,6 +53,8 @@ The property features multiple terraces perfect for al fresco dining, a private 
       "Historic Architecture",
     ],
     videoUrl: null,
+    pdfAssetPath: null,
+    layout: null,
     basePrice: 250000,
     currency: "eur",
     cleaningFee: 25000,
@@ -114,6 +116,8 @@ After a day on the slopes, unwind in the private spa complete with indoor pool, 
     views: ["Alpine Peaks", "Ski Slopes", "Valley Views"],
     highlights: ["Ski Access", "Mountain Views", "Private Spa", "Fireplace"],
     videoUrl: null,
+    pdfAssetPath: null,
+    layout: null,
     basePrice: 320000,
     currency: "eur",
     cleaningFee: 30000,
@@ -166,6 +170,8 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
     views: ["City Views"],
     highlights: ["City Center", "Walking Distance", "Local Shops"],
     videoUrl: null,
+    pdfAssetPath: null,
+    layout: null,
     basePrice: 45000,
     currency: "eur",
     cleaningFee: 8000,
@@ -213,6 +219,8 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
     views: ["Mediterranean Sea", "City Views"],
     highlights: ["Beachfront", "Luxury Finishes", "Prime Location"],
     videoUrl: null,
+    pdfAssetPath: null,
+    layout: null,
     basePrice: 180000,
     currency: "eur",
     cleaningFee: 15000,
@@ -250,6 +258,8 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
     views: ["City Views"],
     highlights: ["Fashion District", "Shopping", "Restaurants"],
     videoUrl: null,
+    pdfAssetPath: null,
+    layout: null,
     basePrice: 28000,
     currency: "eur",
     cleaningFee: 5000,
@@ -295,6 +305,8 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
     views: ["River Views", "City Views", "Castle Views"],
     highlights: ["Historic Building", "Central Location", "Private Garden"],
     videoUrl: null,
+    pdfAssetPath: null,
+    layout: null,
     basePrice: 210000,
     currency: "eur",
     cleaningFee: 20000,
@@ -339,6 +351,8 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
     views: ["Caldera Views", "Sunset Views", "Aegean Sea"],
     highlights: ["Iconic Views", "Private Pool", "Sunset Location"],
     videoUrl: null,
+    pdfAssetPath: null,
+    layout: null,
     basePrice: 450000,
     currency: "eur",
     cleaningFee: 40000,
@@ -383,6 +397,8 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
     views: ["Ocean Views", "Reef Views", "Sunrise Views"],
     highlights: ["Private Island", "Direct Ocean Access", "Butler Service"],
     videoUrl: null,
+    pdfAssetPath: null,
+    layout: null,
     basePrice: 580000,
     currency: "eur",
     cleaningFee: 50000,

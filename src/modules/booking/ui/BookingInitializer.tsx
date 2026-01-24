@@ -1,6 +1,9 @@
+import type { BookingContext } from "@/modules/booking/domain/pricing";
+import {
+  initBookingContext,
+  initializeBooking,
+} from "@/modules/booking/store/bookingStore";
 import { useEffect } from "react";
-import type { BookingContext } from "../domain/pricing";
-import { initBookingContext, initializeBooking } from "../store/bookingStore";
 
 type BookingInitializerProps = {
   context?: BookingContext;

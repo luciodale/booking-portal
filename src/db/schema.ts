@@ -82,6 +82,14 @@ export const assets = sqliteTable("assets", {
 
   // Media
   videoUrl: text("video_url"), // For Elite tier video backgrounds
+  pdfAssetPath: text("pdf_asset_path"), // Static PDF path e.g. /flyers/property-name.pdf
+
+  // Elite-specific features (JSON)
+  layout: text("layout", { mode: "json" }).$type<{
+    floors?: string[];
+    specialRooms?: string[]; // e.g., "Wine Cellar", "Spa", "Home Theater"
+    outdoorFeatures?: string[]; // e.g., "Pool House", "Tennis Court"
+  }>(),
 
   // Pricing
   basePrice: integer("base_price").notNull(), // Price in cents per night

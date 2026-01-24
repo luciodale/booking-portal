@@ -1,9 +1,9 @@
-import { useStore } from "@nanostores/react";
 import {
   bookingStore,
   priceBreakdown,
   totalNights,
-} from "../store/bookingStore";
+} from "@/modules/booking/store/bookingStore";
+import { useStore } from "@nanostores/react";
 
 /**
  * Price breakdown island that reacts to booking state changes.

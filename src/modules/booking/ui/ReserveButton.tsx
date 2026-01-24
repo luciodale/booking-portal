@@ -1,4 +1,3 @@
-import { useStore } from "@nanostores/react";
 import {
   bookingStore,
   isSubmitting,
@@ -6,7 +5,8 @@ import {
   submissionResult,
   submitBooking,
   totalNights,
-} from "../store/bookingStore";
+} from "@/modules/booking/store/bookingStore";
+import { useStore } from "@nanostores/react";
 
 /**
  * Reserve button island that handles form submission.

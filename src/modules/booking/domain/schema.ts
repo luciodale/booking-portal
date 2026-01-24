@@ -1,10 +1,10 @@
+import { bookings } from "@/db/schema";
 /**
  * Validation Schemas - Single source of truth for client + server validation
  * Uses drizzle-zod to auto-generate from DB schema, extended with business logic
  */
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { bookings } from "../../../db/schema";
 
 // ============================================================================
 // Auto-generated schemas from Drizzle

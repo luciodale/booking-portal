@@ -1,15 +1,15 @@
+import {
+  type BookingContext,
+  type PriceBreakdown,
+  calculatePriceBreakdown,
+} from "@/modules/booking/domain/pricing";
+import { createBookingSchema } from "@/modules/booking/domain/schema";
+import { toISODateString } from "@/modules/shared/utils/dates";
 /**
  * Booking Store - Context-aware reactive state for booking flow
  * Uses nanostores for cross-framework reactivity (React islands in Astro)
  */
 import { atom, computed, map } from "nanostores";
-import { toISODateString } from "../../shared/utils/dates";
-import {
-  type BookingContext,
-  type PriceBreakdown,
-  calculatePriceBreakdown,
-} from "../domain/pricing";
-import { createBookingSchema } from "../domain/schema";
 
 // ============================================================================
 // State Types

@@ -1,8 +1,8 @@
 ---
+import PageLayout from "@/layouts/PageLayout.astro";
+import Button from "@/modules/shared/ui/Button.astro";
+import Heading from "@/modules/shared/ui/Heading.astro";
 import Hero from "@/modules/shared/ui/Hero.astro";
-import PageLayout from "../layouts/PageLayout.astro";
-import Button from "../modules/shared/ui/Button.astro";
-import Heading from "../modules/shared/ui/Heading.astro";
 
 const stats = [
   { value: "500+", label: "Premium Properties" },
@@ -166,7 +166,7 @@ const team = [
                   class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   loading="lazy"
                 />
-                <div class="absolute inset-0 bg-gradient-to-t from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <div class="absolute inset-0 bg-linear-to-t from-primary/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
               <h3 class="text-lg font-semibold mb-1">{member.name}</h3>
               <p class="text-muted-foreground text-sm">{member.role}</p>
