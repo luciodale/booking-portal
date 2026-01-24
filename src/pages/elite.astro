@@ -1,15 +1,36 @@
 ---
-import { getEliteAssets } from "@/data/helpers";
+import { assets, getDb, images } from "@/db";
 import PageLayout from "@/layouts/PageLayout.astro";
 import Button from "@/modules/ui/astro/Button.astro";
 import Hero from "@/modules/ui/astro/Hero.astro";
 import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
+import { and, desc, eq } from "drizzle-orm";
+
+export const prerender = false;
+
+const db = getDb(Astro.locals.runtime.env.DB);
 
 // Get elite properties and transform to PropertyCard format
-const eliteProperties = getEliteAssets().map((asset) => ({
-  asset,
-  imageUrl: asset.images[0],
-}));
+const elitePropertiesRaw = await db
+  .select()
+  .from(assets)
+  .where(and(eq(assets.tier, "elite"), eq(assets.status, "published")))
+  .orderBy(desc(assets.createdAt));
+
+const eliteProperties = await Promise.all(
+  elitePropertiesRaw.map(async (asset) => {
+    const [primaryImage] = await db
+      .select()
+      .from(images)
+      .where(and(eq(images.assetId, asset.id), eq(images.isPrimary, true)))
+      .limit(1);
+
+    return {
+      asset,
+      imageUrl: primaryImage?.r2Path || "",
+    };
+  }),
+);
 
 const filters = [
   "Beachfront",

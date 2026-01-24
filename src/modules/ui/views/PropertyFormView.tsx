@@ -10,6 +10,8 @@ import {
 import { getAmenityOptions } from "@/modules/shared/constants";
 import {
   NumberField,
+  type PropertyImage,
+  PropertyImagesField,
   SelectField,
   StaticAssetPathField,
   TagsField,
@@ -19,20 +21,49 @@ import {
 import { nullToUndefined } from "@/modules/utils/form-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+/** Form data extends CreatePropertyInput with images */
+interface PropertyFormData extends CreatePropertyInput {
+  images?: PropertyImage[];
+}
+
+/** Form schema - extends property schema to include images */
+const propertyFormSchema = createPropertySchema.and(
+  z.object({
+    images: z
+      .array(
+        z.object({
+          id: z.string(),
+          url: z.string(),
+          file: z.custom<File>().optional(), // File object for new uploads
+          isPrimary: z.boolean(),
+          isExisting: z.boolean().optional(),
+        })
+      )
+      .optional(),
+  })
+);
 
 interface ElitePropertyFormProps {
-  defaultValues?: Partial<CreatePropertyInput>;
-  onSubmit: (data: CreatePropertyInput) => Promise<void>;
+  defaultValues?: Partial<PropertyFormData>;
+  existingImages?: PropertyImage[];
+  onSubmit: (data: PropertyFormData) => Promise<void>;
   isLoading?: boolean;
+  onDeleteImage?: (imageId: string) => Promise<void>;
+  onSetPrimaryImage?: (imageId: string) => Promise<void>;
 }
 
 export function ElitePropertyForm({
   defaultValues,
+  existingImages = [],
   onSubmit,
   isLoading = false,
+  onDeleteImage,
+  onSetPrimaryImage,
 }: ElitePropertyFormProps) {
-  const { control, handleSubmit, formState } = useForm<CreatePropertyInput>({
-    resolver: zodResolver(createPropertySchema),
+  const { control, handleSubmit, formState } = useForm<PropertyFormData>({
+    resolver: zodResolver(propertyFormSchema),
     defaultValues: {
       brokerId: "broker-001", // TODO: Get from auth context
       type: "apartment",
@@ -40,6 +71,7 @@ export function ElitePropertyForm({
       status: "draft",
       currency: "eur",
       amenities: [],
+      images: existingImages,
       ...nullToUndefined(defaultValues),
     },
   });
@@ -231,9 +263,25 @@ export function ElitePropertyForm({
         />
       </section>
 
-      {/* Media */}
+      {/* Images */}
       <section className="bg-card border border-border p-6 rounded-xl">
-        <h2 className="text-xl font-semibold text-foreground mb-4">Media</h2>
+        <PropertyImagesField
+          name="images"
+          control={control}
+          label="Property Images"
+          description="Upload high-quality images. The main image will be used as the cover photo."
+          required
+          existingImages={existingImages}
+          onDelete={onDeleteImage}
+          onSetPrimary={onSetPrimaryImage}
+        />
+      </section>
+
+      {/* Media Links */}
+      <section className="bg-card border border-border p-6 rounded-xl">
+        <h2 className="text-xl font-semibold text-foreground mb-4">
+          Additional Media
+        </h2>
 
         <TextField
           name="videoUrl"

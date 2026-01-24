@@ -6,6 +6,7 @@
 export { FormError } from "./FormError";
 export { ImageUploadField } from "./ImageUploadField";
 export { NumberField } from "./NumberField";
+export { PropertyImagesField, type PropertyImage } from "./PropertyImagesField";
 export { SelectField } from "./SelectField";
 export { StaticAssetPathField } from "./StaticAssetPathField";
 export { TagsField } from "./TagsField";

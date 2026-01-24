@@ -4,6 +4,8 @@
   "exclude": ["dist"],
   "compilerOptions": {
     "strictNullChecks": true,
+    "noImplicitAny": true,
+    "strict": true,
     "types": ["@types/node", "./worker-configuration.d.ts"],
     "paths": {
       "@/*": ["./src/*"]
