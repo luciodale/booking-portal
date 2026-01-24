@@ -9,12 +9,13 @@ import {
   useProperty,
   useUpdateProperty,
 } from "@/modules/property/hooks/queries";
-import { getAmenityOptions } from "@/modules/shared/constants";
+import { getFacilityOptions } from "@/modules/shared/constants";
 import { useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import {
+  EditableFeatureGroupField,
   EditableNumberField,
   EditableSelectField,
-  EditableTagsField,
   EditableTextField,
   EditableTextareaField,
 } from "./EditableField";
@@ -42,6 +43,13 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
     await updateProperty.mutateAsync({
       id: propertyId,
       data: { [field]: value },
+    });
+  };
+
+  const saveFields = async (data: Partial<UpdatePropertyRequest>) => {
+    await updateProperty.mutateAsync({
+      id: propertyId,
+      data,
     });
   };
 
@@ -178,24 +186,31 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
         </div>
       </section>
 
-      {/* Amenities */}
+      {/* Features & Amenities (synced group) */}
       <section className="bg-card border border-border p-6 rounded-xl">
-        <h2 className="text-xl font-semibold text-foreground mb-6">
-          Amenities
-        </h2>
-
-        <EditableTagsField
-          label="Property Amenities"
-          value={property.amenities ?? []}
-          onSave={(v) => saveField("amenities", v)}
-          description="Select all amenities available"
-          options={getAmenityOptions()}
+        <EditableFeatureGroupField
+          amenities={property.amenities ?? []}
+          highlights={property.highlights ?? []}
+          views={property.views ?? []}
+          onSave={(data) => saveFields(data)}
+          amenitiesOptions={getFacilityOptions("amenity")}
+          highlightsOptions={getFacilityOptions("highlight")}
+          viewsOptions={getFacilityOptions("view")}
         />
       </section>
 
       {/* Pricing */}
       <section className="bg-card border border-border p-6 rounded-xl">
-        <h2 className="text-xl font-semibold text-foreground mb-6">Pricing</h2>
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-foreground">Pricing</h2>
+          <Link
+            to="/properties/$id/pricing"
+            params={{ id: propertyId }}
+            className="text-sm text-primary hover:text-primary-hover transition-colors font-medium"
+          >
+            Manage Dynamic Pricing →
+          </Link>
+        </div>
 
         <div className="space-y-6">
           <div className="grid grid-cols-2 gap-6">

@@ -12,7 +12,7 @@ import DateRangePicker from '@/modules/booking/ui/DateRangePicker';
 import GuestSelector from '@/modules/booking/ui/GuestSelector';
 import PriceBreakdown from '@/modules/booking/ui/PriceBreakdown';
 import ReserveButton from '@/modules/booking/ui/ReserveButton';
-import { getAmenityIconName } from "@/modules/shared/constants";
+import { getFacilityIconName } from "@/modules/shared/constants";
 
 // Server-rendered dynamic route
 export const prerender = false;
@@ -195,7 +195,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
               {property.amenities.map(amenity => (
                 <div class="flex items-center gap-4 px-4 py-3.5 bg-card rounded-xl border border-border/50">
                   <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
-                    <i data-lucide={getAmenityIconName(amenity)} class="w-4 h-4 text-primary"></i>
+                    <i data-lucide={getFacilityIconName(amenity, "amenity")} class="w-4 h-4 text-primary"></i>
                   </div>
                   <span class="text-foreground text-sm font-medium">{amenity}</span>
                 </div>

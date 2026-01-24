@@ -3,6 +3,7 @@
  * Full form + images submitted together on save
  */
 
+import { displayToKebab } from "@/modules/property/domain/sync-features";
 import { useCreateProperty } from "@/modules/property/hooks/queries";
 import { rootRoute } from "@/modules/property/routes/BackofficeRoot";
 import {
@@ -22,8 +23,16 @@ function CreatePropertyPage() {
       // Extract images and property data
       const { images, ...propertyData } = data;
 
+      // Ensure all tags are kebab-cased (idempotent)
+      const normalizedData = {
+        ...propertyData,
+        amenities: propertyData.amenities?.map(displayToKebab) ?? [],
+        highlights: propertyData.highlights?.map(displayToKebab) ?? [],
+        views: propertyData.views?.map(displayToKebab) ?? [],
+      };
+
       // First create the property
-      const newProperty = await createProperty.mutateAsync(propertyData);
+      const newProperty = await createProperty.mutateAsync(normalizedData);
 
       // Then upload images
       if (images.length > 0) {

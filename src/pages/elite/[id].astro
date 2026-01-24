@@ -2,7 +2,8 @@
 import { experienceCategoryLabels, getLinkedExperiences, getPriceInUnits } from '@/data/helpers';
 import { assets, getDb, images } from "@/db";
 import PageLayout from '@/layouts/PageLayout.astro';
-import { getAmenityIconName } from "@/modules/shared/constants";
+import { kebabToDisplay } from "@/modules/property/domain/sync-features";
+import { getFacilityIconName } from "@/modules/shared/constants";
 import { generateImageUrl } from "@/modules/storage/r2-helpers";
 import Badge from '@/modules/ui/astro/Badge.astro';
 import Button from '@/modules/ui/astro/Button.astro';
@@ -48,7 +49,7 @@ const property = {
   location: asset.location,
   address: asset.address ?? asset.location,
   tier: asset.tier,
-  tagline: asset.title ?? 'Exceptional Luxury Awaits',
+  tagline: asset.shortDescription ?? 'Exceptional Luxury Awaits',
   description: asset.description ?? '',
   price: getPriceInUnits(asset.basePrice),
   currency: asset.currency.toUpperCase(),
@@ -57,9 +58,9 @@ const property = {
   maxGuests: asset.maxGuests ?? 2,
   sqMeters: asset.sqMeters ?? 0,
   images: imageUrls,
-  amenities: (asset.amenities as string[]) ?? [],
-  highlights: (asset.highlights as string[]) ?? [],
-  views: (asset.views as string[]) ?? [],
+  amenities: (asset.amenities) ?? [],
+  highlights: (asset.highlights) ?? [],
+  views: (asset.views) ?? [],
 };
 
 // Get linked experiences with discounts
@@ -217,7 +218,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
                   <div class="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
                     <i data-lucide="check" class="w-6 h-6 text-primary"></i>
                   </div>
-                  <span class="text-foreground font-medium">{highlight}</span>
+                  <span class="text-foreground font-medium">{kebabToDisplay(highlight)}</span>
                 </div>
               ))}
             </div>
@@ -249,9 +250,9 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
               {property.amenities.map(amenity => (
                 <div class="flex items-center gap-4 px-4 py-3.5 bg-card rounded-xl border border-border/50 hover:border-primary/30 transition-colors">
                   <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
-                    <i data-lucide={getAmenityIconName(amenity)} class="w-4 h-4 text-primary"></i>
+                    <i data-lucide={getFacilityIconName(amenity, "amenity")} class="w-4 h-4 text-primary"></i>
                   </div>
-                  <span class="text-foreground text-sm font-medium">{amenity}</span>
+                  <span class="text-foreground text-sm font-medium">{kebabToDisplay(amenity)}</span>
                 </div>
               ))}
             </div>
@@ -266,7 +267,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
               {property.views.map(view => (
                 <span class="flex items-center gap-3 px-5 py-2.5 bg-card rounded-full border border-border/50 text-foreground text-sm font-medium">
                   <i data-lucide="eye" class="w-5 h-5 text-primary"></i>
-                  {view}
+                  {kebabToDisplay(view)}
                 </span>
               ))}
             </div>

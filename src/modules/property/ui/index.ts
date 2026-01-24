@@ -2,7 +2,10 @@
  * Property UI Components - Barrel Export
  */
 
-export { CreatePropertyForm, type CreatePropertyFormData } from "./CreatePropertyForm";
+export {
+  CreatePropertyForm,
+  type CreatePropertyFormData,
+} from "./CreatePropertyForm";
 export {
   EditableField,
   EditableNumberField,
@@ -13,4 +16,3 @@ export {
 } from "./EditableField";
 export { ImagesManager } from "./ImagesManager";
 export { PropertyEditView } from "./PropertyEditView";
-

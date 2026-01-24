@@ -5,6 +5,7 @@
 
 import { cn } from "@/modules/utils/cn";
 import { useDeleteProperty, useProperties } from "@/modules/property/hooks/queries";
+import { Select } from "@/modules/ui/Select";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -46,26 +47,30 @@ export function PropertyList() {
           className="input flex-1"
         />
 
-        <select
+        <Select
           value={tierFilter}
-          onChange={(e) => setTierFilter(e.target.value)}
-          className="input w-auto min-w-36"
-        >
-          <option value="">All Tiers</option>
-          <option value="elite">Elite</option>
-          <option value="standard">Standard</option>
-        </select>
+          onChange={setTierFilter}
+          options={[
+            { value: "", label: "All Tiers" },
+            { value: "elite", label: "Elite" },
+            { value: "standard", label: "Standard" },
+          ]}
+          placeholder="All Tiers"
+          className="w-auto min-w-36"
+        />
 
-        <select
+        <Select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="input w-auto min-w-40"
-        >
-          <option value="">All Statuses</option>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-          <option value="archived">Archived</option>
-        </select>
+          onChange={setStatusFilter}
+          options={[
+            { value: "", label: "All Statuses" },
+            { value: "draft", label: "Draft" },
+            { value: "published", label: "Published" },
+            { value: "archived", label: "Archived" },
+          ]}
+          placeholder="All Statuses"
+          className="w-auto min-w-40"
+        />
       </div>
 
       {/* Error State */}
@@ -186,6 +191,13 @@ export function PropertyList() {
                       className="text-primary hover:text-primary-hover mr-4 transition-colors"
                     >
                       Edit
+                    </Link>
+                    <Link
+                      to="/properties/$id/pricing"
+                      params={{ id: property.id }}
+                      className="text-primary hover:text-primary-hover mr-4 transition-colors"
+                    >
+                      Pricing
                     </Link>
                     <button
                       type="button"

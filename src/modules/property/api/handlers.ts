@@ -13,6 +13,7 @@ import {
   createPropertySchema,
   updatePropertySchema,
 } from "@/modules/property/domain/schema";
+import { displayToKebab } from "@/modules/property/domain/sync-features";
 import { generateImageUrl } from "@/modules/storage/r2-helpers";
 import { genUniqueId } from "@/modules/utils/id";
 import type { APIRoute } from "astro";
@@ -149,15 +150,29 @@ export const createProperty: APIRoute = async ({ request, locals }) => {
     const data = validationResult.data;
     const propertyId = genUniqueId("prop");
 
+    // Normalize tags to kebab-case (idempotent)
+    const normalizedData = {
+      ...data,
+      amenities: data.amenities?.map(displayToKebab),
+      highlights: data.highlights?.map(displayToKebab),
+      views: data.views?.map(displayToKebab),
+    };
+
     const [newProperty] = await db
       .insert(assets)
       .values({
-        ...data,
+        ...normalizedData,
         id: propertyId,
-        brokerId: data.brokerId as string,
-        type: (data.type || "apartment") as "apartment" | "boat" | "tour",
-        tier: (data.tier || "elite") as "elite" | "standard",
-        status: (data.status || "draft") as "draft" | "published" | "archived",
+        brokerId: normalizedData.brokerId as string,
+        type: (normalizedData.type || "apartment") as
+          | "apartment"
+          | "boat"
+          | "tour",
+        tier: (normalizedData.tier || "elite") as "elite" | "standard",
+        status: (normalizedData.status || "draft") as
+          | "draft"
+          | "published"
+          | "archived",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       })
@@ -272,10 +287,18 @@ export const updateProperty: APIRoute = async ({ params, request, locals }) => {
 
     const data = validationResult.data;
 
+    // Normalize tags to kebab-case (idempotent)
+    const normalizedData = {
+      ...data,
+      amenities: data.amenities?.map(displayToKebab),
+      highlights: data.highlights?.map(displayToKebab),
+      views: data.views?.map(displayToKebab),
+    };
+
     const [updated] = await db
       .update(assets)
       .set({
-        ...(data as Partial<typeof assets.$inferInsert>),
+        ...(normalizedData as Partial<typeof assets.$inferInsert>),
         updatedAt: new Date().toISOString(),
       })
       .where(eq(assets.id, id))

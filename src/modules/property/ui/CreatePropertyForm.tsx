@@ -5,7 +5,7 @@
 
 import type { CreatePropertyInput } from "@/modules/property/domain/schema";
 import { createPropertySchema } from "@/modules/property/domain/schema";
-import { getAmenityOptions } from "@/modules/shared/constants";
+import { getFacilityOptions } from "@/modules/shared/constants";
 import { Select } from "@/modules/ui/Select";
 import { cn } from "@/modules/utils/cn";
 import { genUniqueId } from "@/modules/utils/id";
@@ -14,6 +14,13 @@ import { ImagePlus, Star, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 import { type Control, Controller, useForm } from "react-hook-form";
 import { z } from "zod";
+
+import {
+  type FeatureFieldName,
+  displayToKebab,
+  kebabToDisplay,
+  syncFeatureFields,
+} from "@/modules/property/domain/sync-features";
 
 // =============================================================================
 // Types
@@ -77,11 +84,39 @@ export function CreatePropertyForm({
         status: "draft",
         currency: "eur",
         amenities: [],
+        highlights: [],
+        views: [],
         images: [],
       },
     });
 
   const images = watch("images");
+  const amenities = watch("amenities") ?? [];
+  const highlights = watch("highlights") ?? [];
+  const views = watch("views") ?? [];
+
+  // Synced change handler - applies pure sync logic and updates form
+  const handleSyncedChange = (
+    fieldName: FeatureFieldName,
+    newValue: string[]
+  ) => {
+    const synced = syncFeatureFields(
+      { amenities, highlights, views },
+      fieldName,
+      newValue
+    );
+
+    // Update all fields that changed
+    if (synced.amenities !== amenities) {
+      setValue("amenities", synced.amenities);
+    }
+    if (synced.highlights !== highlights) {
+      setValue("highlights", synced.highlights);
+    }
+    if (synced.views !== views) {
+      setValue("views", synced.views);
+    }
+  };
 
   return (
     <form
@@ -186,15 +221,43 @@ export function CreatePropertyForm({
         </div>
       </FormSection>
 
-      {/* Amenities */}
-      <FormSection title="Amenities">
+      {/* Features & Amenities (synced group) */}
+      <FormSection title="Features & Amenities">
+        <p className="text-sm text-muted-foreground mb-4">
+          Items are unique across all categories - adding to one removes from
+          others
+        </p>
+
         <TagsInput
           name="amenities"
           control={control}
           label="Property Amenities"
           required
           description="Select all amenities available"
-          options={getAmenityOptions()}
+          options={getFacilityOptions("amenity")}
+          onChangeOverride={(newValue) =>
+            handleSyncedChange("amenities", newValue)
+          }
+        />
+
+        <TagsInput
+          name="highlights"
+          control={control}
+          label="Signature Highlights"
+          description="Key features that make this property special"
+          options={getFacilityOptions("highlight")}
+          onChangeOverride={(newValue) =>
+            handleSyncedChange("highlights", newValue)
+          }
+        />
+
+        <TagsInput
+          name="views"
+          control={control}
+          label="Panoramic Views"
+          description="Views available from the property"
+          options={getFacilityOptions("view")}
+          onChangeOverride={(newValue) => handleSyncedChange("views", newValue)}
         />
       </FormSection>
 
@@ -549,13 +612,15 @@ function TagsInput({
   required,
   description,
   options,
+  onChangeOverride,
 }: {
   name: string;
   control: Control<CreatePropertyFormData>;
   label: string;
   required?: boolean;
   description?: string;
-  options: Array<{ value: string; label: string }>;
+  options: Array<{ value: string }>;
+  onChangeOverride?: (newValue: string[]) => void;
 }) {
   const [customInput, setCustomInput] = useState("");
   const optionValues = new Set(options.map((o) => o.value));
@@ -568,17 +633,25 @@ function TagsInput({
         const selectedValues: string[] = (field.value as string[]) || [];
         const customTags = selectedValues.filter((v) => !optionValues.has(v));
 
+        const handleChange = (newValues: string[]) => {
+          if (onChangeOverride) {
+            onChangeOverride(newValues);
+          } else {
+            field.onChange(newValues);
+          }
+        };
+
         const toggleValue = (value: string) => {
           const newValues = selectedValues.includes(value)
             ? selectedValues.filter((v) => v !== value)
             : [...selectedValues, value];
-          field.onChange(newValues);
+          handleChange(newValues);
         };
 
         const addCustomTag = () => {
-          const trimmed = customInput.trim().toLowerCase().replace(/\s+/g, "-");
-          if (!trimmed || selectedValues.includes(trimmed)) return;
-          field.onChange([...selectedValues, trimmed]);
+          const kebabTag = displayToKebab(customInput);
+          if (!kebabTag || selectedValues.includes(kebabTag)) return;
+          handleChange([...selectedValues, kebabTag]);
           setCustomInput("");
         };
 
@@ -609,7 +682,7 @@ function TagsInput({
                         : "bg-card text-foreground border-border hover:border-primary/50"
                     )}
                   >
-                    {option.label}
+                    {kebabToDisplay(option.value)}
                   </button>
                 );
               })}
@@ -621,7 +694,7 @@ function TagsInput({
                   onClick={() => toggleValue(tag)}
                   className="px-3 py-1.5 text-sm rounded-full border bg-primary text-primary-foreground border-primary flex items-center gap-1"
                 >
-                  {tag}
+                  {kebabToDisplay(tag)}
                   <span className="text-xs">×</span>
                 </button>
               ))}
