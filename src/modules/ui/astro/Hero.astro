@@ -65,9 +65,7 @@ const heightClasses = {
       badge && (
         <div class="animate-fade-in opacity-0" style="animation-delay: 0.2s">
           <span class="badge-elite mb-6 inline-flex">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-            </svg>
+            <i data-lucide="star" class="w-3.5 h-3.5 fill-current" />
             {badge}
           </span>
         </div>
@@ -129,19 +127,7 @@ const heightClasses = {
                 />
               </div>
               <button class="btn-primary flex items-center gap-2">
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
+                <i data-lucide="search" class="w-5 h-5" />
                 Search
               </button>
             </div>
@@ -157,19 +143,7 @@ const heightClasses = {
   {
     height === "full" && (
       <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <svg
-          class="w-6 h-6 text-muted-foreground"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="2"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M19 14l-7 7m0 0l-7-7m7 7V3"
-          />
-        </svg>
+        <i data-lucide="arrow-down" class="w-6 h-6 text-muted-foreground" />
       </div>
     )
   }

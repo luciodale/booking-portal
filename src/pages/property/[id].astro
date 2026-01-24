@@ -1,8 +1,8 @@
 ---
 import { experienceCategoryLabels, getAssetById, getLinkedExperiences, getPriceInUnits } from '@/data/helpers';
 import PageLayout from '@/layouts/PageLayout.astro';
-import Badge from '@/modules/shared/ui/Badge.astro';
-import ImageGallery from '@/modules/shared/ui/ImageGallery.astro';
+import Badge from '@/modules/ui/astro/Badge.astro';
+import ImageGallery from '@/modules/ui/astro/ImageGallery.astro';
 
 import { getPricingRulesByAssetId } from '@/data/helpers';
 import type { BookingContext } from '@/modules/booking/domain/pricing';
@@ -12,6 +12,7 @@ import DateRangePicker from '@/modules/booking/ui/DateRangePicker';
 import GuestSelector from '@/modules/booking/ui/GuestSelector';
 import PriceBreakdown from '@/modules/booking/ui/PriceBreakdown';
 import ReserveButton from '@/modules/booking/ui/ReserveButton';
+import { getAmenityIconName } from "@/modules/shared/constants";
 
 // Server-rendered dynamic route
 export const prerender = false;
@@ -91,9 +92,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
   <section class="pt-8 px-6">
     <div class="container mx-auto">
       <a href="/" class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
+        <i data-lucide="chevron-left" class="w-5 h-5"></i>
         Back to Properties
       </a>
     </div>
@@ -125,10 +124,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
               {property.title}
             </h1>
             <div class="flex items-center gap-2 text-muted-foreground">
-              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
+              <i data-lucide="map-pin" class="w-5 h-5"></i>
               <span>{property.location}</span>
             </div>
           </div>
@@ -137,36 +133,28 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
           <div class="grid grid-cols-2 md:grid-cols-4 gap-8 p-8 bg-card rounded-2xl">
             <div class="text-center">
               <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
-                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
+                <i data-lucide="bed-double" class="w-6 h-6 text-primary"></i>
               </div>
               <div class="text-2xl font-bold text-foreground mb-1">{property.bedrooms}</div>
               <div class="text-sm text-muted-foreground">Bedrooms</div>
             </div>
             <div class="text-center">
               <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
-                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
-                </svg>
+                <i data-lucide="bath" class="w-6 h-6 text-primary"></i>
               </div>
               <div class="text-2xl font-bold text-foreground mb-1">{property.bathrooms}</div>
               <div class="text-sm text-muted-foreground">Bathrooms</div>
             </div>
             <div class="text-center">
               <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
-                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
+                <i data-lucide="users" class="w-6 h-6 text-primary"></i>
               </div>
               <div class="text-2xl font-bold text-foreground mb-1">{property.maxGuests}</div>
               <div class="text-sm text-muted-foreground">Guests</div>
             </div>
             <div class="text-center">
               <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
-                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
+                <i data-lucide="move" class="w-6 h-6 text-primary"></i>
               </div>
               <div class="text-2xl font-bold text-foreground mb-1">{property.sqMeters}</div>
               <div class="text-sm text-muted-foreground">m²</div>
@@ -181,9 +169,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
             <div class="flex flex-wrap gap-3">
               {property.highlights.map(highlight => (
                 <span class="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
+                  <i data-lucide="check" class="w-4 h-4"></i>
                   {highlight}
                 </span>
               ))}
@@ -209,9 +195,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
               {property.amenities.map(amenity => (
                 <div class="flex items-center gap-4 px-4 py-3.5 bg-card rounded-xl border border-border/50">
                   <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
-                    <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
+                    <i data-lucide={getAmenityIconName(amenity)} class="w-4 h-4 text-primary"></i>
                   </div>
                   <span class="text-foreground text-sm font-medium">{amenity}</span>
                 </div>
@@ -227,10 +211,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
             <div class="flex flex-wrap gap-3">
               {property.views.map(view => (
                 <span class="amenity-chip">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                  </svg>
+                  <i data-lucide="eye" class="w-4 h-4"></i>
                   {view}
                 </span>
               ))}
@@ -281,9 +262,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
             <!-- Contact Host -->
             <div class="mt-5 p-5 rounded-xl bg-card border border-border">
               <button class="w-full flex items-center justify-center gap-3 py-2 text-foreground hover:text-primary transition-colors font-medium">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
+                <i data-lucide="message-circle" class="w-5 h-5"></i>
                 Contact Host
               </button>
             </div>
@@ -348,10 +327,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
                   {exp.title}
                 </h3>
                 <p class="text-muted-foreground text-sm mb-4 flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
+                  <i data-lucide="map-pin" class="w-4 h-4"></i>
                   {exp.location}
                 </p>
                 <div class="flex items-center justify-between">
@@ -382,10 +358,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
       <h2 class="text-2xl font-bold text-foreground mb-6">Location</h2>
       <div class="aspect-[2/1] rounded-2xl bg-card border border-border flex items-center justify-center">
         <div class="text-center">
-          <svg class="w-16 h-16 text-muted-foreground mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
+          <i data-lucide="map-pin" class="w-16 h-16 text-muted-foreground mx-auto mb-4"></i>
           <p class="text-muted-foreground">{property.address}</p>
           <p class="text-sm text-muted-foreground mt-2">Interactive map coming soon</p>
         </div>

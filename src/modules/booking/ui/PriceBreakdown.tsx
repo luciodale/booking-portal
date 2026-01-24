@@ -4,6 +4,7 @@ import {
   totalNights,
 } from "@/modules/booking/store/bookingStore";
 import { useStore } from "@nanostores/react";
+import { Zap } from "lucide-react";
 
 /**
  * Price breakdown island that reacts to booking state changes.
@@ -51,21 +52,7 @@ export default function PriceBreakdown() {
       {/* Applied Pricing Rules */}
       {$breakdown.appliedRules.length > 0 && (
         <div className="flex items-center gap-2 text-xs text-amber-500">
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-            role="img"
-            aria-label="Special pricing indicator"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M13 10V3L4 14h7v7l9-11h-7z"
-            />
-          </svg>
+          <Zap className="w-4 h-4" aria-label="Special pricing indicator" />
           <span>Includes: {$breakdown.appliedRules.join(", ")}</span>
         </div>
       )}

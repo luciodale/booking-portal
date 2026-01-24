@@ -1,10 +1,10 @@
 ---
 import { mockAssets } from "@/data/mocks";
 import PageLayout from "@/layouts/PageLayout.astro";
-import Button from "@/modules/shared/ui/Button.astro";
-import Heading from "@/modules/shared/ui/Heading.astro";
-import Hero from "@/modules/shared/ui/Hero.astro";
-import PropertyCard from "@/modules/shared/ui/PropertyCard.astro";
+import Button from "@/modules/ui/astro/Button.astro";
+import Heading from "@/modules/ui/astro/Heading.astro";
+import Hero from "@/modules/ui/astro/Hero.astro";
+import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
 
 // Transform assets to PropertyCard format
 const featuredProperties = mockAssets.slice(0, 6).map((asset) => ({
@@ -48,18 +48,7 @@ const standardProperties = featuredProperties.filter(
           class="hidden md:flex items-center gap-2 text-primary hover:text-primary-hover transition-colors group"
         >
           View all
-          <svg
-            class="w-4 h-4 group-hover:translate-x-1 transition-transform"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-          </svg>
+          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
         </a>
       </div>
 
@@ -84,18 +73,7 @@ const standardProperties = featuredProperties.filter(
           class="hidden md:flex items-center gap-2 text-primary hover:text-primary-hover transition-colors group"
         >
           View all
-          <svg
-            class="w-4 h-4 group-hover:translate-x-1 transition-transform"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-          </svg>
+          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
         </a>
       </div>
 

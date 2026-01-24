@@ -9,6 +9,7 @@ import { MonthView } from "@/modules/ui/calendar/MonthView";
 import { WeekView } from "@/modules/ui/calendar/WeekView";
 import { YearView } from "@/modules/ui/calendar/YearView";
 import { cn } from "@/modules/utils/cn";
+import { X } from "lucide-react";
 import { useState } from "react";
 
 type ViewMode = "week" | "month" | "year";
@@ -209,19 +210,7 @@ export function PricingCalendar({
             onClick={() => setSelectedRange(undefined)}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
           >
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            <X className="w-4 h-4" />
             Clear Selection
           </button>
         )}

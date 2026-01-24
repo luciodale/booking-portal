@@ -3,11 +3,11 @@
  * Main form for creating and editing elite properties
  */
 
-import { nullToUndefined } from "@/modules/utils/form-utils";
 import {
   type CreatePropertyInput,
   createPropertySchema,
 } from "@/modules/property/domain/schema";
+import { getAmenityOptions } from "@/modules/shared/constants";
 import {
   NumberField,
   SelectField,
@@ -16,6 +16,7 @@ import {
   TextField,
   TextareaField,
 } from "@/modules/ui/form";
+import { nullToUndefined } from "@/modules/utils/form-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
@@ -174,28 +175,7 @@ export function ElitePropertyForm({
           label="Property Amenities"
           required
           description="Select all amenities available"
-          options={[
-            { value: "pool", label: "Pool" },
-            { value: "spa", label: "Spa" },
-            { value: "sauna", label: "Sauna" },
-            { value: "fitness", label: "Fitness Room" },
-            { value: "wine-cellar", label: "Wine Cellar" },
-            { value: "elevator", label: "Elevator" },
-            { value: "air-conditioning", label: "Air Conditioning" },
-            { value: "underfloor-heating", label: "Underfloor Heating" },
-            { value: "alarm-system", label: "Alarm System" },
-            { value: "parking", label: "Parking" },
-            { value: "garden", label: "Garden" },
-            { value: "terrace", label: "Terrace" },
-            { value: "sea-view", label: "Sea View" },
-            { value: "mountain-view", label: "Mountain View" },
-            { value: "fireplace", label: "Fireplace" },
-            { value: "bbq", label: "BBQ" },
-            { value: "wifi", label: "WiFi" },
-            { value: "concierge", label: "Concierge" },
-            { value: "chef", label: "Private Chef" },
-            { value: "housekeeping", label: "Housekeeping" },
-          ]}
+          options={getAmenityOptions()}
         />
       </section>
 

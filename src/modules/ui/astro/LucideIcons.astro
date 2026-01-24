@@ -1,0 +1,24 @@
+---
+/**
+ * Lucide Icons Integration for Astro
+ * This component loads and initializes Lucide icons for use in Astro templates.
+ * Include at the end of PageLayout.astro to initialize icons after DOM is ready.
+ *
+ * Usage in Astro templates:
+ * <i data-lucide="heart" class="w-5 h-5"></i>
+ */
+---
+
+<script is:inline src="https://unpkg.com/lucide@0.563.0/dist/umd/lucide.min.js"></script>
+<script is:inline>
+    // Initialize Lucide icons when DOM is ready
+    document.addEventListener("DOMContentLoaded", function() {
+        if (typeof lucide !== "undefined") {
+            lucide.createIcons();
+        }
+    });
+    // Also run immediately if lucide is already loaded
+    if (typeof lucide !== "undefined") {
+        lucide.createIcons();
+    }
+</script>

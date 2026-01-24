@@ -4,17 +4,18 @@
  * Uses custom calendar implementation instead of react-day-picker.
  */
 
-import { cn } from "@/modules/utils/cn";
+import {
+  bookingStore,
+  setDateRange,
+} from "@/modules/booking/store/bookingStore";
 import {
   buildRangeFromClick,
   getMonthDays,
   isSameDay,
 } from "@/modules/pricing/utils/calendar-utils";
-import {
-  bookingStore,
-  setDateRange,
-} from "@/modules/booking/store/bookingStore";
+import { cn } from "@/modules/utils/cn";
 import { useStore } from "@nanostores/react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 interface DateRange {
@@ -158,19 +159,7 @@ export default function DateRangePicker() {
                 className="p-2 rounded-lg bg-secondary hover:bg-card-hover transition-colors border border-border"
                 aria-label="Previous month"
               >
-                <svg
-                  className="w-5 h-5 text-card-foreground"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
+                <ChevronLeft className="w-5 h-5 text-card-foreground" />
               </button>
               <span className="text-lg font-semibold text-card-foreground">
                 {monthName}
@@ -181,19 +170,7 @@ export default function DateRangePicker() {
                 className="p-2 rounded-lg bg-secondary hover:bg-card-hover transition-colors border border-border"
                 aria-label="Next month"
               >
-                <svg
-                  className="w-5 h-5 text-card-foreground"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                <ChevronRight className="w-5 h-5 text-card-foreground" />
               </button>
             </div>
 
