@@ -4,56 +4,81 @@
  */
 
 import { useState } from "react";
-import { type DateRange, DayPicker } from "react-day-picker";
-import "react-day-picker/dist/style.css";
+import {
+  type DateRange,
+  MonthView,
+  type PricingPeriod,
+  WeekView,
+  YearView,
+} from "./calendar";
 
 type ViewMode = "week" | "month" | "year";
-
-interface PricingPeriod {
-  id: string;
-  startDate: Date;
-  endDate: Date;
-  price: number;
-  label?: string;
-}
+type PriceMode = "absolute" | "percentage";
 
 interface PricingCalendarProps {
-  assetId: string;
+  /** Base price in cents */
+  basePrice: number;
   existingPeriods?: PricingPeriod[];
   onSavePeriod: (period: Omit<PricingPeriod, "id">) => Promise<void>;
+  onUpdatePeriod: (
+    id: string,
+    period: Partial<Omit<PricingPeriod, "id">>
+  ) => Promise<void>;
   onDeletePeriod: (id: string) => Promise<void>;
 }
 
 export function PricingCalendar({
-  assetId,
+  basePrice,
   existingPeriods = [],
   onSavePeriod,
+  onUpdatePeriod,
   onDeletePeriod,
 }: PricingCalendarProps) {
   const [viewMode, setViewMode] = useState<ViewMode>("month");
   const [selectedRange, setSelectedRange] = useState<DateRange | undefined>();
-  const [price, setPrice] = useState("");
+  const [priceMode, setPriceMode] = useState<PriceMode>("percentage");
+  const [priceValue, setPriceValue] = useState("");
   const [label, setLabel] = useState("");
   const [saving, setSaving] = useState(false);
+  const [editingPeriod, setEditingPeriod] = useState<PricingPeriod | null>(
+    null
+  );
+
+  /** Calculate final price from input based on mode */
+  const calculateFinalPrice = (value: string, mode: PriceMode): number => {
+    const numValue = Number(value);
+    if (mode === "absolute") {
+      return numValue;
+    }
+    // Percentage mode: basePrice * (1 + percentage/100)
+    return Math.round(basePrice * (1 + numValue / 100));
+  };
+
+  /** Get percentage from a price relative to base price */
+  const getPercentageFromPrice = (price: number): number => {
+    return Math.round(((price - basePrice) / basePrice) * 100);
+  };
 
   const handleSavePeriod = async () => {
-    if (!selectedRange?.from || !selectedRange?.to || !price) {
+    if (!selectedRange?.from || !selectedRange?.to || !priceValue) {
       alert("Please select a date range and enter a price");
       return;
     }
 
     try {
       setSaving(true);
+      const finalPrice = calculateFinalPrice(priceValue, priceMode);
       await onSavePeriod({
         startDate: selectedRange.from,
         endDate: selectedRange.to,
-        price: Number(price),
+        price: finalPrice,
+        percentageAdjustment:
+          priceMode === "percentage" ? Number(priceValue) : undefined,
         label: label || undefined,
       });
 
-      // Reset form
       setSelectedRange(undefined);
-      setPrice("");
+      setPriceValue("");
       setLabel("");
     } catch (error) {
       console.error("Failed to save pricing period:", error);
@@ -63,118 +88,167 @@ export function PricingCalendar({
     }
   };
 
-  const getModifiers = () => {
-    const modifiers: Record<string, Date[]> = {};
-
-    existingPeriods.forEach((period, index) => {
-      const dates: Date[] = [];
-      const current = new Date(period.startDate);
-      const end = new Date(period.endDate);
-
-      while (current <= end) {
-        dates.push(new Date(current));
-        current.setDate(current.getDate() + 1);
-      }
-
-      modifiers[`period-${index}`] = dates;
-    });
-
-    return modifiers;
+  const handleEditPeriod = (period: PricingPeriod) => {
+    setEditingPeriod(period);
+    // Default to percentage mode showing the adjustment
+    if (period.percentageAdjustment !== undefined) {
+      setPriceMode("percentage");
+      setPriceValue(String(period.percentageAdjustment));
+    } else {
+      // Calculate percentage from price
+      setPriceMode("percentage");
+      setPriceValue(String(getPercentageFromPrice(period.price)));
+    }
+    setLabel(period.label || "");
   };
 
-  const getModifiersStyles = () => {
-    const styles: Record<string, React.CSSProperties> = {};
+  const handleUpdatePeriod = async () => {
+    if (!editingPeriod || !priceValue) {
+      alert("Please enter a price");
+      return;
+    }
 
-    existingPeriods.forEach((_, index) => {
-      styles[`period-${index}`] = {
-        backgroundColor: "oklch(0.75 0.12 85 / 0.2)",
-        color: "oklch(0.75 0.12 85)",
-        fontWeight: "bold",
-      };
-    });
+    try {
+      setSaving(true);
+      const finalPrice = calculateFinalPrice(priceValue, priceMode);
+      await onUpdatePeriod(editingPeriod.id, {
+        price: finalPrice,
+        percentageAdjustment:
+          priceMode === "percentage" ? Number(priceValue) : undefined,
+        label: label || undefined,
+      });
 
-    return styles;
+      setEditingPeriod(null);
+      setPriceValue("");
+      setLabel("");
+    } catch (error) {
+      console.error("Failed to update pricing period:", error);
+      alert("Failed to update pricing period");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const numberOfMonths =
-    viewMode === "week" ? 1 : viewMode === "month" ? 1 : 12;
+  const handleCancelEdit = () => {
+    setEditingPeriod(null);
+    setPriceValue("");
+    setLabel("");
+  };
+
+  /** Preview price based on current input */
+  const previewPrice = priceValue
+    ? calculateFinalPrice(priceValue, priceMode)
+    : basePrice;
+
+  const CalendarView = {
+    week: WeekView,
+    month: MonthView,
+    year: YearView,
+  }[viewMode];
 
   return (
     <div className="bg-card border border-border p-6 rounded-xl">
       <div className="mb-6">
-        <h3 className="text-xl font-semibold text-foreground mb-4">Dynamic Pricing Calendar</h3>
+        <h3 className="text-xl font-semibold text-foreground mb-4">
+          Dynamic Pricing Calendar
+        </h3>
 
         {/* View Mode Selector */}
         <div className="flex gap-2 mb-4">
-          <button
-            type="button"
-            onClick={() => setViewMode("week")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              viewMode === "week"
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            }`}
-          >
-            Week
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode("month")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              viewMode === "month"
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            }`}
-          >
-            Month
-          </button>
-          <button
-            type="button"
-            onClick={() => setViewMode("year")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              viewMode === "year"
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            }`}
-          >
-            Year
-          </button>
+          {(["week", "month", "year"] as const).map((mode) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={() => setViewMode(mode)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
+                viewMode === mode
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
+            >
+              {mode}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Calendar */}
-      <div className="mb-6 pricing-calendar-dark">
-        <DayPicker
-          mode="range"
-          selected={selectedRange}
-          onSelect={setSelectedRange}
-          numberOfMonths={numberOfMonths}
-          modifiers={getModifiers()}
-          modifiersStyles={getModifiersStyles()}
-          className="border border-border rounded-xl p-4 bg-secondary/30"
+      {/* Calendar View */}
+      <div className="mb-6">
+        <CalendarView
+          selectedRange={selectedRange}
+          onRangeChange={setSelectedRange}
+          existingPeriods={existingPeriods}
+          basePrice={basePrice}
         />
       </div>
 
-      {/* Price Input */}
-      {selectedRange?.from && selectedRange?.to && (
+      {/* Price Input - New Period */}
+      {selectedRange?.from && selectedRange?.to && !editingPeriod && (
         <div className="border-t border-border pt-4">
+          {/* Price Mode Toggle */}
+          <div className="flex gap-2 mb-4">
+            <button
+              type="button"
+              onClick={() => {
+                setPriceMode("percentage");
+                setPriceValue("");
+              }}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                priceMode === "percentage"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
+            >
+              % Adjustment
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPriceMode("absolute");
+                setPriceValue("");
+              }}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                priceMode === "absolute"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
+            >
+              Absolute Price
+            </button>
+          </div>
+
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div>
               <label
                 htmlFor="price-input"
                 className="block text-sm font-medium text-foreground mb-1"
               >
-                Price per night (cents)
+                {priceMode === "percentage"
+                  ? "Adjustment % (e.g. +20, -10)"
+                  : "Price per night (cents)"}
               </label>
-              <input
-                id="price-input"
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="250000"
-                className="input"
-                min="0"
-              />
+              <div className="relative">
+                <input
+                  id="price-input"
+                  type="number"
+                  value={priceValue}
+                  onChange={(e) => setPriceValue(e.target.value)}
+                  placeholder={
+                    priceMode === "percentage" ? "0" : String(basePrice)
+                  }
+                  className="input"
+                />
+                {priceMode === "percentage" && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    %
+                  </span>
+                )}
+              </div>
+              {priceValue && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Final price: €{Math.round(previewPrice / 100)}/night
+                </div>
+              )}
             </div>
 
             <div>
@@ -192,6 +266,9 @@ export function PricingCalendar({
                 placeholder="Summer Season"
                 className="input"
               />
+              <div className="text-xs text-muted-foreground mt-1">
+                Base price: €{Math.round(basePrice / 100)}/night
+              </div>
             </div>
           </div>
 
@@ -204,7 +281,7 @@ export function PricingCalendar({
             <button
               type="button"
               onClick={handleSavePeriod}
-              disabled={saving || !price}
+              disabled={saving || !priceValue}
               className="btn-primary disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save Period"}
@@ -213,35 +290,191 @@ export function PricingCalendar({
         </div>
       )}
 
+      {/* Edit Period Form */}
+      {editingPeriod && (
+        <div className="border-t border-border pt-4 bg-accent/30 -mx-6 px-6 pb-4">
+          <h4 className="font-medium text-foreground mb-3">
+            Edit Pricing Period
+          </h4>
+
+          {/* Price Mode Toggle */}
+          <div className="flex gap-2 mb-4">
+            <button
+              type="button"
+              onClick={() => {
+                setPriceMode("percentage");
+                setPriceValue(
+                  String(getPercentageFromPrice(editingPeriod.price))
+                );
+              }}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                priceMode === "percentage"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
+            >
+              % Adjustment
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setPriceMode("absolute");
+                setPriceValue(String(editingPeriod.price));
+              }}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                priceMode === "absolute"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
+              }`}
+            >
+              Absolute Price
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label
+                htmlFor="edit-price-input"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                {priceMode === "percentage"
+                  ? "Adjustment % (e.g. +20, -10)"
+                  : "Price per night (cents)"}
+              </label>
+              <div className="relative">
+                <input
+                  id="edit-price-input"
+                  type="number"
+                  value={priceValue}
+                  onChange={(e) => setPriceValue(e.target.value)}
+                  placeholder={
+                    priceMode === "percentage" ? "0" : String(basePrice)
+                  }
+                  className="input"
+                />
+                {priceMode === "percentage" && (
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                    %
+                  </span>
+                )}
+              </div>
+              {priceValue && (
+                <div className="text-xs text-muted-foreground mt-1">
+                  Final price: €{Math.round(previewPrice / 100)}/night
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="edit-label-input"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Label (optional)
+              </label>
+              <input
+                id="edit-label-input"
+                type="text"
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
+                placeholder="Summer Season"
+                className="input"
+              />
+              <div className="text-xs text-muted-foreground mt-1">
+                Base price: €{Math.round(basePrice / 100)}/night
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-center">
+            <div className="text-sm text-muted-foreground">
+              {editingPeriod.startDate.toLocaleDateString()} -{" "}
+              {editingPeriod.endDate.toLocaleDateString()}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="btn-secondary"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleUpdatePeriod}
+                disabled={saving || !priceValue}
+                className="btn-primary disabled:opacity-50"
+              >
+                {saving ? "Updating..." : "Update Period"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Existing Periods */}
       {existingPeriods.length > 0 && (
         <div className="mt-6 border-t border-border pt-4">
-          <h4 className="font-medium text-foreground mb-3">Existing Pricing Periods</h4>
+          <h4 className="font-medium text-foreground mb-3">
+            Existing Pricing Periods ({existingPeriods.length})
+          </h4>
           <div className="space-y-2">
-            {existingPeriods.map((period) => (
-              <div
-                key={period.id}
-                className="flex justify-between items-center p-3 bg-secondary/50 rounded-lg border border-border"
-              >
-                <div>
-                  <div className="font-medium text-foreground">
-                    {period.label || "Pricing Period"}
+            {existingPeriods.map((period) => {
+              const percentDiff = getPercentageFromPrice(period.price);
+              const percentLabel =
+                percentDiff >= 0 ? `+${percentDiff}%` : `${percentDiff}%`;
+
+              return (
+                <div
+                  key={period.id}
+                  className={`flex justify-between items-center p-3 rounded-lg border transition-colors ${
+                    editingPeriod?.id === period.id
+                      ? "bg-primary/10 border-primary"
+                      : "bg-secondary/50 border-border"
+                  }`}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-foreground">
+                        {period.label || "Pricing Period"}
+                      </span>
+                      <span
+                        className={`text-xs px-1.5 py-0.5 rounded ${
+                          percentDiff >= 0
+                            ? "bg-emerald-500/20 text-emerald-400"
+                            : "bg-red-500/20 text-red-400"
+                        }`}
+                      >
+                        {percentLabel}
+                      </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {period.startDate.toLocaleDateString()} -{" "}
+                      {period.endDate.toLocaleDateString()} • €
+                      {Math.round(period.price / 100)}/night
+                    </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {period.startDate.toLocaleDateString()} -{" "}
-                    {period.endDate.toLocaleDateString()} • €
-                    {(period.price / 100).toFixed(0)}/night
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleEditPeriod(period)}
+                      disabled={editingPeriod?.id === period.id}
+                      className="text-primary hover:text-primary/80 text-sm transition-colors disabled:opacity-50"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onDeletePeriod(period.id)}
+                      className="text-error hover:text-error/80 text-sm transition-colors"
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => onDeletePeriod(period.id)}
-                  className="text-error hover:text-error/80 text-sm transition-colors"
-                >
-                  Delete
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

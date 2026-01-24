@@ -1,5 +1,6 @@
 /**
- * Pricing Rules API - Create Pricing Rule
+ * Pricing Rules API
+ * GET /api/backoffice/pricing-rules?assetId=X - List pricing rules for asset
  * POST /api/backoffice/pricing-rules - Create new pricing rule
  */
 
@@ -7,9 +8,45 @@ import { getDb, pricingRules } from "@/db";
 import { requireAdmin } from "@/lib/auth";
 import { createPricingRuleSchema } from "@/modules/backoffice/domain/elite-schema";
 import type { APIRoute } from "astro";
+import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export const prerender = false;
+
+// ============================================================================
+// GET - List Pricing Rules for Asset
+// ============================================================================
+
+export const GET: APIRoute = async ({ url, locals }) => {
+  try {
+    await requireAdmin();
+
+    const assetId = url.searchParams.get("assetId");
+    if (!assetId) {
+      return jsonError("assetId query parameter required", 400);
+    }
+
+    const D1Database = locals.runtime?.env?.DB;
+    if (!D1Database) {
+      return jsonError("Database not available", 503);
+    }
+
+    const db = getDb(D1Database);
+
+    const rules = await db
+      .select()
+      .from(pricingRules)
+      .where(eq(pricingRules.assetId, assetId))
+      .orderBy(pricingRules.startDate);
+
+    return jsonSuccess({ pricingRules: rules });
+  } catch (error) {
+    console.error("Error fetching pricing rules:", error);
+    return jsonError(
+      error instanceof Error ? error.message : "Failed to fetch pricing rules"
+    );
+  }
+};
 
 // ============================================================================
 // POST - Create Pricing Rule

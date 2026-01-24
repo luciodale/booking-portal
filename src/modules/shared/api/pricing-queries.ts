@@ -1,27 +1,62 @@
 /**
  * Pricing Rules React Query Hooks
- * Type-safe mutations for pricing rules
+ * Type-safe queries and mutations for pricing rules
  */
 
-import { type ApiError, pricingRuleApi } from "@/modules/shared/api/client";
+import {
+  type ApiError,
+  type PricingRuleData,
+  type UpdatePricingRuleRequest,
+  pricingRuleApi,
+} from "@/modules/shared/api/client";
 import type { CreatePricingRuleRequest } from "@/modules/shared/api/types";
 import {
   type UseMutationOptions,
+  type UseQueryOptions,
   useMutation,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { queryKeys } from "./queries";
 
-interface PricingRuleResponse {
-  id: string;
+// ============================================================================
+// Query Keys for Pricing Rules
+// ============================================================================
+
+export const pricingQueryKeys = {
+  all: ["pricingRules"] as const,
+  byAsset: (assetId: string) => [...pricingQueryKeys.all, assetId] as const,
+};
+
+// ============================================================================
+// Queries
+// ============================================================================
+
+/**
+ * Hook to fetch pricing rules for an asset
+ */
+export function usePricingRules(
+  assetId: string,
+  options?: Omit<UseQueryOptions<PricingRuleData[]>, "queryKey" | "queryFn">
+) {
+  return useQuery({
+    queryKey: pricingQueryKeys.byAsset(assetId),
+    queryFn: () => pricingRuleApi.list(assetId),
+    enabled: !!assetId,
+    ...options,
+  });
 }
+
+// ============================================================================
+// Mutations
+// ============================================================================
 
 /**
  * Hook to create a pricing rule
  */
 export function useCreatePricingRule(
   options?: UseMutationOptions<
-    PricingRuleResponse,
+    PricingRuleData,
     ApiError,
     CreatePricingRuleRequest,
     unknown
@@ -31,9 +66,36 @@ export function useCreatePricingRule(
 
   return useMutation({
     mutationFn: pricingRuleApi.create,
-    onSuccess: () => {
-      // Invalidate property queries to refetch pricing rules
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: pricingQueryKeys.byAsset(variables.assetId),
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.properties.all });
+    },
+    ...options,
+  });
+}
+
+/**
+ * Hook to update a pricing rule
+ */
+export function useUpdatePricingRule(
+  assetId: string,
+  options?: UseMutationOptions<
+    PricingRuleData,
+    ApiError,
+    { id: string; data: UpdatePricingRuleRequest },
+    unknown
+  >
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, data }) => pricingRuleApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: pricingQueryKeys.byAsset(assetId),
+      });
     },
     ...options,
   });
@@ -43,6 +105,7 @@ export function useCreatePricingRule(
  * Hook to delete a pricing rule
  */
 export function useDeletePricingRule(
+  assetId?: string,
   options?: UseMutationOptions<void, ApiError, string, unknown>
 ) {
   const queryClient = useQueryClient();
@@ -50,7 +113,11 @@ export function useDeletePricingRule(
   return useMutation({
     mutationFn: pricingRuleApi.delete,
     onSuccess: () => {
-      // Invalidate property queries to refetch pricing rules
+      if (assetId) {
+        queryClient.invalidateQueries({
+          queryKey: pricingQueryKeys.byAsset(assetId),
+        });
+      }
       queryClient.invalidateQueries({ queryKey: queryKeys.properties.all });
     },
     ...options,

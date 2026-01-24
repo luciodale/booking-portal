@@ -12,6 +12,7 @@ import {
   NumberField,
   SelectField,
   StaticAssetPathField,
+  TagsField,
   TextField,
   TextareaField,
 } from "@/modules/backoffice/ui/form";
@@ -37,6 +38,7 @@ export function ElitePropertyForm({
       tier: "elite",
       status: "draft",
       currency: "eur",
+      amenities: [],
       ...nullToUndefined(defaultValues),
     },
   });
@@ -160,6 +162,43 @@ export function ElitePropertyForm({
         </div>
       </section>
 
+      {/* Amenities */}
+      <section className="bg-card border border-border p-6 rounded-xl">
+        <h2 className="text-xl font-semibold text-foreground mb-4">
+          Amenities
+        </h2>
+
+        <TagsField
+          name="amenities"
+          control={control}
+          label="Property Amenities"
+          required
+          description="Select all amenities available"
+          options={[
+            { value: "pool", label: "Pool" },
+            { value: "spa", label: "Spa" },
+            { value: "sauna", label: "Sauna" },
+            { value: "fitness", label: "Fitness Room" },
+            { value: "wine-cellar", label: "Wine Cellar" },
+            { value: "elevator", label: "Elevator" },
+            { value: "air-conditioning", label: "Air Conditioning" },
+            { value: "underfloor-heating", label: "Underfloor Heating" },
+            { value: "alarm-system", label: "Alarm System" },
+            { value: "parking", label: "Parking" },
+            { value: "garden", label: "Garden" },
+            { value: "terrace", label: "Terrace" },
+            { value: "sea-view", label: "Sea View" },
+            { value: "mountain-view", label: "Mountain View" },
+            { value: "fireplace", label: "Fireplace" },
+            { value: "bbq", label: "BBQ" },
+            { value: "wifi", label: "WiFi" },
+            { value: "concierge", label: "Concierge" },
+            { value: "chef", label: "Private Chef" },
+            { value: "housekeeping", label: "Housekeeping" },
+          ]}
+        />
+      </section>
+
       {/* Pricing */}
       <section className="bg-card border border-border p-6 rounded-xl">
         <h2 className="text-xl font-semibold text-foreground mb-4">Pricing</h2>
@@ -253,13 +292,15 @@ export function ElitePropertyForm({
         </button>
       </div>
 
-      {formState.errors && Object.keys(formState.errors).length > 0 && (
-        <div className="bg-error/10 border border-error/20 rounded-lg p-4">
-          <p className="text-sm text-error font-medium">
-            Please fix the errors above before submitting.
-          </p>
-        </div>
-      )}
+      {formState.errors &&
+        Object.keys(formState.errors).length > 0 &&
+        console.log("Form errors:", formState.errors) === undefined && (
+          <div className="bg-error/10 border border-error/20 rounded-lg p-4">
+            <p className="text-sm text-error font-medium">
+              Please fix the errors above before submitting.
+            </p>
+          </div>
+        )}
     </form>
   );
 }

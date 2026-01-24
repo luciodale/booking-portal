@@ -174,17 +174,59 @@ export const imageApi = {
 // Pricing Rules API
 // ============================================================================
 
-interface PricingRuleResponse {
+export interface PricingRuleData {
   id: string;
+  assetId: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  multiplier: number;
+  minNights: number | null;
+  priority: number;
+  active: boolean;
+  createdAt: string | null;
+}
+
+interface PricingRulesListResponse {
+  pricingRules: PricingRuleData[];
+}
+
+export interface UpdatePricingRuleRequest {
+  name?: string;
+  startDate?: string;
+  endDate?: string;
+  multiplier?: number;
+  minNights?: number | null;
+  priority?: number;
 }
 
 export const pricingRuleApi = {
   /**
+   * Fetch all pricing rules for an asset
+   */
+  list: async (assetId: string): Promise<PricingRuleData[]> => {
+    const response = await apiFetch<PricingRulesListResponse>(
+      `/api/backoffice/pricing-rules?assetId=${encodeURIComponent(assetId)}`
+    );
+    return response.pricingRules;
+  },
+
+  /**
    * Create a new pricing rule
    */
-  create: async (data: CreatePricingRuleRequest): Promise<PricingRuleResponse> => {
-    return apiFetch<PricingRuleResponse>("/api/backoffice/pricing-rules", {
+  create: async (data: CreatePricingRuleRequest): Promise<PricingRuleData> => {
+    return apiFetch<PricingRuleData>("/api/backoffice/pricing-rules", {
       method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Update an existing pricing rule
+   */
+  update: async (id: string, data: UpdatePricingRuleRequest): Promise<PricingRuleData> => {
+    return apiFetch<PricingRuleData>(`/api/backoffice/pricing-rules/${id}`, {
+      method: "PATCH",
       body: JSON.stringify(data),
     });
   },

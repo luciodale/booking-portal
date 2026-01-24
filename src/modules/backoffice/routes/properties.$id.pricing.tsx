@@ -5,79 +5,101 @@
 
 import { rootRoute } from "@/modules/backoffice/routes/BackofficeRoot";
 import { PricingCalendar } from "@/modules/backoffice/ui/PricingCalendar";
+import type { PricingPeriod } from "@/modules/backoffice/ui/calendar";
 import {
   useCreatePricingRule,
   useDeletePricingRule,
+  usePricingRules,
+  useUpdatePricingRule,
 } from "@/modules/shared/api/pricing-queries";
-import { createRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-
-interface PricingPeriod {
-  id: string;
-  startDate: Date;
-  endDate: Date;
-  price: number;
-  label?: string;
-}
+import { useProperty } from "@/modules/shared/api/queries";
+import { createRoute, useParams } from "@tanstack/react-router";
+import { useMemo, useState } from "react";
 
 function PricingManagementPage() {
-  const [periods, setPeriods] = useState<PricingPeriod[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { id: propertyId } = useParams({ from: "/properties/$id/pricing" });
+  const [syncing, setSyncing] = useState<"airbnb" | "booking" | null>(null);
 
-  // TODO: Get propertyId from route params
-  const propertyId = "temp-id";
+  // Fetch property for base price
+  const { data: property, isLoading: propertyLoading } = useProperty(propertyId);
 
-  // Use mutations instead of fetch
-  const createPricingRule = useCreatePricingRule({
-    onSuccess: (result) => {
-      // The mutation already invalidates queries
-    },
-  });
+  // Fetch existing pricing rules
+  const { data: pricingRules = [], isLoading: rulesLoading } =
+    usePricingRules(propertyId);
 
-  const deletePricingRule = useDeletePricingRule({
-    onSuccess: () => {
-      // The mutation already invalidates queries
-    },
-  });
+  const isLoading = propertyLoading || rulesLoading;
+  const basePrice = property?.basePrice ?? 0;
 
-  useEffect(() => {
-    // TODO: Fetch existing pricing periods from API
-    setLoading(false);
-  }, []);
+  // Convert API data to PricingPeriod format
+  // The multiplier in DB represents percentage (100 = base price, 150 = +50%)
+  const periods: PricingPeriod[] = useMemo(
+    () =>
+      pricingRules.map((rule) => ({
+        id: rule.id,
+        startDate: new Date(rule.startDate),
+        endDate: new Date(rule.endDate),
+        price: Math.round((basePrice * rule.multiplier) / 100),
+        percentageAdjustment: rule.multiplier - 100, // Convert to adjustment (150 -> +50%)
+        label: rule.name,
+      })),
+    [pricingRules, basePrice]
+  );
+
+  // Mutations
+  const createPricingRule = useCreatePricingRule();
+  const updatePricingRule = useUpdatePricingRule(propertyId);
+  const deletePricingRule = useDeletePricingRule(propertyId);
 
   const handleSavePeriod = async (
     period: Omit<PricingPeriod, "id">
   ): Promise<void> => {
-    try {
-      const result = await createPricingRule.mutateAsync({
-        assetId: propertyId,
-        name: period.label || "Custom Period",
-        startDate: period.startDate.toISOString().split("T")[0],
-        endDate: period.endDate.toISOString().split("T")[0],
-        multiplier: Math.round((period.price / 100) * 100), // Convert to percentage multiplier
-      });
+    // Convert price to multiplier: (price / basePrice) * 100
+    // e.g., if basePrice=10000 and price=15000, multiplier=150 (which means +50%)
+    const multiplier =
+      basePrice > 0 ? Math.round((period.price / basePrice) * 100) : 100;
 
-      // Add to local state
-      setPeriods([...periods, { ...period, id: result.id }]);
-    } catch (error) {
-      console.error("Error saving pricing period:", error);
-      throw error;
-    }
+    await createPricingRule.mutateAsync({
+      assetId: propertyId,
+      name: period.label || "Custom Period",
+      startDate: period.startDate.toISOString().split("T")[0],
+      endDate: period.endDate.toISOString().split("T")[0],
+      multiplier,
+    });
+  };
+
+  const handleUpdatePeriod = async (
+    id: string,
+    period: Partial<Omit<PricingPeriod, "id">>
+  ): Promise<void> => {
+    const multiplier =
+      period.price && basePrice > 0
+        ? Math.round((period.price / basePrice) * 100)
+        : undefined;
+
+    await updatePricingRule.mutateAsync({
+      id,
+      data: {
+        name: period.label,
+        multiplier,
+      },
+    });
   };
 
   const handleDeletePeriod = async (id: string): Promise<void> => {
-    try {
-      await deletePricingRule.mutateAsync(id);
-
-      // Remove from local state
-      setPeriods(periods.filter((p) => p.id !== id));
-    } catch (error) {
-      console.error("Error deleting pricing period:", error);
-      throw error;
-    }
+    await deletePricingRule.mutateAsync(id);
   };
 
-  if (loading) {
+  const handleSyncToChannel = async (channel: "airbnb" | "booking") => {
+    setSyncing(channel);
+    // Mock sync - simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setSyncing(null);
+    alert(
+      `Prices synced to ${channel === "airbnb" ? "Airbnb" : "Booking.com"}! (mock)`
+    );
+  };
+
+  if (isLoading) {
     return (
       <div className="p-8">
         <div className="text-center text-muted-foreground">Loading...</div>
@@ -85,14 +107,77 @@ function PricingManagementPage() {
     );
   }
 
+  if (!property) {
+    return (
+      <div className="p-8">
+        <div className="text-center text-error">Property not found</div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-foreground mb-6">Pricing Management</h1>
+      <div className="flex justify-between items-start mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">
+            Pricing: {property.title}
+          </h1>
+          <p className="text-muted-foreground mt-1">
+            Base price: €{Math.round(basePrice / 100)}/night • Set dynamic
+            pricing periods and sync to booking channels
+          </p>
+        </div>
+
+        {/* Sync Buttons */}
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => handleSyncToChannel("airbnb")}
+            disabled={syncing !== null}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#FF5A5F] hover:bg-[#FF5A5F]/90 text-white font-medium transition-colors disabled:opacity-50"
+          >
+            {syncing === "airbnb" ? (
+              <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <svg
+                className="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M12.001 18.5c-1.5 0-2.5-.5-3-1.5-.5-1-1-2.5-1.5-4.5-.3-1-.5-2-.5-3 0-2 1-3.5 3-3.5 1.5 0 2.5.5 3 1.5.5 1 1 2.5 1.5 4.5.3 1 .5 2 .5 3 0 2-1 3.5-3 3.5zm0-10c-1 0-1.5.5-1.5 1.5 0 .5.1 1.2.3 2 .4 1.5.8 2.8 1.2 3.5.2.3.5.5 1 .5s.8-.2 1-.5c.4-.7.8-2 1.2-3.5.2-.8.3-1.5.3-2 0-1-.5-1.5-1.5-1.5h-1z" />
+              </svg>
+            )}
+            Sync to Airbnb
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSyncToChannel("booking")}
+            disabled={syncing !== null}
+            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#003580] hover:bg-[#003580]/90 text-white font-medium transition-colors disabled:opacity-50"
+          >
+            {syncing === "booking" ? (
+              <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            ) : (
+              <svg
+                className="w-5 h-5"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M4 4h16v16H4V4zm2 2v12h12V6H6zm2 2h3v3H8V8zm5 0h3v3h-3V8zm-5 5h3v3H8v-3zm5 0h3v3h-3v-3z" />
+              </svg>
+            )}
+            Sync to Booking.com
+          </button>
+        </div>
+      </div>
 
       <PricingCalendar
-        assetId={propertyId}
+        basePrice={basePrice}
         existingPeriods={periods}
         onSavePeriod={handleSavePeriod}
+        onUpdatePeriod={handleUpdatePeriod}
         onDeletePeriod={handleDeletePeriod}
       />
     </div>

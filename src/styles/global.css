@@ -432,50 +432,78 @@
 
 /* Dark theme for react-day-picker in backoffice */
 .pricing-calendar-dark .rdp {
+  /* Core RDP variables - override all defaults */
   --rdp-cell-size: 40px;
   --rdp-accent-color: var(--color-primary);
-  --rdp-background-color: var(--color-secondary);
-  color: var(--color-foreground);
+  --rdp-accent-background-color: var(--color-primary);
+  --rdp-range_middle-background-color: oklch(0.75 0.12 85 / 0.15);
+  --rdp-range_middle-color: var(--color-card-foreground);
+  --rdp-day_button-background-color: transparent;
+  --rdp-day_button-border-radius: 0.5rem;
+  --rdp-selected-font: inherit;
+  --rdp-outside-opacity: 0.4;
+  --rdp-today-color: var(--color-primary);
+  color: var(--color-card-foreground);
 }
 
 .pricing-calendar-dark .rdp-months {
   justify-content: center;
+  gap: 2rem;
+}
+
+.pricing-calendar-dark .rdp-month {
+  background: var(--color-secondary);
+  border-radius: 0.75rem;
+  padding: 1rem;
 }
 
 .pricing-calendar-dark .rdp-month_caption {
-  color: var(--color-foreground);
+  color: var(--color-card-foreground);
   font-weight: 600;
+  padding-bottom: 0.75rem;
 }
 
 .pricing-calendar-dark .rdp-weekday {
   color: var(--color-muted-foreground);
   font-size: 0.75rem;
+  font-weight: 500;
 }
 
 .pricing-calendar-dark .rdp-day {
-  color: var(--color-foreground);
+  color: var(--color-card-foreground);
   border-radius: 0.5rem;
 }
 
-.pricing-calendar-dark .rdp-day:hover:not(.rdp-day_selected) {
-  background-color: var(--color-secondary);
+.pricing-calendar-dark .rdp-day_button {
+  color: var(--color-card-foreground);
+  border-radius: 0.5rem;
+  transition: all 0.15s ease;
 }
 
-.pricing-calendar-dark .rdp-day_selected,
-.pricing-calendar-dark .rdp-day_range_start,
-.pricing-calendar-dark .rdp-day_range_end {
+.pricing-calendar-dark .rdp-day_button:hover {
+  background-color: var(--color-card-hover);
+}
+
+.pricing-calendar-dark .rdp-selected .rdp-day_button,
+.pricing-calendar-dark .rdp-range_start .rdp-day_button,
+.pricing-calendar-dark .rdp-range_end .rdp-day_button {
   background-color: var(--color-primary) !important;
   color: var(--color-primary-foreground) !important;
 }
 
-.pricing-calendar-dark .rdp-day_range_middle {
-  background-color: oklch(0.75 0.12 85 / 0.2);
-  color: var(--color-foreground);
+.pricing-calendar-dark .rdp-range_middle .rdp-day_button {
+  background-color: oklch(0.75 0.12 85 / 0.15);
+  color: var(--color-card-foreground);
+  border-radius: 0;
 }
 
-.pricing-calendar-dark .rdp-day_outside {
+.pricing-calendar-dark .rdp-outside .rdp-day_button {
   color: var(--color-muted-foreground);
   opacity: 0.5;
+}
+
+.pricing-calendar-dark .rdp-today .rdp-day_button {
+  border: 2px solid var(--color-primary);
 }
 
 .pricing-calendar-dark .rdp-button:focus-visible {
@@ -483,12 +511,38 @@
   outline-offset: 2px;
 }
 
-.pricing-calendar-dark .rdp-nav button {
-  color: var(--color-foreground);
+.pricing-calendar-dark .rdp-button_previous,
+.pricing-calendar-dark .rdp-button_next {
+  color: var(--color-card-foreground);
   border: 1px solid var(--color-border);
   border-radius: 0.5rem;
+  background: var(--color-secondary);
 }
 
-.pricing-calendar-dark .rdp-nav button:hover {
-  background-color: var(--color-secondary);
+.pricing-calendar-dark .rdp-button_previous:hover,
+.pricing-calendar-dark .rdp-button_next:hover {
+  background-color: var(--color-card-hover);
+}
+
+.pricing-calendar-dark .rdp-chevron {
+  fill: var(--color-card-foreground);
+}
+
+/* Year view grid layout */
+.pricing-calendar-dark.year-view .rdp-months {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .pricing-calendar-dark.year-view .rdp-months {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .pricing-calendar-dark.year-view .rdp-months {
+    grid-template-columns: 1fr;
+  }
 }
