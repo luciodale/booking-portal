@@ -4,7 +4,7 @@ import {
   calculatePriceBreakdown,
 } from "@/modules/booking/domain/pricing";
 import { createBookingSchema } from "@/modules/booking/domain/schema";
-import { toISODateString } from "@/modules/shared/utils/dates";
+import { toISODateString } from "@/modules/utils/dates";
 /**
  * Booking Store - Context-aware reactive state for booking flow
  * Uses nanostores for cross-framework reactivity (React islands in Astro)

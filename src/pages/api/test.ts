@@ -1,5 +1,5 @@
 import { brokers, getDb } from "@/db";
-import { toUTCTimestamp } from "@/modules/shared/utils/dates";
+import { toUTCTimestamp } from "@/modules/utils/dates";
 import type { APIRoute } from "astro";
 
 export const prerender = false;

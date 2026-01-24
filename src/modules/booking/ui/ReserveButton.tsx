@@ -1,3 +1,4 @@
+import { cn } from "@/modules/utils/cn";
 import {
   bookingStore,
   isSubmitting,
@@ -89,9 +90,10 @@ export default function ReserveButton() {
       type="button"
       onClick={handleClick}
       disabled={!canSubmit}
-      className={`w-full btn-primary py-4 text-base relative overflow-hidden ${
-        !canSubmit ? "opacity-50 cursor-not-allowed" : ""
-      }`}
+      className={cn(
+        "w-full btn-primary py-4 text-base relative overflow-hidden",
+        !canSubmit && "opacity-50 cursor-not-allowed"
+      )}
     >
       {$isSubmitting ? (
         <span className="flex items-center justify-center gap-2">

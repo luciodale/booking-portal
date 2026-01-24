@@ -1,10 +1,11 @@
 import { getAssetById, getPricingRulesByAssetId } from "@/data/helpers";
+import { genUniqueId } from "@/modules/utils/id";
 import {
   type BookingContext,
   calculatePriceBreakdown,
 } from "@/modules/booking/domain/pricing";
 import { createBookingSchema } from "@/modules/booking/domain/schema";
-import { fromISODateString } from "@/modules/shared/utils/dates";
+import { fromISODateString } from "@/modules/utils/dates";
 import type { APIRoute } from "astro";
 
 export const bookingHandler: APIRoute = async ({ request }) => {
@@ -89,10 +90,7 @@ export const bookingHandler: APIRoute = async ({ request }) => {
     // Simulate database write
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const bookingId = `BK-${Date.now()}-${Math.random()
-      .toString(36)
-      .substr(2, 9)
-      .toUpperCase()}`;
+    const bookingId = genUniqueId("BK");
 
     return new Response(
       JSON.stringify({

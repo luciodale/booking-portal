@@ -1,5 +1,5 @@
 import type { BookingContextInput } from "@/modules/booking/domain/schema";
-import { fromISODateString } from "@/modules/shared/utils/dates";
+import { fromISODateString } from "@/modules/utils/dates";
 /**
  * Pricing Engine - Pure calculation functions for booking prices
  * Shared between client (UX) and server (validation)

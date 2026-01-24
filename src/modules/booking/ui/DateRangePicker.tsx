@@ -1,33 +1,87 @@
+/**
+ * Date Range Picker Component
+ * Custom calendar for selecting check-in and check-out dates.
+ * Uses custom calendar implementation instead of react-day-picker.
+ */
+
+import { cn } from "@/modules/utils/cn";
+import {
+  buildRangeFromClick,
+  getMonthDays,
+  isSameDay,
+} from "@/modules/pricing/utils/calendar-utils";
 import {
   bookingStore,
   setDateRange,
 } from "@/modules/booking/store/bookingStore";
 import { useStore } from "@nanostores/react";
 import { useState } from "react";
-import { type DateRange, DayPicker } from "react-day-picker";
-import "react-day-picker/style.css";
 
-/**
- * Date range picker island for selecting check-in and check-out dates.
- * Uses react-day-picker and syncs with the global booking store.
- */
+interface DateRange {
+  from: Date | undefined;
+  to?: Date | undefined;
+}
+
+const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
 export default function DateRangePicker() {
   const $booking = useStore(bookingStore);
   const [isOpen, setIsOpen] = useState(false);
+  const [currentDate, setCurrentDate] = useState(new Date());
 
-  const selected: DateRange | undefined =
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const monthDays = getMonthDays(year, month);
+
+  const monthName = currentDate.toLocaleDateString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const selectedRange: DateRange | undefined =
     $booking.startDate && $booking.endDate
       ? { from: $booking.startDate, to: $booking.endDate }
       : $booking.startDate
         ? { from: $booking.startDate, to: undefined }
         : undefined;
 
-  const handleSelect = (range: DateRange | undefined) => {
-    setDateRange(range?.from, range?.to);
+  const handleDayClick = (date: Date) => {
+    const newRange = buildRangeFromClick(date, selectedRange);
+    setDateRange(newRange?.from, newRange?.to);
+
     // Close picker when a complete range is selected
-    if (range?.from && range?.to) {
+    if (newRange?.from && newRange?.to) {
       setTimeout(() => setIsOpen(false), 300);
     }
+  };
+
+  const isPastDate = (date: Date): boolean => {
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
+    return normalizedDate < today;
+  };
+
+  const getDayState = (date: Date) => {
+    const isRangeStart =
+      !!selectedRange?.from && isSameDay(date, selectedRange.from);
+    const isRangeEnd = !!selectedRange?.to && isSameDay(date, selectedRange.to);
+
+    const isInRange = (() => {
+      if (!selectedRange?.from) return false;
+      if (!selectedRange.to) return isRangeStart;
+      return date >= selectedRange.from && date <= selectedRange.to;
+    })();
+
+    return {
+      isRangeStart,
+      isRangeEnd,
+      isRangeMiddle: isInRange && !isRangeStart && !isRangeEnd,
+      isToday: isSameDay(date, today),
+      isPast: isPastDate(date),
+    };
   };
 
   const formatDate = (date: Date | null) => {
@@ -37,6 +91,9 @@ export default function DateRangePicker() {
       day: "numeric",
     });
   };
+
+  const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+  const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
 
   return (
     <div className="relative">
@@ -93,56 +150,101 @@ export default function DateRangePicker() {
 
           {/* Calendar */}
           <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-card rounded-xl border border-border shadow-xl p-4 animate-fade-in">
-            <DayPicker
-              mode="range"
-              selected={selected}
-              onSelect={handleSelect}
-              numberOfMonths={1}
-              disabled={{ before: new Date() }}
-              min={1}
-              classNames={{
-                root: "rdp-custom",
-                day: "rdp-day-custom",
-                selected: "rdp-selected-custom",
-                today: "rdp-today-custom",
-              }}
-              styles={{
-                month_caption: {
-                  color: "var(--color-foreground)",
-                  fontWeight: 600,
-                  padding: "0.5rem 0",
-                },
-                weekday: {
-                  color: "var(--color-muted-foreground)",
-                  fontSize: "0.75rem",
-                },
-                day: { color: "var(--color-foreground)" },
-                day_button: {
-                  width: "40px",
-                  height: "40px",
-                  borderRadius: "8px",
-                  transition: "all 0.15s ease",
-                },
-                chevron: { fill: "var(--color-primary)" },
-              }}
-              modifiersStyles={{
-                selected: {
-                  backgroundColor: "var(--color-primary)",
-                  color: "var(--color-primary-foreground)",
-                },
-                range_middle: {
-                  backgroundColor:
-                    "color-mix(in oklch, var(--color-primary) 20%, transparent)",
-                  color: "var(--color-foreground)",
-                },
-                today: {
-                  border: "2px solid var(--color-primary)",
-                },
-                disabled: {
-                  opacity: 0.3,
-                },
-              }}
-            />
+            {/* Month Navigation */}
+            <div className="flex items-center justify-between mb-4">
+              <button
+                type="button"
+                onClick={prevMonth}
+                className="p-2 rounded-lg bg-secondary hover:bg-card-hover transition-colors border border-border"
+                aria-label="Previous month"
+              >
+                <svg
+                  className="w-5 h-5 text-card-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              </button>
+              <span className="text-lg font-semibold text-card-foreground">
+                {monthName}
+              </span>
+              <button
+                type="button"
+                onClick={nextMonth}
+                className="p-2 rounded-lg bg-secondary hover:bg-card-hover transition-colors border border-border"
+                aria-label="Next month"
+              >
+                <svg
+                  className="w-5 h-5 text-card-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            {/* Day Headers */}
+            <div className="grid grid-cols-7 gap-1 mb-2">
+              {DAY_NAMES.map((name) => (
+                <div
+                  key={name}
+                  className="text-center text-xs font-medium text-muted-foreground py-2"
+                >
+                  {name}
+                </div>
+              ))}
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-1">
+              {monthDays.map((day, cellIndex) => {
+                const cellKey = `${year}-${month}-cell-${cellIndex}`;
+
+                if (!day) {
+                  return <div key={cellKey} className="h-10" />;
+                }
+
+                const state = getDayState(day);
+                const isDisabled = state.isPast;
+
+                return (
+                  <button
+                    key={cellKey}
+                    type="button"
+                    onClick={() => !isDisabled && handleDayClick(day)}
+                    disabled={isDisabled}
+                    className={cn(
+                      "h-10 w-10 flex items-center justify-center rounded-lg text-sm font-medium transition-all duration-150",
+                      state.isRangeStart || state.isRangeEnd
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : state.isRangeMiddle
+                          ? "bg-primary/15 text-card-foreground"
+                          : state.isToday
+                            ? "ring-2 ring-primary ring-inset text-card-foreground hover:bg-card-hover"
+                            : isDisabled
+                              ? "opacity-30 cursor-not-allowed text-muted-foreground"
+                              : "text-card-foreground hover:bg-card-hover"
+                    )}
+                  >
+                    {day.getDate()}
+                  </button>
+                );
+              })}
+            </div>
 
             {/* Quick Actions */}
             <div className="mt-4 pt-4 border-t border-border flex justify-between items-center">
