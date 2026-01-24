@@ -5,6 +5,12 @@
  */
 
 import type {
+  createExperienceSchema,
+  experienceListItemSchema,
+  experienceResponseSchema,
+  updateExperienceSchema,
+} from "@/modules/experience/domain/schema";
+import type {
   createPricingRuleSchema,
   createPropertySchema,
   propertyListItemSchema,
@@ -33,6 +39,28 @@ export type PropertyListItem = z.infer<typeof propertyListItemSchema>;
 /** Response for property list endpoint */
 export interface PropertyListResponse {
   properties: PropertyListItem[];
+  total: number;
+}
+
+// ============================================================================
+// Experience API Types
+// ============================================================================
+
+/** Request body for creating a new experience */
+export type CreateExperienceRequest = z.infer<typeof createExperienceSchema>;
+
+/** Request body for updating an existing experience */
+export type UpdateExperienceRequest = z.infer<typeof updateExperienceSchema>;
+
+/** Response for single experience (with all relations) */
+export type ExperienceResponse = z.infer<typeof experienceResponseSchema>;
+
+/** Response for experience list items (lighter payload) */
+export type ExperienceListItem = z.infer<typeof experienceListItemSchema>;
+
+/** Response for experience list endpoint */
+export interface ExperienceListResponse {
+  experiences: ExperienceListItem[];
   total: number;
 }
 

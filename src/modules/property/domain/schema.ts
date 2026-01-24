@@ -64,14 +64,6 @@ const propertyFieldsSchema = baseAssetInsertSchema
     views: z.array(z.string()).optional(),
     highlights: z.array(z.string()).optional(),
 
-    layout: z
-      .object({
-        floors: z.array(z.string()).optional(),
-        specialRooms: z.array(z.string()).optional(),
-        outdoorFeatures: z.array(z.string()).optional(),
-      })
-      .optional(),
-
     basePrice: z
       .number()
       .int()

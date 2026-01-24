@@ -30,14 +30,37 @@ function Dashboard() {
 
         <Link
           to="/properties/new"
-          search={{ type: "elite" }}
           className="group bg-card hover:bg-card-hover border border-border rounded-xl p-6 transition-all duration-200"
         >
           <h2 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
             Create Property
           </h2>
           <p className="text-sm text-muted-foreground">
-            Add a new elite property to your portfolio.
+            Add a new property to your portfolio.
+          </p>
+        </Link>
+
+        <Link
+          to="/experiences"
+          className="group bg-card hover:bg-card-hover border border-border rounded-xl p-6 transition-all duration-200"
+        >
+          <h2 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+            Experiences
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Manage curated experiences and activities.
+          </p>
+        </Link>
+
+        <Link
+          to="/experiences/new"
+          className="group bg-card hover:bg-card-hover border border-border rounded-xl p-6 transition-all duration-200"
+        >
+          <h2 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+            Create Experience
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Add a new experience to your offerings.
           </p>
         </Link>
       </div>

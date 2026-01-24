@@ -43,12 +43,10 @@ export const bookingHandler: APIRoute = async ({ request }) => {
 
     // 3. Re-construct Booking Context (Server-Side)
     const pricingRules = getPricingRulesByAssetId(assetId);
-    const pricingModel = asset.type === "tour" ? "per_person" : "per_night";
 
     const context: BookingContext = {
       assetId: asset.id,
-      assetType: asset.type,
-      pricingModel,
+      pricingModel: "per_night",
       basePrice: asset.basePrice,
       cleaningFee: asset.cleaningFee ?? 0,
       currency: asset.currency,

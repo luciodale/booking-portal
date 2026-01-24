@@ -164,10 +164,6 @@ export const createProperty: APIRoute = async ({ request, locals }) => {
         ...normalizedData,
         id: propertyId,
         brokerId: normalizedData.brokerId as string,
-        type: (normalizedData.type || "apartment") as
-          | "apartment"
-          | "boat"
-          | "tour",
         tier: (normalizedData.tier || "elite") as "elite" | "standard",
         status: (normalizedData.status || "draft") as
           | "draft"

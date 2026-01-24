@@ -30,6 +30,12 @@ export const rootRoute = createRootRoute({
               >
                 Properties
               </Link>
+              <Link
+                to="/experiences"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Experiences
+              </Link>
             </div>
           </nav>
         </header>

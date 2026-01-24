@@ -12,8 +12,6 @@ import { addDays, differenceInCalendarDays, isWithinInterval } from "date-fns";
 
 export type PricingModel = "per_night" | "per_person" | "fixed";
 
-export type AssetType = "apartment" | "boat" | "tour" | "experience";
-
 export type BookingContext = BookingContextInput;
 
 export type NightlyPriceResult = {

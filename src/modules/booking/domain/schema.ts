@@ -81,7 +81,6 @@ export const pricingRuleSchema = z.object({
 /** Schema for booking context passed from server to client */
 export const bookingContextSchema = z.object({
   assetId: z.string(),
-  assetType: z.enum(["apartment", "boat", "tour", "experience"]),
   pricingModel: z.enum(["per_night", "per_person", "fixed"]),
   basePrice: z.number().int().min(0), // cents
   cleaningFee: z.number().int().min(0), // cents

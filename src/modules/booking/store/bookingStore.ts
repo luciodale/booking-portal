@@ -50,12 +50,6 @@ export const totalNights = computed(
   bookingStore,
   ({ startDate, endDate, context }) => {
     if (!startDate || !context) return 0;
-
-    // Tours/Experiences are always 1 day
-    if (context.assetType === "tour" || context.assetType === "experience") {
-      return 1;
-    }
-
     if (!endDate) return 0;
 
     const diff = endDate.getTime() - startDate.getTime();
@@ -121,18 +115,10 @@ export function initBookingContext(context: BookingContext) {
 
 /**
  * Set check-in and check-out dates.
- * For tours/experiences, endDate is automatically set to match startDate.
  */
 export function setDateRange(start: Date | undefined, end: Date | undefined) {
   bookingStore.setKey("startDate", start ?? null);
-
-  const ctx = bookingStore.get().context;
-  if (ctx?.assetType === "tour" || ctx?.assetType === "experience") {
-    // Tours are single-day, so endDate matches startDate
-    bookingStore.setKey("endDate", start ?? null);
-  } else {
-    bookingStore.setKey("endDate", end ?? null);
-  }
+  bookingStore.setKey("endDate", end ?? null);
 }
 
 /** Set the number of guests (clamped to max) */
@@ -244,7 +230,6 @@ export function initializeBooking(config: {
   // Convert legacy config to BookingContext
   initBookingContext({
     assetId: config.propertyId,
-    assetType: "apartment",
     pricingModel: "per_night",
     basePrice: config.pricePerNight * 100, // Convert to cents
     cleaningFee: 25000, // Legacy hardcoded €250

@@ -56,12 +56,10 @@ const property = {
 // Build Booking Context (Server-Side)
 // ----------------------------------------------------------------------------
 const pricingRules = getPricingRulesByAssetId(asset.id);
-const pricingModel = asset.type === 'tour' ? 'per_person' : 'per_night'; // Simple logic for now
 
 const bookingContext: BookingContext = {
   assetId: asset.id,
-  assetType: asset.type,
-  pricingModel,
+  pricingModel: 'per_night',
   basePrice: asset.basePrice, // cents
   cleaningFee: asset.cleaningFee ?? 0, // cents
   currency: asset.currency,

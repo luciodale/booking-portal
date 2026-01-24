@@ -42,11 +42,7 @@ export const assets = sqliteTable("assets", {
     .notNull()
     .references(() => brokers.id),
 
-  // Type & Tier
-  type: text("type")
-    .$type<"apartment" | "boat" | "tour">()
-    .notNull()
-    .default("apartment"),
+  // Tier
   tier: text("tier")
     .$type<"elite" | "standard">()
     .notNull()
@@ -83,13 +79,6 @@ export const assets = sqliteTable("assets", {
   // Media
   videoUrl: text("video_url"), // For Elite tier video backgrounds
   pdfAssetPath: text("pdf_asset_path"), // Static PDF path e.g. /flyers/property-name.pdf
-
-  // Elite-specific features (JSON)
-  layout: text("layout", { mode: "json" }).$type<{
-    floors?: string[];
-    specialRooms?: string[]; // e.g., "Wine Cellar", "Spa", "Home Theater"
-    outdoorFeatures?: string[]; // e.g., "Pool House", "Tennis Court"
-  }>(),
 
   // Pricing
   basePrice: integer("base_price").notNull(), // Price in cents per night
@@ -280,9 +269,7 @@ export const experiences = sqliteTable("experiences", {
   country: text("country"),
 
   // Details
-  category: text("category").$type<
-    "sailing" | "food_wine" | "adventure" | "culture" | "wellness" | "other"
-  >(),
+  category: text("category"),
   duration: text("duration"), // e.g., "8 hours"
   maxParticipants: integer("max_participants"),
 
@@ -306,6 +293,23 @@ export const experiences = sqliteTable("experiences", {
 });
 
 // ============================================================================
+// Experience Images table - R2 image storage for experiences
+// ============================================================================
+export const experienceImages = sqliteTable("experience_images", {
+  id: text("id").primaryKey(),
+  experienceId: text("experience_id")
+    .notNull()
+    .references(() => experiences.id, { onDelete: "cascade" }),
+  r2Key: text("r2_key").notNull(),
+  alt: text("alt"),
+  isPrimary: integer("is_primary", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  order: integer("order").notNull().default(0),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+// ============================================================================
 // Asset-Experience junction table - links experiences to properties
 // ============================================================================
 export const assetExperiences = sqliteTable("asset_experiences", {
@@ -321,7 +325,6 @@ export const assetExperiences = sqliteTable("asset_experiences", {
   discountPercent: integer("discount_percent").default(0), // Bundle discount
   featured: integer("featured", { mode: "boolean" }).notNull().default(false), // Show prominently on property page
   sortOrder: integer("sort_order").default(0),
-
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -362,7 +365,6 @@ export const brokersClerkIdx = index("idx_brokers_clerk").on(
 );
 
 export const assetsBrokerIdx = index("idx_assets_broker").on(assets.brokerId);
-export const assetsTypeIdx = index("idx_assets_type").on(assets.type);
 export const assetsTierIdx = index("idx_assets_tier").on(assets.tier);
 export const assetsStatusIdx = index("idx_assets_status").on(assets.status);
 export const assetsFeaturedIdx = index("idx_assets_featured").on(
@@ -420,6 +422,10 @@ export const favoritesUserAssetIdx = index("idx_favorites_user_asset").on(
 export const experiencesBrokerIdx = index("idx_experiences_broker").on(
   experiences.brokerId
 );
+
+export const experienceImagesExpIdx = index("idx_experience_images_exp").on(
+  experienceImages.experienceId
+);
 export const experiencesCategoryIdx = index("idx_experiences_category").on(
   experiences.category
 );
@@ -472,6 +478,8 @@ export type Favorite = typeof favorites.$inferSelect;
 export type NewFavorite = typeof favorites.$inferInsert;
 export type Experience = typeof experiences.$inferSelect;
 export type NewExperience = typeof experiences.$inferInsert;
+export type ExperienceImage = typeof experienceImages.$inferSelect;
+export type NewExperienceImage = typeof experienceImages.$inferInsert;
 export type AssetExperience = typeof assetExperiences.$inferSelect;
 export type NewAssetExperience = typeof assetExperiences.$inferInsert;
 export type Channel = typeof channels.$inferSelect;

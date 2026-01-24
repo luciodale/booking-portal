@@ -6,10 +6,14 @@
 
 import type {
   ApiResponse,
+  CreateExperienceRequest,
   CreatePricingRuleRequest,
   CreatePropertyRequest,
+  ExperienceListResponse,
+  ExperienceResponse,
   PropertyListResponse,
   PropertyResponse,
+  UpdateExperienceRequest,
   UpdatePropertyRequest,
   UploadImagesResponse,
 } from "@/modules/api-client/types";
@@ -128,6 +132,70 @@ export const propertyApi = {
    */
   delete: async (id: string): Promise<void> => {
     return apiFetch<void>(`/api/backoffice/properties/${id}`, {
+      method: "DELETE",
+    });
+  },
+};
+
+// ============================================================================
+// Experience API
+// ============================================================================
+
+export const experienceApi = {
+  /**
+   * Fetch all experiences with optional filters
+   */
+  list: async (params?: {
+    search?: string;
+    category?: string;
+    status?: string;
+  }): Promise<ExperienceListResponse> => {
+    const searchParams = new URLSearchParams();
+    if (params?.search) searchParams.set("search", params.search);
+    if (params?.category) searchParams.set("category", params.category);
+    if (params?.status) searchParams.set("status", params.status);
+
+    const query = searchParams.toString();
+    const url = `/api/backoffice/experiences${query ? `?${query}` : ""}`;
+
+    return apiFetch<ExperienceListResponse>(url);
+  },
+
+  /**
+   * Fetch a single experience by ID
+   */
+  get: async (id: string): Promise<ExperienceResponse> => {
+    return apiFetch<ExperienceResponse>(`/api/backoffice/experiences/${id}`);
+  },
+
+  /**
+   * Create a new experience
+   */
+  create: async (data: CreateExperienceRequest): Promise<ExperienceResponse> => {
+    return apiFetch<ExperienceResponse>("/api/backoffice/experiences", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Update an existing experience
+   */
+  update: async (
+    id: string,
+    data: UpdateExperienceRequest
+  ): Promise<ExperienceResponse> => {
+    return apiFetch<ExperienceResponse>(`/api/backoffice/experiences/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Delete/archive an experience
+   */
+  delete: async (id: string): Promise<void> => {
+    return apiFetch<void>(`/api/backoffice/experiences/${id}`, {
       method: "DELETE",
     });
   },
