@@ -3,8 +3,6 @@
  * Manage dynamic pricing for a property
  */
 
-import { rootRoute } from "@/modules/property/routes/BackofficeRoot";
-import { PricingCalendar } from "@/modules/ui/views/PricingCalendarView";
 import type { PricingPeriod } from "@/modules/pricing/domain/types";
 import {
   useCreatePricingRule,
@@ -13,6 +11,9 @@ import {
   useUpdatePricingRule,
 } from "@/modules/pricing/hooks/queries";
 import { useProperty } from "@/modules/property/hooks/queries";
+import { rootRoute } from "@/modules/property/routes/BackofficeRoot";
+import { showSuccess } from "@/modules/shared/notificationStore";
+import { PricingCalendar } from "@/modules/ui/views/PricingCalendarView";
 import { toUniversalISODate } from "@/modules/utils/dates";
 import { createRoute, useParams } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
@@ -106,7 +107,7 @@ function PricingManagementPage() {
     // Mock sync - simulate API call
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setSyncing(null);
-    alert(
+    showSuccess(
       `Prices synced to ${channel === "airbnb" ? "Airbnb" : "Booking.com"}! (mock)`
     );
   };

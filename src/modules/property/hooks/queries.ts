@@ -11,6 +11,7 @@ import type {
   UpdatePropertyRequest,
   UploadImagesResponse,
 } from "@/modules/api-client/types";
+import { showSuccess } from "@/modules/shared/notificationStore";
 import {
   type UseMutationOptions,
   type UseQueryOptions,
@@ -96,6 +97,7 @@ export function useCreateProperty(
     onSuccess: () => {
       // Invalidate all property lists
       queryClient.invalidateQueries({ queryKey: queryKeys.properties.lists() });
+      showSuccess("Property created successfully!");
     },
     ...options,
   });

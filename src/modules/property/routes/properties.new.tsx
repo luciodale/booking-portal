@@ -10,6 +10,7 @@ import {
   CreatePropertyForm,
   type CreatePropertyFormData,
 } from "@/modules/property/ui";
+import { showError } from "@/modules/shared/notificationStore";
 import { getErrorMessages } from "@/modules/utils/errors";
 import { createRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -60,7 +61,7 @@ function CreatePropertyPage() {
 
         if (!response.ok) {
           console.error("Failed to upload images");
-          alert("Property created but image upload failed.");
+          showError("Property created but image upload failed.");
         }
 
         setIsUploading(false);

@@ -5,6 +5,7 @@
 
 import { reconcilePricingPeriods } from "@/modules/pricing/domain/reconciliation";
 import type { DateRange, PricingPeriod } from "@/modules/pricing/domain/types";
+import { showError } from "@/modules/shared/notificationStore";
 import { MonthView } from "@/modules/ui/calendar/MonthView";
 import { WeekView } from "@/modules/ui/calendar/WeekView";
 import { YearView } from "@/modules/ui/calendar/YearView";
@@ -61,7 +62,7 @@ export function PricingCalendar({
 
   const handleSavePeriod = async () => {
     if (!selectedRange?.from || !selectedRange?.to || !priceValue) {
-      alert("Please select a date range and enter a price");
+      showError("Please select a date range and enter a price");
       return;
     }
 
@@ -112,7 +113,7 @@ export function PricingCalendar({
       setLabel("");
     } catch (error) {
       console.error("Failed to save pricing period:", error);
-      alert("Failed to save pricing period");
+      showError("Failed to save pricing period");
     } finally {
       setSaving(false);
     }
@@ -134,7 +135,7 @@ export function PricingCalendar({
 
   const handleUpdatePeriod = async () => {
     if (!editingPeriod || !priceValue) {
-      alert("Please enter a price");
+      showError("Please enter a price");
       return;
     }
 
@@ -153,7 +154,7 @@ export function PricingCalendar({
       setLabel("");
     } catch (error) {
       console.error("Failed to update pricing period:", error);
-      alert("Failed to update pricing period");
+      showError("Failed to update pricing period");
     } finally {
       setSaving(false);
     }

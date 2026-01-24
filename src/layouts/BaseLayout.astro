@@ -1,5 +1,6 @@
 ---
 import GalleryLightbox from "@/modules/ui/astro/GalleryLightbox.astro";
+import { GlobalToaster } from "@/modules/ui/react/GlobalToaster";
 
 interface Props {
   title: string;
@@ -59,6 +60,7 @@ const siteTitle = title
   <body class="min-h-screen bg-background text-foreground antialiased">
     <slot />
     <GalleryLightbox />
+    <GlobalToaster client:load />
   </body>
 </html>
 
