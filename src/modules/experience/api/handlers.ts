@@ -4,6 +4,10 @@
  */
 
 import { experienceImages, experiences, getDb } from "@/db";
+import type {
+  ExperienceListResponse,
+  ExperienceResponse,
+} from "@/modules/api-client/types";
 import { requireAdmin } from "@/modules/auth/auth";
 import {
   createExperienceSchema,
@@ -13,60 +17,6 @@ import { generateImageUrl } from "@/modules/storage/r2-helpers";
 import { genUniqueId } from "@/modules/utils/id";
 import type { APIRoute } from "astro";
 import { and, desc, eq, like, or } from "drizzle-orm";
-
-// ============================================================================
-// Types
-// ============================================================================
-
-export interface ExperienceListResponse {
-  experiences: Array<{
-    id: string;
-    title: string;
-    shortDescription: string | null;
-    location: string;
-    category: string | null;
-    duration: string | null;
-    status: "draft" | "published" | "archived";
-    basePrice: number;
-    currency: string;
-    maxParticipants: number | null;
-    featured: boolean;
-    createdAt: string | null;
-    updatedAt: string | null;
-    primaryImageUrl?: string;
-  }>;
-  total: number;
-}
-
-export interface ExperienceResponse {
-  id: string;
-  brokerId: string;
-  title: string;
-  description: string | null;
-  shortDescription: string | null;
-  location: string;
-  city: string | null;
-  country: string | null;
-  category: string | null;
-  duration: string | null;
-  maxParticipants: number | null;
-  basePrice: number;
-  currency: string;
-  imageUrl: string | null;
-  status: "draft" | "published" | "archived";
-  featured: boolean;
-  createdAt: string | null;
-  updatedAt: string | null;
-  images: Array<{
-    id: string;
-    experienceId: string;
-    r2Key: string;
-    alt: string | null;
-    isPrimary: boolean;
-    order: number;
-    createdAt: string | null;
-  }>;
-}
 
 // ============================================================================
 // Shared Response Helpers
