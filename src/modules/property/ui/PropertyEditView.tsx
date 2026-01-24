@@ -14,7 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import {
   EditableFeatureGroupField,
-  EditableNumberField,
+  EditableSectionField,
   EditableSelectField,
   EditableTextField,
   EditableTextareaField,
@@ -148,42 +148,126 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
 
       {/* Property Details */}
       <section className="bg-card border border-border p-6 rounded-xl">
-        <h2 className="text-xl font-semibold text-foreground mb-6">
-          Property Details
-        </h2>
+        <EditableSectionField
+          title="Property Details"
+          values={{
+            maxGuests: property.maxGuests ?? undefined,
+            bedrooms: property.bedrooms ?? undefined,
+            bathrooms: property.bathrooms ?? undefined,
+            sqMeters: property.sqMeters ?? undefined,
+          }}
+          onSave={(data) => saveFields(data)}
+          renderFields={({ values, onChange, disabled }) => (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div>
+                <label
+                  htmlFor="edit-maxGuests"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Max Guests
+                </label>
+                <input
+                  id="edit-maxGuests"
+                  type="number"
+                  value={values.maxGuests ?? ""}
+                  onChange={(e) =>
+                    onChange({
+                      ...values,
+                      maxGuests:
+                        e.target.value === ""
+                          ? undefined
+                          : Number(e.target.value),
+                    })
+                  }
+                  disabled={disabled}
+                  min={1}
+                  max={50}
+                  className="input"
+                />
+              </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <EditableNumberField
-            label="Max Guests"
-            value={property.maxGuests ?? undefined}
-            onSave={(v) => saveField("maxGuests", v)}
-            min={1}
-            max={50}
-          />
+              <div>
+                <label
+                  htmlFor="edit-bedrooms"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Bedrooms
+                </label>
+                <input
+                  id="edit-bedrooms"
+                  type="number"
+                  value={values.bedrooms ?? ""}
+                  onChange={(e) =>
+                    onChange({
+                      ...values,
+                      bedrooms:
+                        e.target.value === ""
+                          ? undefined
+                          : Number(e.target.value),
+                    })
+                  }
+                  disabled={disabled}
+                  min={0}
+                  max={20}
+                  className="input"
+                />
+              </div>
 
-          <EditableNumberField
-            label="Bedrooms"
-            value={property.bedrooms ?? undefined}
-            onSave={(v) => saveField("bedrooms", v)}
-            min={0}
-            max={20}
-          />
+              <div>
+                <label
+                  htmlFor="edit-bathrooms"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Bathrooms
+                </label>
+                <input
+                  id="edit-bathrooms"
+                  type="number"
+                  value={values.bathrooms ?? ""}
+                  onChange={(e) =>
+                    onChange({
+                      ...values,
+                      bathrooms:
+                        e.target.value === ""
+                          ? undefined
+                          : Number(e.target.value),
+                    })
+                  }
+                  disabled={disabled}
+                  min={0}
+                  max={20}
+                  className="input"
+                />
+              </div>
 
-          <EditableNumberField
-            label="Bathrooms"
-            value={property.bathrooms ?? undefined}
-            onSave={(v) => saveField("bathrooms", v)}
-            min={0}
-            max={20}
-          />
-
-          <EditableNumberField
-            label="Size (m²)"
-            value={property.sqMeters ?? undefined}
-            onSave={(v) => saveField("sqMeters", v)}
-            min={10}
-          />
-        </div>
+              <div>
+                <label
+                  htmlFor="edit-sqMeters"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Size (m²)
+                </label>
+                <input
+                  id="edit-sqMeters"
+                  type="number"
+                  value={values.sqMeters ?? ""}
+                  onChange={(e) =>
+                    onChange({
+                      ...values,
+                      sqMeters:
+                        e.target.value === ""
+                          ? undefined
+                          : Number(e.target.value),
+                    })
+                  }
+                  disabled={disabled}
+                  min={10}
+                  className="input"
+                />
+              </div>
+            </div>
+          )}
+        />
       </section>
 
       {/* Features & Amenities (synced group) */}
@@ -201,63 +285,165 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
 
       {/* Pricing */}
       <section className="bg-card border border-border p-6 rounded-xl">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-semibold text-foreground">Pricing</h2>
-          <Link
-            to="/properties/$id/pricing"
-            params={{ id: propertyId }}
-            className="text-sm text-primary hover:text-primary-hover transition-colors font-medium"
-          >
-            Manage Dynamic Pricing →
-          </Link>
-        </div>
+        <EditableSectionField
+          title="Pricing"
+          headerAction={
+            <Link
+              to="/properties/$id/pricing"
+              params={{ id: propertyId }}
+              className="text-sm text-primary hover:text-primary-hover transition-colors font-medium"
+            >
+              Manage Dynamic Pricing →
+            </Link>
+          }
+          values={{
+            basePrice: property.basePrice,
+            cleaningFee: property.cleaningFee ?? undefined,
+            minNights: property.minNights ?? undefined,
+            maxNights: property.maxNights ?? undefined,
+            currency: property.currency,
+          }}
+          onSave={(data) => saveFields(data)}
+          renderFields={({ values, onChange, disabled }) => (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label
+                    htmlFor="edit-basePrice"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
+                    Base Price (cents)
+                  </label>
+                  <input
+                    id="edit-basePrice"
+                    type="number"
+                    value={values.basePrice}
+                    onChange={(e) =>
+                      onChange({
+                        ...values,
+                        basePrice: Number(e.target.value) || 0,
+                      })
+                    }
+                    disabled={disabled}
+                    min={100}
+                    className="input"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Price in cents per night (e.g., 250000 = €2,500/night)
+                  </p>
+                </div>
 
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
-            <EditableNumberField
-              label="Base Price (cents)"
-              value={property.basePrice}
-              onSave={(v) => saveField("basePrice", v)}
-              description="Price in cents per night (e.g., 250000 = €2,500/night)"
-              min={100}
-            />
+                <div>
+                  <label
+                    htmlFor="edit-cleaningFee"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
+                    Cleaning Fee (cents)
+                  </label>
+                  <input
+                    id="edit-cleaningFee"
+                    type="number"
+                    value={values.cleaningFee ?? ""}
+                    onChange={(e) =>
+                      onChange({
+                        ...values,
+                        cleaningFee:
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
+                      })
+                    }
+                    disabled={disabled}
+                    min={0}
+                    className="input"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    One-time cleaning fee in cents
+                  </p>
+                </div>
+              </div>
 
-            <EditableNumberField
-              label="Cleaning Fee (cents)"
-              value={property.cleaningFee ?? undefined}
-              onSave={(v) => saveField("cleaningFee", v)}
-              description="One-time cleaning fee in cents"
-              min={0}
-            />
-          </div>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label
+                    htmlFor="edit-minNights"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
+                    Minimum Nights
+                  </label>
+                  <input
+                    id="edit-minNights"
+                    type="number"
+                    value={values.minNights ?? ""}
+                    onChange={(e) =>
+                      onChange({
+                        ...values,
+                        minNights:
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
+                      })
+                    }
+                    disabled={disabled}
+                    min={1}
+                    className="input"
+                  />
+                </div>
 
-          <div className="grid grid-cols-2 gap-6">
-            <EditableNumberField
-              label="Minimum Nights"
-              value={property.minNights ?? undefined}
-              onSave={(v) => saveField("minNights", v)}
-              min={1}
-            />
+                <div>
+                  <label
+                    htmlFor="edit-maxNights"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
+                    Maximum Nights
+                  </label>
+                  <input
+                    id="edit-maxNights"
+                    type="number"
+                    value={values.maxNights ?? ""}
+                    onChange={(e) =>
+                      onChange({
+                        ...values,
+                        maxNights:
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
+                      })
+                    }
+                    disabled={disabled}
+                    min={1}
+                    className="input"
+                  />
+                </div>
+              </div>
 
-            <EditableNumberField
-              label="Maximum Nights"
-              value={property.maxNights ?? undefined}
-              onSave={(v) => saveField("maxNights", v)}
-              min={1}
-            />
-          </div>
-
-          <EditableSelectField
-            label="Currency"
-            value={property.currency}
-            onSave={(v) => saveField("currency", v as "eur" | "usd" | "gbp")}
-            options={[
-              { value: "eur", label: "EUR (€)" },
-              { value: "usd", label: "USD ($)" },
-              { value: "gbp", label: "GBP (£)" },
-            ]}
-          />
-        </div>
+              <div>
+                <label
+                  htmlFor="edit-currency"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Currency
+                </label>
+                <select
+                  id="edit-currency"
+                  value={values.currency ?? "eur"}
+                  onChange={(e) =>
+                    onChange({
+                      ...values,
+                      currency: e.target.value as "eur" | "usd" | "gbp",
+                    })
+                  }
+                  disabled={disabled}
+                  className="input"
+                >
+                  <option value="eur">EUR (€)</option>
+                  <option value="usd">USD ($)</option>
+                  <option value="gbp">GBP (£)</option>
+                </select>
+              </div>
+            </div>
+          )}
+        />
       </section>
 
       {/* Images */}

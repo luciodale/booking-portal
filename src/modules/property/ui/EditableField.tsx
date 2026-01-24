@@ -9,6 +9,7 @@ import {
 } from "@/modules/property/domain/sync-features";
 import { Select } from "@/modules/ui/Select";
 import { cn } from "@/modules/utils/cn";
+import { getErrorMessages } from "@/modules/utils/errors";
 import { Check, Loader2 } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
@@ -35,7 +36,7 @@ export function EditableField<T>({
 }: EditableFieldProps<T>) {
   const [localValue, setLocalValue] = useState<T>(value);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
 
   const hasChanges = JSON.stringify(localValue) !== JSON.stringify(value);
 
@@ -43,12 +44,12 @@ export function EditableField<T>({
     if (!hasChanges) return;
 
     setIsSaving(true);
-    setError(null);
+    setErrors([]);
 
     try {
       await onSave(localValue);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
+      setErrors(getErrorMessages(err));
     } finally {
       setIsSaving(false);
     }
@@ -94,7 +95,15 @@ export function EditableField<T>({
         </button>
       </div>
 
-      {error && <p className="text-sm text-error mt-1">{error}</p>}
+      {errors.length > 0 && (
+        <div className="mt-2 space-y-1">
+          {errors.map((error) => (
+            <p key={error} className="text-sm text-error">
+              {error}
+            </p>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -393,6 +402,7 @@ interface EditableSectionFieldProps<T extends Record<string, unknown>> {
     disabled: boolean;
   }) => ReactNode;
   description?: string;
+  headerAction?: ReactNode;
   className?: string;
 }
 
@@ -402,11 +412,12 @@ export function EditableSectionField<T extends Record<string, unknown>>({
   onSave,
   renderFields,
   description,
+  headerAction,
   className,
 }: EditableSectionFieldProps<T>) {
   const [localValues, setLocalValues] = useState<T>(values);
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
 
   const hasChanges = JSON.stringify(localValues) !== JSON.stringify(values);
 
@@ -414,12 +425,12 @@ export function EditableSectionField<T extends Record<string, unknown>>({
     if (!hasChanges) return;
 
     setIsSaving(true);
-    setError(null);
+    setErrors([]);
 
     try {
       await onSave(localValues);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to save");
+      setErrors(getErrorMessages(err));
     } finally {
       setIsSaving(false);
     }
@@ -428,7 +439,10 @@ export function EditableSectionField<T extends Record<string, unknown>>({
   return (
     <div className={cn("group", className)}>
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        <div className="flex items-center gap-4">
+          <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+          {headerAction}
+        </div>
         <button
           type="button"
           onClick={handleSave}
@@ -464,9 +478,15 @@ export function EditableSectionField<T extends Record<string, unknown>>({
         disabled: isSaving,
       })}
 
-      {error && (
+      {errors.length > 0 && (
         <div className="mt-4 p-3 rounded-lg bg-error/10 border border-error/20">
-          <p className="text-sm text-error">{error}</p>
+          <div className="space-y-1">
+            {errors.map((error) => (
+              <p key={error} className="text-sm text-error">
+                {error}
+              </p>
+            ))}
+          </div>
         </div>
       )}
     </div>

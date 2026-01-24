@@ -10,6 +10,7 @@ import {
   CreatePropertyForm,
   type CreatePropertyFormData,
 } from "@/modules/property/ui";
+import { getErrorMessages } from "@/modules/utils/errors";
 import { createRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -87,9 +88,16 @@ function CreatePropertyPage() {
       />
       {createProperty.isError && (
         <div className="mt-4 bg-error/10 border border-error/20 rounded-lg p-4">
-          <p className="text-error text-sm">
-            Error: {createProperty.error.message}
+          <p className="text-error font-medium text-sm mb-2">
+            Validation errors:
           </p>
+          <ul className="list-disc list-inside space-y-1">
+            {getErrorMessages(createProperty.error).map((msg) => (
+              <li key={msg} className="text-error text-sm">
+                {msg}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
