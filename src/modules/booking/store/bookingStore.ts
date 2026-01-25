@@ -4,7 +4,7 @@ import {
   calculatePriceBreakdown,
 } from "@/modules/booking/domain/pricing";
 import { createBookingSchema } from "@/modules/booking/domain/schema";
-import { toISODateString } from "@/modules/utils/dates";
+import { toDateString } from "@/modules/utils/dates";
 /**
  * Booking Store - Context-aware reactive state for booking flow
  * Uses nanostores for cross-framework reactivity (React islands in Astro)
@@ -160,8 +160,8 @@ export async function submitBooking(): Promise<{
   // Format dates for API
   const payload = {
     assetId: state.context.assetId,
-    checkIn: toISODateString(state.startDate),
-    checkOut: toISODateString(state.endDate),
+    checkIn: toDateString(state.startDate),
+    checkOut: toDateString(state.endDate),
     guests: state.guests,
     currency: state.context.currency,
     // Price is for display only - server will recalculate

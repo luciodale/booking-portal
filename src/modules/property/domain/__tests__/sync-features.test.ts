@@ -4,7 +4,7 @@ import {
   displayToKebab,
   kebabToDisplay,
   syncFeatureFields,
-} from "./sync-features";
+} from "../sync-features";
 
 describe("syncFeatureFields", () => {
   const emptyFields: FeatureFields = {

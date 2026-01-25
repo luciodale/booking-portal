@@ -1,7 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
-  testDir: "./tests",
+  testDir: "./playwright",
 
   // Run tests in parallel
   fullyParallel: true,

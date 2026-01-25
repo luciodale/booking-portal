@@ -5,7 +5,7 @@ import {
   calculatePriceBreakdown,
 } from "@/modules/booking/domain/pricing";
 import { createBookingSchema } from "@/modules/booking/domain/schema";
-import { fromISODateString } from "@/modules/utils/dates";
+import { fromDateString } from "@/modules/utils/dates";
 import type { APIRoute } from "astro";
 
 export const bookingHandler: APIRoute = async ({ request }) => {
@@ -56,8 +56,8 @@ export const bookingHandler: APIRoute = async ({ request }) => {
     };
 
     // 4. Server-Side Price Calculation (The Security Gate)
-    const startDate = fromISODateString(checkIn);
-    const endDate = fromISODateString(checkOut);
+    const startDate = fromDateString(checkIn);
+    const endDate = fromDateString(checkOut);
 
     const serverBreakdown = calculatePriceBreakdown(
       startDate,

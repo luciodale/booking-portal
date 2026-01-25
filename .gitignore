@@ -6,14 +6,14 @@ dist
 .DS_Store
 *.log
 .wrangler
+test-results/
 
 # Seed script generated files (safe to delete after each run)
 .seed.sql
 .image-manifest.json
 .check-data.sql
 .remote-teardown.sql
+.tmp*
 
-# Legacy - images now served from R2 only
-public/properties/
-public/experiences/
+
 

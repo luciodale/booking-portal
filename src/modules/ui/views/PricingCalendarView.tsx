@@ -10,6 +10,8 @@ import { MonthView } from "@/modules/ui/calendar/MonthView";
 import { WeekView } from "@/modules/ui/calendar/WeekView";
 import { YearView } from "@/modules/ui/calendar/YearView";
 import { cn } from "@/modules/utils/cn";
+import { applyPercentage, toCents } from "@/modules/utils/money";
+import Decimal from "decimal.js-light";
 import { X } from "lucide-react";
 import { useState } from "react";
 
@@ -52,12 +54,17 @@ export function PricingCalendar({
       return numValue;
     }
     // Percentage mode: basePrice * (1 + percentage/100)
-    return Math.round(basePrice * (1 + numValue / 100));
+    // Use decimal.js for precise calculation
+    return toCents(applyPercentage(basePrice, numValue));
   };
 
   /** Get percentage from a price relative to base price */
   const getPercentageFromPrice = (price: number): number => {
-    return Math.round(((price - basePrice) / basePrice) * 100);
+    // Use decimal.js for precise percentage calculation
+    const priceDec = new Decimal(price);
+    const baseDec = new Decimal(basePrice);
+    const percentDec = priceDec.minus(baseDec).div(baseDec).times(100);
+    return percentDec.toDecimalPlaces(0).toNumber();
   };
 
   const handleSavePeriod = async () => {

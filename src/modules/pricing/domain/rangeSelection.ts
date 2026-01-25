@@ -57,15 +57,15 @@ export function computeNextRange(
 
 function startOfDay(date: Date): Date {
   const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
+  d.setUTCHours(0, 0, 0, 0);
   return d;
 }
 
 function isSameDay(a: Date, b: Date): boolean {
   return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
+    a.getUTCFullYear() === b.getUTCFullYear() &&
+    a.getUTCMonth() === b.getUTCMonth() &&
+    a.getUTCDate() === b.getUTCDate()
   );
 }
 

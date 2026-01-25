@@ -14,7 +14,7 @@ import { useProperty } from "@/modules/property/hooks/queries";
 import { rootRoute } from "@/modules/property/routes/BackofficeRoot";
 import { showSuccess } from "@/modules/shared/notificationStore";
 import { PricingCalendar } from "@/modules/ui/views/PricingCalendarView";
-import { toUniversalISODate } from "@/modules/utils/dates";
+import { toDateString } from "@/modules/utils/dates";
 import { createRoute, useParams } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
@@ -64,8 +64,8 @@ function PricingManagementPage() {
     await createPricingRule.mutateAsync({
       assetId: propertyId,
       name: period.label || "Custom Period",
-      startDate: toUniversalISODate(period.startDate),
-      endDate: toUniversalISODate(period.endDate),
+      startDate: toDateString(period.startDate),
+      endDate: toDateString(period.endDate),
       multiplier,
     });
   };
@@ -89,8 +89,8 @@ function PricingManagementPage() {
     if (period.label !== undefined) updateData.name = period.label;
     if (multiplier !== undefined) updateData.multiplier = multiplier;
     if (period.startDate)
-      updateData.startDate = toUniversalISODate(period.startDate);
-    if (period.endDate) updateData.endDate = toUniversalISODate(period.endDate);
+      updateData.startDate = toDateString(period.startDate);
+    if (period.endDate) updateData.endDate = toDateString(period.endDate);
 
     await updatePricingRule.mutateAsync({
       id,

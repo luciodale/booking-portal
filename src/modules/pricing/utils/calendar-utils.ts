@@ -43,9 +43,9 @@ export function getMonthDays(year: number, month: number) {
 export function isSameDay(d1: Date | null, d2: Date | null) {
   if (!d1 || !d2) return false;
   return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate()
+    d1.getUTCFullYear() === d2.getUTCFullYear() &&
+    d1.getUTCMonth() === d2.getUTCMonth() &&
+    d1.getUTCDate() === d2.getUTCDate()
   );
 }
 
@@ -67,8 +67,8 @@ export function isInPricingPeriod(date: Date, periods: PricingPeriod[]) {
   return periods.some((p) => {
     const start = new Date(p.startDate);
     const end = new Date(p.endDate);
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCHours(23, 59, 59, 999);
     return date >= start && date <= end;
   });
 }
@@ -79,13 +79,13 @@ export function getPricingPeriodForDate(
   periods: PricingPeriod[]
 ): PricingPeriod | undefined {
   const normalizedDate = new Date(date);
-  normalizedDate.setHours(0, 0, 0, 0);
+  normalizedDate.setUTCHours(0, 0, 0, 0);
 
   return periods.find((p) => {
     const start = new Date(p.startDate);
     const end = new Date(p.endDate);
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
+    start.setUTCHours(0, 0, 0, 0);
+    end.setUTCHours(23, 59, 59, 999);
     return normalizedDate >= start && normalizedDate <= end;
   });
 }

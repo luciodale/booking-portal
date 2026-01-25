@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { computeNextRange } from "./rangeSelection";
+import { computeNextRange } from "../rangeSelection";
 
-const date = (day: number) => new Date(2025, 0, day); // January 2025
+// Create dates using UTC to match our UTC-based date handling
+const date = (day: number) => new Date(Date.UTC(2025, 0, day)); // January 2025 UTC
 
 describe("computeNextRange", () => {
   describe("no existing selection", () => {
     it("first click selects start date", () => {
       const result = computeNextRange(date(15), undefined);
 
-      expect(result?.from?.getDate()).toBe(15);
+      expect(result?.from?.getUTCDate()).toBe(15);
       expect(result?.to).toBeUndefined();
     });
   });
@@ -19,8 +20,8 @@ describe("computeNextRange", () => {
     it("click after start completes range", () => {
       const result = computeNextRange(date(20), range);
 
-      expect(result?.from?.getDate()).toBe(10);
-      expect(result?.to?.getDate()).toBe(20);
+      expect(result?.from?.getUTCDate()).toBe(10);
+      expect(result?.to?.getUTCDate()).toBe(20);
     });
 
     it("click on same start date does nothing (no end selected)", () => {
@@ -42,14 +43,14 @@ describe("computeNextRange", () => {
     it("click after end expands range", () => {
       const result = computeNextRange(date(25), range);
 
-      expect(result?.from?.getDate()).toBe(10);
-      expect(result?.to?.getDate()).toBe(25);
+      expect(result?.from?.getUTCDate()).toBe(10);
+      expect(result?.to?.getUTCDate()).toBe(25);
     });
 
     it("click on start date clears end date", () => {
       const result = computeNextRange(date(10), range);
 
-      expect(result?.from?.getDate()).toBe(10);
+      expect(result?.from?.getUTCDate()).toBe(10);
       expect(result?.to).toBeUndefined();
     });
 
@@ -62,15 +63,15 @@ describe("computeNextRange", () => {
     it("click between start and end adjusts end to that date", () => {
       const result = computeNextRange(date(15), range);
 
-      expect(result?.from?.getDate()).toBe(10);
+      expect(result?.from?.getUTCDate()).toBe(10);
       expect(result?.to?.getDate()).toBe(15);
     });
 
     it("click on end date adjusts end (same as between)", () => {
       const result = computeNextRange(date(20), range);
 
-      expect(result?.from?.getDate()).toBe(10);
-      expect(result?.to?.getDate()).toBe(20);
+      expect(result?.from?.getUTCDate()).toBe(10);
+      expect(result?.to?.getUTCDate()).toBe(20);
     });
   });
 
@@ -91,7 +92,7 @@ describe("computeNextRange", () => {
         to: undefined,
       });
 
-      expect(result?.from?.getDate()).toBe(15);
+      expect(result?.from?.getUTCDate()).toBe(15);
     });
   });
 });

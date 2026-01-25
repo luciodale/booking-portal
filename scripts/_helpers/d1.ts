@@ -49,7 +49,8 @@ export async function checkExistingData(mode: Mode): Promise<boolean> {
 
     await $`rm -f ${tempFile}`.quiet();
 
-    const data = JSON.parse(result.stdout.toString());
+    const stdoutText = result.stdout.toString();
+    const data = JSON.parse(stdoutText);
     const count = data?.[0]?.results?.[0]?.count || 0;
 
     return count > 0;

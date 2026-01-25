@@ -20,11 +20,8 @@ async function main() {
   // Generate SQL if needed
   await generateSql(ROOT_DIR);
 
-  // Check for existing data
-  const hasData = await checkExistingData("remote");
-  if (hasData) {
-    console.log("\n⚠️  Database already contains data - will be replaced");
-  }
+  // Skip check for remote (wrangler remote commands have issues with Bun shell)
+  // The SQL includes DELETE statements so it's safe to run multiple times
 
   // Execute SQL
   await executeSql(SQL_PATH, "remote");

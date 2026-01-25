@@ -1,7 +1,7 @@
-import { toUniversalISODate } from "@/modules/utils/dates";
+import { toDateString } from "@/modules/utils/dates";
 import { describe, expect, it } from "vitest";
-import { reconcilePricingPeriods } from "./reconciliation";
-import type { PricingPeriod } from "./types";
+import { reconcilePricingPeriods } from "../reconciliation";
+import type { PricingPeriod } from "../types";
 
 describe("reconcilePricingPeriods", () => {
   const createDate = (str: string) => new Date(str);
@@ -62,7 +62,7 @@ describe("reconcilePricingPeriods", () => {
     expect(result.toUpdate).toHaveLength(1);
     expect(result.toUpdate[0].id).toBe("1");
     // Check date strings for simplicity (UTC check might be needed in real app)
-    expect(toUniversalISODate(result.toUpdate[0].endDate)).toBe("2024-01-07");
+    expect(toDateString(result.toUpdate[0].endDate)).toBe("2024-01-07");
   });
 
   it("should trim start of existing period if new overlaps end", () => {
@@ -79,7 +79,7 @@ describe("reconcilePricingPeriods", () => {
     const result = reconcilePricingPeriods(newPeriod, existing);
     expect(result.toUpdate).toHaveLength(1);
     expect(result.toUpdate[0].id).toBe("1");
-    expect(toUniversalISODate(result.toUpdate[0].startDate)).toBe("2024-01-13");
+    expect(toDateString(result.toUpdate[0].startDate)).toBe("2024-01-13");
   });
 
   it("should split existing period if new is in the middle", () => {
@@ -101,7 +101,7 @@ describe("reconcilePricingPeriods", () => {
     // Check update
     expect(result.toUpdate).toHaveLength(1);
     expect(result.toUpdate[0].id).toBe("1");
-    expect(toUniversalISODate(result.toUpdate[0].endDate)).toBe("2024-01-09");
+    expect(toDateString(result.toUpdate[0].endDate)).toBe("2024-01-09");
 
     // Check additions (New Period + Splinter)
     expect(result.toAdd).toHaveLength(2);
@@ -110,8 +110,8 @@ describe("reconcilePricingPeriods", () => {
     const splinter = result.toAdd.find((p) => p.price === 100);
     expect(splinter).toBeDefined();
     if (splinter) {
-      expect(toUniversalISODate(splinter.startDate)).toBe("2024-01-16");
-      expect(toUniversalISODate(splinter.endDate)).toBe("2024-01-20");
+      expect(toDateString(splinter.startDate)).toBe("2024-01-16");
+      expect(toDateString(splinter.endDate)).toBe("2024-01-20");
     }
   });
 });

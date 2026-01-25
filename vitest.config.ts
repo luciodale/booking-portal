@@ -1,24 +1,10 @@
-import { defineWorkersConfig } from "@cloudflare/vitest-pool-workers/config";
 import path from "node:path";
+import { defineConfig } from "vitest/config";
 
-export default defineWorkersConfig({
+export default defineConfig({
   test: {
-    poolOptions: {
-      workers: {
-        wrangler: { configPath: "./wrangler.json" },
-        miniflare: {
-          // Add bindings configuration
-          bindings: {
-            DB: {
-              // D1 binding will use local database
-            },
-            R2_IMAGES_BUCKET: {
-              // R2 binding for testing
-            },
-          },
-        },
-      },
-    },
+    include: ["src/**/__tests__/*.test.ts"],
+    exclude: ["playwright/**/*"],
   },
   resolve: {
     alias: {
@@ -26,3 +12,4 @@ export default defineWorkersConfig({
     },
   },
 });
+
