@@ -85,9 +85,7 @@ async function uploadToR2(
         lastError = err;
         if (attempt < MAX_RETRIES) {
           // Exponential backoff: 500ms, 1000ms, 2000ms
-          await new Promise((r) =>
-            setTimeout(r, 500 * Math.pow(2, attempt - 1))
-          );
+          await new Promise((r) => setTimeout(r, 500 * 2 ** (attempt - 1)));
         }
       }
     }
