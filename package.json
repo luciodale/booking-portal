@@ -5,9 +5,8 @@
     "build": "tsc --noEmit && astro build",
     "preview": "astro build && wrangler dev",
     "deploy": "wrangler deploy",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:ui": "vitest --ui",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
     "db:generate": "drizzle-kit generate --name",
     "db:studio": "drizzle-kit studio",
     "db:migrate:local": "bunx wrangler d1 migrations apply booking-portal-db --local",
@@ -70,10 +69,8 @@
     "@types/node": "^25.0.10",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
-    "@vitest/ui": "^4.0.18",
     "drizzle-kit": "^0.31.4",
     "sharp": "^0.34.5",
-    "vitest": "^4.0.17",
     "wrangler": "^4.59.1"
   }
 }
