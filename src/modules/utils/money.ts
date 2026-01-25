@@ -58,7 +58,26 @@ export function percentageOf(baseCents: number, pct: number): Decimal {
  * Used for pricing rules: basePrice * multiplier / 100
  * @example applyMultiplier(10000, 150) -> Decimal(15000) // 1.5x markup
  */
-export function applyMultiplier(baseCents: number, multiplier: number): Decimal {
+export function applyMultiplier(
+  baseCents: number,
+  multiplier: number
+): Decimal {
   return fromCents(baseCents).times(new Decimal(multiplier).div(100));
 }
 
+/**
+ * Compute multiplier from target price and base price
+ * Used when user sets absolute price: (targetCents / baseCents) * 100
+ * @example computeMultiplier(15000, 10000) -> 150 (1.5x)
+ */
+export function computeMultiplier(
+  targetCents: number,
+  baseCents: number
+): number {
+  if (baseCents === 0) return 100;
+  return fromCents(targetCents)
+    .div(fromCents(baseCents))
+    .times(100)
+    .toDecimalPlaces(0)
+    .toNumber();
+}

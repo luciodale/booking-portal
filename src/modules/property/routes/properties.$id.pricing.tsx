@@ -15,6 +15,7 @@ import { rootRoute } from "@/modules/property/routes/BackofficeRoot";
 import { showSuccess } from "@/modules/shared/notificationStore";
 import { PricingCalendar } from "@/modules/ui/views/PricingCalendarView";
 import { toDateString } from "@/modules/utils/dates";
+import { applyMultiplier, computeMultiplier, toCents } from "@/modules/utils/money";
 import { createRoute, useParams } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 
@@ -41,7 +42,7 @@ function PricingManagementPage() {
         id: rule.id,
         startDate: new Date(rule.startDate),
         endDate: new Date(rule.endDate),
-        price: Math.round((basePrice * rule.multiplier) / 100),
+        price: toCents(applyMultiplier(basePrice, rule.multiplier)),
         percentageAdjustment: rule.multiplier - 100, // Convert to adjustment (150 -> +50%)
         label: rule.name,
       })),
@@ -59,7 +60,7 @@ function PricingManagementPage() {
     // Convert price to multiplier: (price / basePrice) * 100
     // e.g., if basePrice=10000 and price=15000, multiplier=150 (which means +50%)
     const multiplier =
-      basePrice > 0 ? Math.round((period.price / basePrice) * 100) : 100;
+      basePrice > 0 ? computeMultiplier(period.price, basePrice) : 100;
 
     await createPricingRule.mutateAsync({
       assetId: propertyId,
@@ -76,7 +77,7 @@ function PricingManagementPage() {
   ): Promise<void> => {
     const multiplier =
       period.price !== undefined && basePrice > 0
-        ? Math.round((period.price / basePrice) * 100)
+        ? computeMultiplier(period.price, basePrice)
         : undefined;
 
     const updateData: {

@@ -68,6 +68,7 @@ export function WeekView({
             basePrice
           );
           const isCustomPrice = state.isPriced;
+          const isSelected = state.isRangeStart || state.isRangeEnd;
 
           return (
             <button
@@ -86,9 +87,11 @@ export function WeekView({
               <span
                 className={cn(
                   "text-xs mt-1",
-                  isCustomPrice
-                    ? "text-primary font-semibold"
-                    : "text-muted-foreground"
+                  isSelected
+                    ? "text-primary-foreground"
+                    : isCustomPrice
+                      ? "text-primary font-semibold"
+                      : "text-muted-foreground"
                 )}
               >
                 {formatPriceShort(dayPrice)}

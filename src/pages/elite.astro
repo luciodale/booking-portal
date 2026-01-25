@@ -1,6 +1,7 @@
 ---
 import { assets, getDb, images } from "@/db";
 import PageLayout from "@/layouts/PageLayout.astro";
+import { PropertyListWithPricing } from "@/modules/property/ui/PropertyListWithPricing";
 import { generateImageUrl } from "@/modules/storage/r2-helpers";
 import Button from "@/modules/ui/astro/Button.astro";
 import Hero from "@/modules/ui/astro/Hero.astro";
@@ -33,6 +34,8 @@ const eliteProperties = await Promise.all(
   }),
 );
 
+const assetIds = eliteProperties.map((p) => p.asset.id);
+
 const filters = [
   "Beachfront",
   "Mountain",
@@ -55,6 +58,13 @@ const filters = [
     subtitle="A handpicked selection of the world's most extraordinary properties. Each residence meets our rigorous standards for luxury, location, and exceptional service."
     height="medium"
   />
+
+  <!-- Date Picker & Filters Bar -->
+  <section class="border-b border-border/50 bg-card/50">
+    <div class="container mx-auto px-6 py-6">
+      <PropertyListWithPricing client:load assetIds={assetIds} />
+    </div>
+  </section>
 
   <!-- Filters Bar -->
   <section
@@ -92,20 +102,83 @@ const filters = [
   <!-- Property Grid -->
   <section class="py-16 px-6">
     <div class="container mx-auto">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div
+        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        id="property-grid"
+      >
         {
           eliteProperties.map((property, index) => (
             <div
-              class="animate-slide-up opacity-0"
+              class="animate-slide-up opacity-0 property-card-wrapper"
               style={`animation-delay: ${0.1 + index * 0.1}s`}
+              data-asset-id={property.asset.id}
             >
-              <PropertyCard {...property} />
+              <PropertyCard {...property} price={null} />
             </div>
           ))
         }
       </div>
     </div>
   </section>
+
+  <script>
+    // Listen for price updates and re-render cards with new prices
+    window.addEventListener("pricesUpdated", ((event: CustomEvent) => {
+      const prices = event.detail.prices;
+
+      // Update each property card with computed price
+      document.querySelectorAll(".property-card-wrapper").forEach((wrapper) => {
+        const assetId = wrapper.getAttribute("data-asset-id");
+        if (!assetId) return;
+
+        const priceData = prices[assetId];
+        const priceTag = wrapper.querySelector(".absolute.bottom-4.left-4");
+
+        if (!priceTag) return;
+
+        if (priceData) {
+          // Show computed price
+          const currency =
+            priceData.currency === "eur"
+              ? "€"
+              : priceData.currency.toUpperCase();
+          const displayPrice = (priceData.computedPrice / 100).toLocaleString();
+          const nightsText =
+            priceData.nights > 1 ? ` / ${priceData.nights} nights` : " / night";
+
+          let html = `
+            <div class="text-white">
+              <span class="text-2xl font-bold">${currency} ${displayPrice}</span>
+              <span class="text-white/70 text-sm">${nightsText}</span>
+          `;
+
+          if (priceData.appliedRules && priceData.appliedRules.length > 0) {
+            html += `
+              <div class="flex items-center gap-1 mt-1">
+                <i data-lucide="zap" class="w-3 h-3 text-amber-400"></i>
+                <span class="text-xs text-amber-400">${priceData.appliedRules[0]}</span>
+              </div>
+            `;
+          }
+
+          html += "</div>";
+          priceTag.innerHTML = html;
+
+          // Re-initialize lucide icons
+          if ((window as any).lucide) {
+            (window as any).lucide.createIcons();
+          }
+        } else {
+          // Show placeholder
+          priceTag.innerHTML = `
+            <div class="text-white">
+              <span class="text-lg font-medium text-white/90">Select dates for pricing</span>
+            </div>
+          `;
+        }
+      });
+    }) as EventListener);
+  </script>
 
   <!-- Load More -->
   <section class="pb-20 px-6 text-center">

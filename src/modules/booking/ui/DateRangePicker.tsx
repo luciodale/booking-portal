@@ -1,12 +1,12 @@
 /**
  * Date Range Picker Component
  * Custom calendar for selecting check-in and check-out dates.
- * Uses custom calendar implementation instead of react-day-picker.
+ * Supports both controlled mode (with props) and uncontrolled mode (using store).
  */
 
 import {
   bookingStore,
-  setDateRange,
+  setDateRange as setStoreRange,
 } from "@/modules/booking/store/bookingStore";
 import {
   buildRangeFromClick,
@@ -23,12 +23,24 @@ interface DateRange {
   to?: Date | undefined;
 }
 
+type DateRangePickerProps = {
+  selectedRange?: DateRange;
+  onRangeChange?: (range: DateRange | undefined) => void;
+};
+
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export default function DateRangePicker() {
+export function DateRangePicker({
+  selectedRange: controlledRange,
+  onRangeChange,
+}: DateRangePickerProps = {}) {
   const $booking = useStore(bookingStore);
   const [isOpen, setIsOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
+
+  // Controlled mode: use props; Uncontrolled mode: use store
+  const isControlled =
+    controlledRange !== undefined || onRangeChange !== undefined;
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -42,12 +54,22 @@ export default function DateRangePicker() {
     year: "numeric",
   });
 
-  const selectedRange: DateRange | undefined =
-    $booking.startDate && $booking.endDate
+  // Use controlled range if provided, otherwise derive from store
+  const selectedRange: DateRange | undefined = isControlled
+    ? controlledRange
+    : $booking.startDate && $booking.endDate
       ? { from: $booking.startDate, to: $booking.endDate }
       : $booking.startDate
         ? { from: $booking.startDate, to: undefined }
         : undefined;
+
+  const setDateRange = (from: Date | undefined, to: Date | undefined) => {
+    if (isControlled && onRangeChange) {
+      onRangeChange(from ? { from, to } : undefined);
+    } else {
+      setStoreRange(from, to);
+    }
+  };
 
   const handleDayClick = (date: Date) => {
     const newRange = buildRangeFromClick(date, selectedRange);
@@ -85,13 +107,16 @@ export default function DateRangePicker() {
     };
   };
 
-  const formatDate = (date: Date | null) => {
+  const formatDate = (date: Date | undefined | null) => {
     if (!date) return "Select date";
     return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });
   };
+
+  const displayStartDate = selectedRange?.from;
+  const displayEndDate = selectedRange?.to;
 
   const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
   const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
@@ -113,7 +138,7 @@ export default function DateRangePicker() {
             onClick={() => setIsOpen(!isOpen)}
             className="w-full px-4 py-3.5 bg-secondary rounded-xl text-left text-foreground hover:bg-card-hover transition-colors border border-border/50"
           >
-            {formatDate($booking.startDate)}
+            {formatDate(displayStartDate)}
           </button>
         </div>
         <div>
@@ -129,7 +154,7 @@ export default function DateRangePicker() {
             onClick={() => setIsOpen(!isOpen)}
             className="w-full px-4 py-3.5 bg-secondary rounded-xl text-left text-foreground hover:bg-card-hover transition-colors border border-border/50"
           >
-            {formatDate($booking.endDate)}
+            {formatDate(displayEndDate)}
           </button>
         </div>
       </div>

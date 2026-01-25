@@ -27,12 +27,13 @@ export function computeNextRange(
   const start = startOfDay(currentRange.from);
   const end = currentRange.to ? startOfDay(currentRange.to) : undefined;
 
-  // Click on start date → clear end if exists, otherwise no change
+  // Click on start date → clear end if exists, otherwise complete single-day selection
   if (isSameDay(clicked, start)) {
     if (end) {
       return { from: start, to: undefined };
     }
-    return currentRange;
+    // Single day selection: set to = from
+    return { from: start, to: start };
   }
 
   // Click before start → clear selection

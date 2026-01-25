@@ -5,14 +5,18 @@ import Badge from "@/modules/ui/astro/Badge.astro";
 interface Props {
   asset: Asset;
   imageUrl: string;
-  price?: number;
+  price?: number | null; // null means "no dates selected yet"
+  nights?: number;
+  appliedRules?: string[];
 }
 
-const { asset, imageUrl, price } = Astro.props;
+const { asset, imageUrl, price, nights, appliedRules } = Astro.props;
 
-// Use passed price or fallback to asset base price (assuming standard formatting needed if not passed)
-// The previous implementation took a number, so we keep that flexibility but prefer explicit props if needed for formatting override
-const displayPrice = price ?? asset.basePrice / 100;
+// If price is explicitly null, show placeholder
+// If price is undefined, fallback to base price (backward compat)
+// If price is a number, use it
+const showPlaceholder = price === null;
+const displayPrice = price === null ? 0 : (price ?? asset.basePrice / 100);
 
 const isElite = asset.tier === "elite";
 const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
@@ -55,13 +59,31 @@ const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
 
     <!-- Price Tag -->
     <div class="absolute bottom-4 left-4">
-      <div class="text-white">
-        <span class="text-2xl font-bold"
-          >{asset.currency === "eur" ? "€" : asset.currency.toUpperCase()}
-          {displayPrice.toLocaleString()}</span
-        >
-        <span class="text-white/70 text-sm"> / night</span>
-      </div>
+      {
+        showPlaceholder ? (
+          <div class="text-white">
+            <span class="text-lg font-medium text-white/90">
+              Select dates for pricing
+            </span>
+          </div>
+        ) : (
+          <div class="text-white">
+            <span class="text-2xl font-bold">
+              {asset.currency === "eur" ? "€" : asset.currency.toUpperCase()}
+              {displayPrice.toLocaleString()}
+            </span>
+            <span class="text-white/70 text-sm">
+              {nights && nights > 1 ? ` / ${nights} nights` : " / night"}
+            </span>
+            {appliedRules && appliedRules.length > 0 && (
+              <div class="flex items-center gap-1 mt-1">
+                <i data-lucide="zap" class="w-3 h-3 text-amber-400" />
+                <span class="text-xs text-amber-400">{appliedRules[0]}</span>
+              </div>
+            )}
+          </div>
+        )
+      }
     </div>
   </div>
 

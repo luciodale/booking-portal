@@ -85,6 +85,7 @@ export function MonthView({
             basePrice
           );
           const isCustomPrice = state.isPriced;
+          const isSelected = state.isRangeStart || state.isRangeEnd;
 
           return (
             <button
@@ -100,9 +101,11 @@ export function MonthView({
               <span
                 className={cn(
                   "text-[10px] mt-0.5",
-                  isCustomPrice
-                    ? "text-primary font-semibold"
-                    : "text-muted-foreground"
+                  isSelected
+                    ? "text-primary-foreground"
+                    : isCustomPrice
+                      ? "text-primary font-semibold"
+                      : "text-muted-foreground"
                 )}
               >
                 {formatPriceShort(dayPrice)}

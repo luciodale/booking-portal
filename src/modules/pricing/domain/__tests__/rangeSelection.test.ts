@@ -24,10 +24,11 @@ describe("computeNextRange", () => {
       expect(result?.to?.getUTCDate()).toBe(20);
     });
 
-    it("click on same start date does nothing (no end selected)", () => {
+    it("click on same start date completes single-day selection (no end selected)", () => {
       const result = computeNextRange(date(10), range);
 
-      expect(result).toBe(range); // Same reference
+      expect(result?.from?.getUTCDate()).toBe(10);
+      expect(result?.to?.getUTCDate()).toBe(10); // Single day selection
     });
 
     it("click before start clears selection", () => {
@@ -83,7 +84,9 @@ describe("computeNextRange", () => {
 
       const result = computeNextRange(morningClick, range);
 
-      expect(result).toBe(range); // Same day = no change
+      // Same day = completes single-day selection
+      expect(result?.from?.getUTCDate()).toBe(15);
+      expect(result?.to?.getUTCDate()).toBe(15);
     });
 
     it("handles undefined from gracefully", () => {

@@ -8,6 +8,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyMultiplier,
   applyPercentage,
+  computeMultiplier,
   formatEuros,
   fromCents,
   percentageOf,
@@ -117,6 +118,95 @@ describe("money utilities", () => {
       // With multiplier=29 representing 0.29x
       const result = applyMultiplier(10000, 29);
       expect(toCents(result)).toBe(2900);
+    });
+  });
+
+  describe("computeMultiplier", () => {
+    it("computes multiplier from target and base price", () => {
+      // Target: €150, Base: €100 -> 1.5x = 150
+      const multiplier = computeMultiplier(15000, 10000);
+      expect(multiplier).toBe(150);
+    });
+
+    it("handles 1x multiplier (same price)", () => {
+      const multiplier = computeMultiplier(10000, 10000);
+      expect(multiplier).toBe(100);
+    });
+
+    it("handles sub-1x multiplier (discount)", () => {
+      // Target: €80, Base: €100 -> 0.8x = 80
+      const multiplier = computeMultiplier(8000, 10000);
+      expect(multiplier).toBe(80);
+    });
+
+    it("handles zero base price safely", () => {
+      const multiplier = computeMultiplier(15000, 0);
+      expect(multiplier).toBe(100); // Default fallback
+    });
+
+    it("rounds to integer multiplier", () => {
+      // Target: €150.25, Base: €100 -> 1.5025x rounds to 150
+      const multiplier = computeMultiplier(15025, 10000);
+      expect(multiplier).toBe(150); // Rounds down
+    });
+  });
+
+  describe("round-trip precision (applyMultiplier <-> computeMultiplier)", () => {
+    it("preserves price when converting back and forth", () => {
+      const basePrice = 10000; // €100
+      const targetPrice = 15000; // €150
+
+      // Forward: price -> multiplier
+      const multiplier = computeMultiplier(targetPrice, basePrice);
+      
+      // Backward: multiplier -> price
+      const reconstructedPrice = toCents(applyMultiplier(basePrice, multiplier));
+
+      expect(reconstructedPrice).toBe(targetPrice);
+    });
+
+    it("handles user's reported bug case: €5985 base, €6000 target", () => {
+      const basePrice = 598500; // €5985
+      const targetPrice = 600000; // €6000
+
+      // Forward: price -> multiplier
+      const multiplier = computeMultiplier(targetPrice, basePrice);
+      
+      // Backward: multiplier -> price
+      const reconstructedPrice = toCents(applyMultiplier(basePrice, multiplier));
+
+      // With Decimal.js, this should preserve the price
+      expect(reconstructedPrice).toBe(targetPrice);
+    });
+
+    it("handles user's second bug case: €3990 (14-16 nights at €6000)", () => {
+      const basePrice = 398500; // €3985
+      const targetPrice = 400000; // €4000
+
+      // Forward: price -> multiplier
+      const multiplier = computeMultiplier(targetPrice, basePrice);
+      
+      // Backward: multiplier -> price
+      const reconstructedPrice = toCents(applyMultiplier(basePrice, multiplier));
+
+      expect(reconstructedPrice).toBe(targetPrice);
+    });
+
+    it("preserves absolute prices across full round-trip", () => {
+      // Test various price points
+      const testCases = [
+        { base: 10000, target: 12000 },
+        { base: 598500, target: 600000 },
+        { base: 398500, target: 400000 },
+        { base: 25000, target: 27500 },
+        { base: 100000, target: 115000 },
+      ];
+
+      for (const { base, target } of testCases) {
+        const multiplier = computeMultiplier(target, base);
+        const reconstructed = toCents(applyMultiplier(base, multiplier));
+        expect(reconstructed).toBe(target);
+      }
     });
   });
 

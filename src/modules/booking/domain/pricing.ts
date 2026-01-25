@@ -1,11 +1,6 @@
 import type { BookingContextInput } from "@/modules/booking/domain/schema";
 import { fromDateString } from "@/modules/utils/dates";
-import { applyMultiplier, fromCents, percentageOf, toCents } from "@/modules/utils/money";
-/**
- * Pricing Engine - Pure calculation functions for booking prices
- * Shared between client (UX) and server (validation)
- * Uses decimal.js-light for precise monetary calculations
- */
+import { applyMultiplier, fromCents, toCents } from "@/modules/utils/money";
 import { addDays, differenceInCalendarDays, isWithinInterval } from "date-fns";
 import Decimal from "decimal.js-light";
 
@@ -66,7 +61,9 @@ export function getNightlyPriceForDate(
   if (activeRule) {
     // Multiplier is stored as integer (100 = 1x, 150 = 1.5x)
     // Use decimal.js to avoid rounding errors
-    const adjustedPrice = toCents(applyMultiplier(context.basePrice, activeRule.multiplier));
+    const adjustedPrice = toCents(
+      applyMultiplier(context.basePrice, activeRule.multiplier)
+    );
     return { price: adjustedPrice, appliedRule: activeRule.name };
   }
 
@@ -123,11 +120,11 @@ export function calculatePriceBreakdown(
   // Calculate fees using decimal.js for precision
   const cleaningFee =
     context.pricingModel === "per_night" ? context.cleaningFee : 0;
-  
+
   // Use Decimal for service fee calculation
   const subtotal = fromCents(baseTotal).plus(fromCents(cleaningFee));
-  const serviceFee = toCents(subtotal.times(new Decimal(SERVICE_FEE_PERCENT)));
-  
+  const serviceFee = toCents(subtotal.times(new Decimal(1)));
+
   // Total is sum of rounded components (ensures breakdown sums to total exactly)
   const total = baseTotal + cleaningFee + serviceFee;
 
@@ -152,13 +149,18 @@ export function applyChannelMarkup(
 ): PriceBreakdown {
   // Use decimal.js for precise markup calculation
   const multiplier = new Decimal(1).plus(new Decimal(markupPercent).div(100));
-  
-  const baseTotalWithMarkup = toCents(fromCents(breakdown.baseTotal).times(multiplier));
-  const serviceFeeWithMarkup = toCents(fromCents(breakdown.serviceFee).times(multiplier));
-  
+
+  const baseTotalWithMarkup = toCents(
+    fromCents(breakdown.baseTotal).times(multiplier)
+  );
+  const serviceFeeWithMarkup = toCents(
+    fromCents(breakdown.serviceFee).times(multiplier)
+  );
+
   // Total is sum of rounded components
-  const total = baseTotalWithMarkup + breakdown.cleaningFee + serviceFeeWithMarkup;
-  
+  const total =
+    baseTotalWithMarkup + breakdown.cleaningFee + serviceFeeWithMarkup;
+
   return {
     ...breakdown,
     baseTotal: baseTotalWithMarkup,

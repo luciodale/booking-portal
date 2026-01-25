@@ -2,6 +2,7 @@
 import { experienceCategoryLabels, getPriceInUnits } from '@/data/helpers';
 import { mockExperiences } from '@/data/mocks';
 import PageLayout from '@/layouts/PageLayout.astro';
+import { ExperienceListWithPricing } from '@/modules/experience/ui/ExperienceListWithPricing';
 import Button from '@/modules/ui/astro/Button.astro';
 import Heading from '@/modules/ui/astro/Heading.astro';
 import Hero from '@/modules/ui/astro/Hero.astro';
@@ -16,6 +17,8 @@ const experiences = mockExperiences.map(exp => ({
   duration: exp.duration ?? '',
   category: exp.category ? experienceCategoryLabels[exp.category] : 'Other',
 }));
+
+const experienceIds = experiences.map(e => e.id);
 
 const categories = ['All', 'Sailing', 'Food & Wine', 'Adventure', 'Culture'];
 ---
@@ -33,6 +36,13 @@ const categories = ['All', 'Sailing', 'Food & Wine', 'Adventure', 'Culture'];
     subtitle="Curated luxury experiences crafted by local experts. From private yacht tours to Michelin dining, elevate your journey."
     height="medium"
   />
+
+  <!-- Date Picker -->
+  <section class="border-b border-border/50 bg-card/50">
+    <div class="container mx-auto px-6 py-6">
+      <ExperienceListWithPricing client:load experienceIds={experienceIds} />
+    </div>
+  </section>
 
   <!-- Categories -->
   <section class="py-8 px-6 border-b border-border">
@@ -53,12 +63,13 @@ const categories = ['All', 'Sailing', 'Food & Wine', 'Adventure', 'Culture'];
   <!-- Experiences Grid -->
   <section class="py-16 px-6">
     <div class="container mx-auto">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="experience-grid">
         {experiences.map((exp, index) => (
           <a 
             href={`/experience/${exp.id}`}
-            class="group block rounded-2xl overflow-hidden bg-card card-hover animate-slide-up opacity-0"
+            class="group block rounded-2xl overflow-hidden bg-card card-hover animate-slide-up opacity-0 experience-card-wrapper"
             style={`animation-delay: ${0.1 + index * 0.1}s`}
+            data-experience-id={exp.id}
           >
             <!-- Image -->
             <div class="relative aspect-[4/3] overflow-hidden">
@@ -92,9 +103,8 @@ const categories = ['All', 'Sailing', 'Food & Wine', 'Adventure', 'Culture'];
                 <i data-lucide="map-pin" class="w-4 h-4"></i>
                 {exp.location}
               </p>
-              <div class="text-foreground">
-                <span class="text-xl font-bold">€{exp.price.toLocaleString()}</span>
-                <span class="text-muted-foreground text-sm"> / person</span>
+              <div class="text-foreground experience-price">
+                <span class="text-lg font-medium text-muted-foreground">Select dates for pricing</span>
               </div>
             </div>
           </a>
@@ -102,6 +112,39 @@ const categories = ['All', 'Sailing', 'Food & Wine', 'Adventure', 'Culture'];
       </div>
     </div>
   </section>
+
+  <script>
+    // Listen for price updates and update experience cards
+    window.addEventListener('pricesUpdated', ((event: CustomEvent) => {
+      const prices = event.detail.prices;
+      
+      document.querySelectorAll('.experience-card-wrapper').forEach((wrapper) => {
+        const experienceId = wrapper.getAttribute('data-experience-id');
+        if (!experienceId) return;
+        
+        const priceData = prices[experienceId];
+        const priceDiv = wrapper.querySelector('.experience-price');
+        
+        if (!priceDiv) return;
+        
+        if (priceData) {
+          // Show computed price (per person for experiences)
+          const currency = priceData.currency === 'eur' ? '€' : priceData.currency.toUpperCase();
+          const displayPrice = (priceData.computedPrice / 100).toLocaleString();
+          
+          priceDiv.innerHTML = `
+            <span class="text-xl font-bold">${currency}${displayPrice}</span>
+            <span class="text-muted-foreground text-sm"> / person</span>
+          `;
+        } else {
+          // Show placeholder
+          priceDiv.innerHTML = `
+            <span class="text-lg font-medium text-muted-foreground">Select dates for pricing</span>
+          `;
+        }
+      });
+    }) as EventListener);
+  </script>
 
   <!-- CTA -->
   <section class="py-20 px-6 bg-card text-center">

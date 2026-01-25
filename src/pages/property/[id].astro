@@ -8,7 +8,7 @@ import { getPricingRulesByAssetId } from '@/data/helpers';
 import type { BookingContext } from '@/modules/booking/domain/pricing';
 // React island components for interactive booking
 import BookingInitializer from '@/modules/booking/ui/BookingInitializer';
-import DateRangePicker from '@/modules/booking/ui/DateRangePicker';
+import { DateRangePicker } from '@/modules/booking/ui/DateRangePicker';
 import GuestSelector from '@/modules/booking/ui/GuestSelector';
 import PriceBreakdown from '@/modules/booking/ui/PriceBreakdown';
 import ReserveButton from '@/modules/booking/ui/ReserveButton';
@@ -229,11 +229,10 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
           
           <div class="sticky top-28">
             <div class="p-7 rounded-2xl bg-card border border-border">
-              <!-- Price -->
+              <!-- Price - Hidden until dates selected, shown in breakdown below -->
               <div class="mb-8">
-                <div class="flex items-baseline gap-2">
-                  <span class="text-3xl font-bold text-foreground">{property.currency} {property.price.toLocaleString()}</span>
-                  <span class="text-muted-foreground">/ night</span>
+                <div class="text-sm text-muted-foreground">
+                  Select dates below to see pricing
                 </div>
               </div>
               
@@ -330,17 +329,9 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
                 </p>
                 <div class="flex items-center justify-between">
                   <div>
-                    {exp.discountPercent > 0 ? (
-                      <div class="flex items-center gap-2">
-                        <span class="text-xl font-bold text-foreground">€{Math.round(exp.price * (1 - exp.discountPercent / 100)).toLocaleString()}</span>
-                        <span class="text-sm text-muted-foreground line-through">€{exp.price.toLocaleString()}</span>
-                      </div>
-                    ) : (
-                      <span class="text-xl font-bold text-foreground">€{exp.price.toLocaleString()}</span>
-                    )}
-                    <span class="text-muted-foreground text-sm"> / person</span>
+                    <span class="text-sm text-muted-foreground">Available as add-on</span>
                   </div>
-                  <button class="btn-secondary text-sm py-2 px-4">Add</button>
+                  <button class="btn-secondary text-sm py-2 px-4">View Details</button>
                 </div>
               </div>
             </div>
