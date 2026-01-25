@@ -1,0 +1,38 @@
+# Cursor-specific ignore file
+# Prevents Cursor from indexing these files/folders
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.astro/
+
+# Wrangler local dev
+.wrangler/
+
+# Generated temp files (safe to delete after each run)
+.seed.sql
+.image-manifest.json
+.check-data.sql
+.remote-teardown.sql
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# Migration files (schema-only, don't need in context)
+drizzle/
+
+# Test outputs
+playwright-report/
+test-results/
+
+# Lock files
+bun.lockb
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+

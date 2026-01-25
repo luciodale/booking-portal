@@ -1,0 +1,14 @@
+DELETE FROM reviews;
+DELETE FROM favorites;
+DELETE FROM bookings;
+DELETE FROM channel_markups;
+DELETE FROM asset_experiences;
+DELETE FROM experience_images;
+DELETE FROM images;
+DELETE FROM pricing_rules;
+DELETE FROM availabilities;
+DELETE FROM assets;
+DELETE FROM experiences;
+DELETE FROM brokers;
+DELETE FROM users;
+DELETE FROM channels;
