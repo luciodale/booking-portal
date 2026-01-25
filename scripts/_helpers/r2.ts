@@ -7,8 +7,8 @@ import { $ } from "bun";
 import { join } from "node:path";
 
 const BUCKET_NAME = "booking-portal-images";
-const BATCH_SIZE = 5;
-const BATCH_DELAY_MS = 500;
+const MAX_CONCURRENCY = 3; // Lower concurrency to prevent process exhaustion
+const MAX_RETRIES = 3;
 
 export type ImageManifestEntry = {
   r2Key: string;
@@ -46,45 +46,10 @@ async function fetchRemoteImage(url: string): Promise<ArrayBuffer> {
   return response.arrayBuffer();
 }
 
-async function checkR2ObjectExists(key: string, mode: Mode): Promise<boolean> {
-  try {
-    const args =
-      mode === "local"
-        ? [
-            "wrangler",
-            "r2",
-            "object",
-            "get",
-            `${BUCKET_NAME}/${key}`,
-            "--local",
-          ]
-        : [
-            "wrangler",
-            "r2",
-            "object",
-            "get",
-            `${BUCKET_NAME}/${key}`,
-            "--remote",
-          ];
-
-    const proc = Bun.spawn(["bunx", ...args], {
-      stdin: "ignore",
-      stdout: "ignore",
-      stderr: "ignore",
-    });
-
-    // Add timeout
-    const timeoutPromise = new Promise<number>((_, reject) => {
-      setTimeout(() => reject(new Error("Timeout after 10s")), 10000);
-    });
-
-    const exitCode = await Promise.race([proc.exited, timeoutPromise]);
-    return exitCode === 0;
-  } catch {
-    return false;
-  }
-}
-
+/**
+ * Uploads a single file to R2 via Wrangler CLI
+ * Includes internal retry logic and temp file cleanup
+ */
 async function uploadToR2(
   key: string,
   data: ArrayBuffer,
@@ -97,45 +62,40 @@ async function uploadToR2(
     `.tmp-${Date.now()}-${Math.random().toString(36).slice(2)}`
   );
 
+  // Write temp file once
   await Bun.write(tempFile, data);
 
+  const modeFlag = mode === "local" ? "--local" : "--remote";
+  let lastError: Error | unknown;
+
   try {
-    const args =
-      mode === "local"
-        ? [
-            "wrangler",
-            "r2",
-            "object",
-            "put",
-            `${BUCKET_NAME}/${key}`,
-            `--file=${tempFile}`,
-            `--content-type=${contentType}`,
-            "--local",
-          ]
-        : [
-            "wrangler",
-            "r2",
-            "object",
-            "put",
-            `${BUCKET_NAME}/${key}`,
-            `--file=${tempFile}`,
-            `--content-type=${contentType}`,
-            "--remote",
-          ];
+    // Retry Loop
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        // Run quietly to prevent stdout spam, only catch errors
+        const result =
+          await $`bunx wrangler r2 object put ${BUCKET_NAME}/${key} --file=${tempFile} --content-type=${contentType} ${modeFlag}`.quiet();
 
-    const proc = Bun.spawn(["bunx", ...args], {
-      stdin: "ignore",
-      stdout: "pipe",
-      stderr: "pipe",
-    });
+        if (result.exitCode !== 0) {
+          throw new Error(result.stderr.toString() || "Unknown wrangler error");
+        }
 
-    const exitCode = await proc.exited;
-    if (exitCode !== 0) {
-      const stderr = await new Response(proc.stderr).text();
-      throw new Error(`Upload failed: ${stderr}`);
+        return; // Success!
+      } catch (err) {
+        lastError = err;
+        if (attempt < MAX_RETRIES) {
+          // Exponential backoff: 500ms, 1000ms, 2000ms
+          await new Promise((r) =>
+            setTimeout(r, 500 * Math.pow(2, attempt - 1))
+          );
+        }
+      }
     }
+
+    // If we get here, all retries failed
+    throw lastError;
   } finally {
-    // Clean up temp file
+    // Always clean up temp file
     try {
       await $`rm -f ${tempFile}`.quiet();
     } catch {
@@ -154,19 +114,12 @@ async function processImage(
   const prefix = `[${index + 1}/${total}]`;
 
   try {
-    // Check if object already exists
-    const exists = await checkR2ObjectExists(entry.r2Key, mode);
-    if (exists) {
-      console.log(`${prefix} ⚠️  SKIPPED: ${entry.r2Key}`);
-      return true;
-    }
-
-    // Get image data
+    // 1. Get image data
     const data = entry.isRemote
       ? await fetchRemoteImage(entry.sourcePath)
       : await readLocalFile(entry.sourcePath, rootDir);
 
-    // Upload to R2
+    // 2. Upload to R2 (with retries handled inside)
     await uploadToR2(entry.r2Key, data, entry.contentType, mode, rootDir);
 
     const icon = entry.isRemote ? "🌐" : "📁";
@@ -175,9 +128,48 @@ async function processImage(
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     console.log(`${prefix} ❌ FAILED: ${entry.r2Key}`);
-    console.log(`  Error: ${msg}`);
+    console.log(`       Error: ${msg}`);
     return false;
   }
+}
+
+/**
+ * Concurrency Queue Runner
+ * limits the number of active promises to MAX_CONCURRENCY
+ */
+async function runWithConcurrency<T>(
+  items: T[],
+  fn: (item: T, index: number) => Promise<boolean>
+): Promise<{ success: number; failed: number }> {
+  let success = 0;
+  let failed = 0;
+  let index = 0;
+
+  const executing = new Set<Promise<void>>();
+
+  for (const item of items) {
+    const currentIndex = index++;
+
+    // Wrap the execution
+    const p = fn(item, currentIndex).then((result) => {
+      if (result) success++;
+      else failed++;
+      // Remove self from executing set
+      executing.delete(p);
+    });
+
+    executing.add(p);
+
+    // If we hit limits, wait for one to finish
+    if (executing.size >= MAX_CONCURRENCY) {
+      await Promise.race(executing);
+    }
+  }
+
+  // Wait for the rest
+  await Promise.all(executing);
+
+  return { success, failed };
 }
 
 export async function seedImages(
@@ -189,60 +181,29 @@ export async function seedImages(
   const total = allImages.length;
 
   console.log(`\n📤 Uploading ${total} images to R2 (${mode})...`);
+  console.log(`   Concurrency: ${MAX_CONCURRENCY}`);
 
-  let success = 0;
-  let failed = 0;
+  // Use sequential for local (SQLite locking issues) or limited concurrent for remote
+  const effectiveConcurrency = mode === "local" ? 1 : MAX_CONCURRENCY;
 
-  // Process in batches with delays
-  for (let i = 0; i < allImages.length; i += BATCH_SIZE) {
-    const batch = allImages.slice(i, i + BATCH_SIZE);
-    const batchNum = Math.floor(i / BATCH_SIZE) + 1;
-    const totalBatches = Math.ceil(allImages.length / BATCH_SIZE);
-
-    console.log(`\n🔄 Batch ${batchNum}/${totalBatches}`);
-
-    for (let j = 0; j < batch.length; j++) {
-      const imageIndex = i + j;
-
-      try {
-        const result = await processImage(
-          batch[j],
-          mode,
-          imageIndex,
-          total,
-          rootDir
-        );
-        if (result) {
-          success++;
-        } else {
-          failed++;
-        }
-      } catch (error) {
-        console.error("  Unexpected error:", error);
-        failed++;
-      }
-    }
-
-    // Add delay between batches (except after the last batch)
-    if (i + BATCH_SIZE < allImages.length) {
-      await Bun.sleep(BATCH_DELAY_MS);
-    }
-  }
+  // Manual concurrency loop
+  const results = await runWithConcurrency(allImages, (entry, idx) =>
+    processImage(entry, mode, idx, total, rootDir)
+  );
 
   console.log(`\n${"=".repeat(40)}`);
   console.log("📊 Summary:");
-  console.log(`  ✅ Uploaded: ${success}`);
-  console.log(`  ❌ Failed: ${failed}`);
+  console.log(`  ✅ Uploaded: ${results.success}`);
+  console.log(`  ❌ Failed: ${results.failed}`);
   console.log("=".repeat(40));
 
-  if (failed > 0) {
-    throw new Error(`${failed} image(s) failed to upload`);
+  if (results.failed > 0) {
+    throw new Error(`${results.failed} image(s) failed to upload`);
   }
 }
 
 export async function loadManifest(rootDir: string): Promise<ImageManifest> {
   const manifestPath = join(rootDir, ".image-manifest.json");
-
   const manifestFile = Bun.file(manifestPath);
   const exists = await manifestFile.exists();
 
@@ -251,8 +212,5 @@ export async function loadManifest(rootDir: string): Promise<ImageManifest> {
     await $`bun run ${join(rootDir, "scripts/collect-images.ts")}`;
   }
 
-  const manifestData = await manifestFile.text();
-  const manifest = JSON.parse(manifestData);
-
-  return manifest;
+  return await manifestFile.json();
 }
