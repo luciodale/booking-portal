@@ -1,5 +1,7 @@
-import { DateRangePicker } from "@/modules/booking/ui/DateRangePicker";
-import type { DateRange } from "@/modules/pricing/domain/types";
+import {
+  type DateRange,
+  DateRangePicker,
+} from "@/modules/booking/ui/DateRangePicker";
 import { Calendar } from "lucide-react";
 import { useEffect, useState } from "react";
 

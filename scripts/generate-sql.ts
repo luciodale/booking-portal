@@ -10,12 +10,10 @@ import {
   type SeedBroker,
   type SeedExperience,
   type SeedImage,
-  type SeedPricingRule,
   assets,
   brokers,
   experiences,
   images,
-  pricingRules,
 } from "../seeds/data";
 
 const ROOT_DIR = join(import.meta.dir, "..");
@@ -39,8 +37,8 @@ VALUES (${escapeString(broker.id)}, ${escapeString(broker.clerkUserId)}, ${escap
 }
 
 function generateAssetInsert(asset: SeedAsset): string {
-  return `INSERT INTO assets (id, broker_id, tier, status, title, description, short_description, location, address, city, country, latitude, longitude, max_guests, bedrooms, bathrooms, sq_meters, amenities, views, highlights, video_url, pdf_asset_path, base_price, currency, cleaning_fee, instant_book, min_nights, max_nights, featured, sort_order)
-VALUES (${escapeString(asset.id)}, ${escapeString(asset.brokerId)}, ${escapeString(asset.tier)}, ${escapeString(asset.status)}, ${escapeString(asset.title)}, ${escapeString(asset.description)}, ${escapeString(asset.shortDescription)}, ${escapeString(asset.location)}, ${escapeString(asset.address)}, ${escapeString(asset.city)}, ${escapeString(asset.country)}, ${escapeString(asset.latitude)}, ${escapeString(asset.longitude)}, ${asset.maxGuests}, ${asset.bedrooms}, ${asset.bathrooms}, ${asset.sqMeters}, ${jsonArray(asset.amenities)}, ${jsonArray(asset.views)}, ${jsonArray(asset.highlights)}, ${escapeString(asset.videoUrl)}, ${escapeString(asset.pdfAssetPath)}, ${asset.basePrice}, ${escapeString(asset.currency)}, ${asset.cleaningFee}, ${boolToInt(asset.instantBook)}, ${asset.minNights}, ${asset.maxNights}, ${boolToInt(asset.featured)}, ${asset.sortOrder});`;
+  return `INSERT INTO assets (id, broker_id, tier, status, title, description, short_description, location, street, zip, city, country, latitude, longitude, max_occupancy, bedrooms, bathrooms, sq_meters, amenities, views, highlights, video_url, pdf_asset_path, instant_book, featured, sort_order)
+VALUES (${escapeString(asset.id)}, ${escapeString(asset.brokerId)}, ${escapeString(asset.tier)}, ${escapeString(asset.status)}, ${escapeString(asset.title)}, ${escapeString(asset.description)}, ${escapeString(asset.shortDescription)}, ${escapeString(asset.location)}, ${escapeString(asset.street)}, ${escapeString(asset.zip)}, ${escapeString(asset.city)}, ${escapeString(asset.country)}, ${escapeString(asset.latitude)}, ${escapeString(asset.longitude)}, ${asset.maxOccupancy}, ${asset.bedrooms}, ${asset.bathrooms}, ${asset.sqMeters}, ${jsonArray(asset.amenities)}, ${jsonArray(asset.views)}, ${jsonArray(asset.highlights)}, ${escapeString(asset.videoUrl)}, ${escapeString(asset.pdfAssetPath)}, ${boolToInt(asset.instantBook)}, ${boolToInt(asset.featured)}, ${asset.sortOrder});`;
 }
 
 function generateImageInsert(image: SeedImage): string {
@@ -53,15 +51,9 @@ function generateExperienceInsert(exp: SeedExperience): string {
 VALUES (${escapeString(exp.id)}, ${escapeString(exp.brokerId)}, ${escapeString(exp.title)}, ${escapeString(exp.description)}, ${escapeString(exp.shortDescription)}, ${escapeString(exp.location)}, ${escapeString(exp.city)}, ${escapeString(exp.country)}, ${escapeString(exp.category)}, ${escapeString(exp.duration)}, ${exp.maxParticipants}, ${exp.basePrice}, ${escapeString(exp.currency)}, ${escapeString(exp.imageUrl)}, ${escapeString(exp.status)}, ${boolToInt(exp.featured)});`;
 }
 
-function generatePricingRuleInsert(rule: SeedPricingRule): string {
-  return `INSERT INTO pricing_rules (id, asset_id, name, start_date, end_date, multiplier, min_nights, priority, active)
-VALUES (${escapeString(rule.id)}, ${escapeString(rule.assetId)}, ${escapeString(rule.name)}, ${escapeString(rule.startDate)}, ${escapeString(rule.endDate)}, ${rule.multiplier}, ${rule.minNights === null ? "NULL" : rule.minNights}, ${rule.priority}, ${boolToInt(rule.active)});`;
-}
-
 function generateDeleteStatements(): string {
   // Delete in reverse order of dependencies
   return `-- Clean existing data
-DELETE FROM pricing_rules;
 DELETE FROM images;
 DELETE FROM experiences;
 DELETE FROM assets;
@@ -106,13 +98,6 @@ function generateSQL(): string {
   for (const exp of experiences) {
     lines.push(generateExperienceInsert(exp));
   }
-  lines.push("");
-
-  // Insert pricing rules
-  lines.push("-- Pricing Rules");
-  for (const rule of pricingRules) {
-    lines.push(generatePricingRuleInsert(rule));
-  }
 
   return lines.join("\n");
 }
@@ -130,7 +115,6 @@ async function main() {
   console.log(`  Assets: ${assets.length}`);
   console.log(`  Images: ${images.length}`);
   console.log(`  Experiences: ${experiences.length}`);
-  console.log(`  Pricing Rules: ${pricingRules.length}`);
   console.log("\n✅ SQL written to .seed.sql");
 
   // Also output to stdout for piping

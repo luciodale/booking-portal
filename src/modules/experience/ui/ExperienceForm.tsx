@@ -2,17 +2,17 @@
  * ExperienceForm - Create/Edit form for experiences
  */
 
-import type { CreateExperienceInput } from "@/modules/experience/domain/schema";
-import { createExperienceSchema } from "@/modules/experience/domain/schema";
 import {
   FormSection,
   ImagesInput,
   type NewImage,
   NumberInput,
   SelectInput,
-  TextareaInput,
   TextInput,
+  TextareaInput,
 } from "@/modules/shared/forms";
+import type { CreateExperienceInput } from "@/schemas";
+import { createExperienceSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -227,4 +227,3 @@ export function ExperienceForm({
     </form>
   );
 }
-

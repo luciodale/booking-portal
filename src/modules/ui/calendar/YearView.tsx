@@ -1,17 +1,14 @@
-import type {
-  CalendarViewProps,
-  PricingPeriod,
-} from "@/modules/pricing/domain/types";
+import { cn } from "@/modules/utils/cn";
+import { useState } from "react";
+import { NavButton } from "./NavButton";
+import type { CalendarViewProps, PricingPeriod } from "./domain/types";
+import { useRangeSelection } from "./useRangeSelection";
 import {
   formatPriceShort,
   getEffectivePriceForDate,
   getMonthDays,
   isInPricingPeriod,
-} from "@/modules/pricing/utils/calendar-utils";
-import { cn } from "@/modules/utils/cn";
-import { useState } from "react";
-import { NavButton } from "./NavButton";
-import { useRangeSelection } from "./useRangeSelection";
+} from "./utils/calendar-utils";
 
 const MONTH_NAMES = [
   "January",

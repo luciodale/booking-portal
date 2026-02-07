@@ -3,9 +3,12 @@
  * Displays all properties with search and filtering
  */
 
-import { cn } from "@/modules/utils/cn";
-import { useDeleteProperty, useProperties } from "@/modules/property/hooks/queries";
+import {
+  useDeleteProperty,
+  useProperties,
+} from "@/modules/property/hooks/queries";
 import { Select } from "@/modules/ui/Select";
+import { cn } from "@/modules/utils/cn";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -99,9 +102,6 @@ export function PropertyList() {
               <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Price
-              </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 Actions
               </th>
@@ -111,7 +111,7 @@ export function PropertyList() {
             {isLoading ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={5}
                   className="px-6 py-12 text-center text-muted-foreground"
                 >
                   Loading properties...
@@ -120,7 +120,7 @@ export function PropertyList() {
             ) : !data || data.properties.length === 0 ? (
               <tr>
                 <td
-                  colSpan={6}
+                  colSpan={5}
                   className="px-6 py-12 text-center text-muted-foreground"
                 >
                   No properties found. Create your first property to get
@@ -147,7 +147,8 @@ export function PropertyList() {
                           {property.title}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {property.bedrooms} bed • {property.maxGuests} guests
+                          {property.bedrooms} bed •{" "}
+                          {property.maxOccupancy ?? "N/A"} guests
                         </div>
                       </div>
                     </div>
@@ -181,9 +182,6 @@ export function PropertyList() {
                       {property.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                    €{(property.basePrice / 100).toFixed(0)} / night
-                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <Link
                       to="/properties/$id/edit"
@@ -191,13 +189,6 @@ export function PropertyList() {
                       className="text-primary hover:text-primary-hover mr-4 transition-colors"
                     >
                       Edit
-                    </Link>
-                    <Link
-                      to="/properties/$id/pricing"
-                      params={{ id: property.id }}
-                      className="text-primary hover:text-primary-hover mr-4 transition-colors"
-                    >
-                      Pricing
                     </Link>
                     <button
                       type="button"

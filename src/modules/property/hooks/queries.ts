@@ -4,14 +4,14 @@
  */
 
 import { imageApi, propertyApi } from "@/modules/api-client/client";
+import { showSuccess } from "@/modules/shared/notificationStore";
 import type {
   CreatePropertyRequest,
   PropertyListResponse,
   PropertyResponse,
   UpdatePropertyRequest,
   UploadImagesResponse,
-} from "@/modules/api-client/types";
-import { showSuccess } from "@/modules/shared/notificationStore";
+} from "@/schemas";
 import {
   type UseMutationOptions,
   type UseQueryOptions,

@@ -9,18 +9,37 @@ import {
   setDateRange as setStoreRange,
 } from "@/modules/booking/store/bookingStore";
 import {
-  buildRangeFromClick,
   getMonthDays,
   isSameDay,
-} from "@/modules/pricing/utils/calendar-utils";
+} from "@/modules/ui/calendar/utils/calendar-utils";
 import { cn } from "@/modules/utils/cn";
 import { useStore } from "@nanostores/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
-interface DateRange {
+export interface DateRange {
   from: Date | undefined;
   to?: Date | undefined;
+}
+
+/**
+ * Compute next range from a day click
+ */
+function buildRangeFromClick(
+  date: Date,
+  currentRange?: DateRange
+): DateRange | undefined {
+  if (!currentRange?.from) {
+    return { from: date };
+  }
+  if (!currentRange.to) {
+    const from = currentRange.from;
+    if (date < from) {
+      return { from: date, to: from };
+    }
+    return { from, to: date };
+  }
+  return { from: date };
 }
 
 type DateRangePickerProps = {

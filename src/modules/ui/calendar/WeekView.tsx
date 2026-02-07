@@ -1,13 +1,13 @@
-import type { CalendarViewProps } from "@/modules/pricing/domain/types";
+import { cn } from "@/modules/utils/cn";
+import { useState } from "react";
+import { NavButton } from "./NavButton";
+import type { CalendarViewProps } from "./domain/types";
+import { getDayClassName, useRangeSelection } from "./useRangeSelection";
 import {
   formatPriceShort,
   getEffectivePriceForDate,
   getWeekDays,
-} from "@/modules/pricing/utils/calendar-utils";
-import { cn } from "@/modules/utils/cn";
-import { useState } from "react";
-import { NavButton } from "./NavButton";
-import { getDayClassName, useRangeSelection } from "./useRangeSelection";
+} from "./utils/calendar-utils";
 
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 

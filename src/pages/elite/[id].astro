@@ -1,5 +1,5 @@
 ---
-import { experienceCategoryLabels, getLinkedExperiences, getPriceInUnits, getPricingRulesByAssetId } from '@/data/helpers';
+import { experienceCategoryLabels, getLinkedExperiences, getPriceInUnits } from '@/data/helpers';
 import { assets, getDb, images } from "@/db";
 import PageLayout from '@/layouts/PageLayout.astro';
 import type { BookingContext } from '@/modules/booking/domain/pricing';
@@ -83,8 +83,6 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
 }));
 
 // Build Booking Context (Server-Side)
-const pricingRules = getPricingRulesByAssetId(asset.id);
-
 const bookingContext: BookingContext = {
   assetId: asset.id,
   pricingModel: 'per_night',
@@ -93,7 +91,6 @@ const bookingContext: BookingContext = {
   currency: asset.currency,
   maxGuests: asset.maxGuests ?? 2,
   minNights: asset.minNights ?? 1,
-  pricingRules,
 };
 ---
 

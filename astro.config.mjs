@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
-  output: "static",
+  output: "server",
   integrations: [react()],
   vite: {
     plugins: [tailwindcss()],

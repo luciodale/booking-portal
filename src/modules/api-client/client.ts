@@ -1,22 +1,25 @@
 /**
  * Type-Safe API Client
- * Uses single source of truth types from elite-schema
+ * Uses single source of truth types from centralized schemas
  * Provides typed fetch wrappers for all backoffice API endpoints
  */
 
 import type {
   ApiResponse,
-  CreateExperienceRequest,
-  CreatePricingRuleRequest,
-  CreatePropertyRequest,
   ExperienceListResponse,
-  ExperienceResponse,
   PropertyListResponse,
-  PropertyResponse,
-  UpdateExperienceRequest,
-  UpdatePropertyRequest,
   UploadImagesResponse,
-} from "@/modules/api-client/types";
+} from "@/schemas";
+import type {
+  CreateExperienceInput,
+  ExperienceWithDetails,
+  UpdateExperienceInput,
+} from "@/schemas/experience";
+import type {
+  CreatePropertyInput,
+  PropertyWithDetails,
+  UpdatePropertyInput,
+} from "@/schemas/property";
 
 /**
  * Base API error class
@@ -100,15 +103,15 @@ export const propertyApi = {
   /**
    * Fetch a single property by ID
    */
-  get: async (id: string): Promise<PropertyResponse> => {
-    return apiFetch<PropertyResponse>(`/api/backoffice/properties/${id}`);
+  get: async (id: string): Promise<PropertyWithDetails> => {
+    return apiFetch<PropertyWithDetails>(`/api/backoffice/properties/${id}`);
   },
 
   /**
    * Create a new property
    */
-  create: async (data: CreatePropertyRequest): Promise<PropertyResponse> => {
-    return apiFetch<PropertyResponse>("/api/backoffice/properties", {
+  create: async (data: CreatePropertyInput): Promise<PropertyWithDetails> => {
+    return apiFetch<PropertyWithDetails>("/api/backoffice/properties", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -119,9 +122,9 @@ export const propertyApi = {
    */
   update: async (
     id: string,
-    data: UpdatePropertyRequest
-  ): Promise<PropertyResponse> => {
-    return apiFetch<PropertyResponse>(`/api/backoffice/properties/${id}`, {
+    data: UpdatePropertyInput
+  ): Promise<PropertyWithDetails> => {
+    return apiFetch<PropertyWithDetails>(`/api/backoffice/properties/${id}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     });
@@ -164,15 +167,17 @@ export const experienceApi = {
   /**
    * Fetch a single experience by ID
    */
-  get: async (id: string): Promise<ExperienceResponse> => {
-    return apiFetch<ExperienceResponse>(`/api/backoffice/experiences/${id}`);
+  get: async (id: string): Promise<ExperienceWithDetails> => {
+    return apiFetch<ExperienceWithDetails>(`/api/backoffice/experiences/${id}`);
   },
 
   /**
    * Create a new experience
    */
-  create: async (data: CreateExperienceRequest): Promise<ExperienceResponse> => {
-    return apiFetch<ExperienceResponse>("/api/backoffice/experiences", {
+  create: async (
+    data: CreateExperienceInput
+  ): Promise<ExperienceWithDetails> => {
+    return apiFetch<ExperienceWithDetails>("/api/backoffice/experiences", {
       method: "POST",
       body: JSON.stringify(data),
     });
@@ -183,12 +188,15 @@ export const experienceApi = {
    */
   update: async (
     id: string,
-    data: UpdateExperienceRequest
-  ): Promise<ExperienceResponse> => {
-    return apiFetch<ExperienceResponse>(`/api/backoffice/experiences/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    });
+    data: UpdateExperienceInput
+  ): Promise<ExperienceWithDetails> => {
+    return apiFetch<ExperienceWithDetails>(
+      `/api/backoffice/experiences/${id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }
+    );
   },
 
   /**
@@ -235,76 +243,5 @@ export const imageApi = {
       "/api/backoffice/upload-images",
       formData
     );
-  },
-};
-
-// ============================================================================
-// Pricing Rules API
-// ============================================================================
-
-export interface PricingRuleData {
-  id: string;
-  assetId: string;
-  name: string;
-  startDate: string;
-  endDate: string;
-  multiplier: number;
-  minNights: number | null;
-  priority: number;
-  active: boolean;
-  createdAt: string | null;
-}
-
-interface PricingRulesListResponse {
-  pricingRules: PricingRuleData[];
-}
-
-export interface UpdatePricingRuleRequest {
-  name?: string;
-  startDate?: string;
-  endDate?: string;
-  multiplier?: number;
-  minNights?: number | null;
-  priority?: number;
-}
-
-export const pricingRuleApi = {
-  /**
-   * Fetch all pricing rules for an asset
-   */
-  list: async (assetId: string): Promise<PricingRuleData[]> => {
-    const response = await apiFetch<PricingRulesListResponse>(
-      `/api/backoffice/pricing-rules?assetId=${encodeURIComponent(assetId)}`
-    );
-    return response.pricingRules;
-  },
-
-  /**
-   * Create a new pricing rule
-   */
-  create: async (data: CreatePricingRuleRequest): Promise<PricingRuleData> => {
-    return apiFetch<PricingRuleData>("/api/backoffice/pricing-rules", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-  },
-
-  /**
-   * Update an existing pricing rule
-   */
-  update: async (id: string, data: UpdatePricingRuleRequest): Promise<PricingRuleData> => {
-    return apiFetch<PricingRuleData>(`/api/backoffice/pricing-rules/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-    });
-  },
-
-  /**
-   * Delete a pricing rule
-   */
-  delete: async (id: string): Promise<void> => {
-    return apiFetch<void>(`/api/backoffice/pricing-rules/${id}`, {
-      method: "DELETE",
-    });
   },
 };

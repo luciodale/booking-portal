@@ -1,10 +1,7 @@
-import { computeNextRange } from "@/modules/pricing/domain/rangeSelection";
-import type { DateRange, PricingPeriod } from "@/modules/pricing/domain/types";
-import {
-  isInPricingPeriod,
-  isSameDay,
-} from "@/modules/pricing/utils/calendar-utils";
 import { cn } from "@/modules/utils/cn";
+import { computeNextRange } from "./domain/rangeSelection";
+import type { DateRange, PricingPeriod } from "./domain/types";
+import { isInPricingPeriod, isSameDay } from "./utils/calendar-utils";
 
 interface DayState {
   isSelected: boolean;

@@ -1,10 +1,9 @@
 /**
- * CreatePropertyForm - Create-only form with tier-aware fields
- * Elite properties show additional fields: videoUrl, pdfAssetPath
+ * CreatePropertyForm - Create property with Smoobu integration
+ * Step 1: Select Smoobu property
+ * Step 2+: Fill additional details (pre-populated from Smoobu)
  */
 
-import type { CreatePropertyInput } from "@/modules/property/domain/schema";
-import { createPropertySchema } from "@/modules/property/domain/schema";
 import {
   type FeatureFieldName,
   displayToKebab,
@@ -21,7 +20,12 @@ import {
   TextInput,
   TextareaInput,
 } from "@/modules/shared/forms";
+import { SmoobuPropertySelector } from "@/modules/smoobu/ui/SmoobuPropertySelector";
+import type { CreatePropertyInput } from "@/schemas";
+import { createPropertySchema } from "@/schemas";
+import type { SmoobuApartmentDetails } from "@/schemas/smoobu";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -62,14 +66,16 @@ export function CreatePropertyForm({
   onSubmit,
   isLoading = false,
 }: CreatePropertyFormProps) {
-  const { control, handleSubmit, formState, setValue, watch } =
+  const [selectedSmoobuId, setSelectedSmoobuId] = useState<number | null>(null);
+  const [showForm, setShowForm] = useState(false);
+
+  const { control, handleSubmit, formState, setValue, watch, reset } =
     useForm<CreatePropertyFormData>({
       resolver: zodResolver(formSchema),
       defaultValues: {
         brokerId: "broker-001", // TODO: Get from auth context
         tier: "elite",
         status: "draft",
-        currency: "eur",
         amenities: [],
         highlights: [],
         views: [],
@@ -85,7 +91,50 @@ export function CreatePropertyForm({
 
   const isElite = tier === "elite";
 
-  // Synced change handler - applies pure sync logic and updates form
+  // Handle Smoobu property selection - pre-populate form
+  const handleSmoobuSelect = (
+    apartmentId: number,
+    details: SmoobuApartmentDetails
+  ) => {
+    setSelectedSmoobuId(apartmentId);
+
+    // Pre-populate form with Smoobu data
+    setValue("smoobuPropertyId", apartmentId);
+    setValue(
+      "location",
+      `${details.location.city}, ${details.location.country}`
+    );
+    setValue("street", details.location.street);
+    setValue("zip", details.location.zip);
+    setValue("city", details.location.city);
+    setValue("country", details.location.country);
+    setValue("latitude", details.location.latitude);
+    setValue("longitude", details.location.longitude);
+
+    // Room details
+    setValue("maxOccupancy", details.rooms.maxOccupancy);
+    setValue("bedrooms", details.rooms.bedrooms);
+    setValue("bathrooms", details.rooms.bathrooms);
+    setValue("doubleBeds", details.rooms.doubleBeds);
+    setValue("singleBeds", details.rooms.singleBeds);
+    setValue("sofaBeds", details.rooms.sofaBeds);
+    setValue("couches", details.rooms.couches);
+    setValue("childBeds", details.rooms.childBeds);
+    setValue("queenSizeBeds", details.rooms.queenSizeBeds);
+    setValue("kingSizeBeds", details.rooms.kingSizeBeds);
+
+    // Pre-fill amenities from Smoobu equipments
+    if (details.equipments && details.equipments.length > 0) {
+      const kebabAmenities = details.equipments.map((eq) =>
+        eq.toLowerCase().replace(/\s+/g, "-")
+      );
+      setValue("amenities", kebabAmenities);
+    }
+
+    setShowForm(true);
+  };
+
+  // Synced change handler for amenities/highlights/views
   const handleSyncedChange = (
     fieldName: FeatureFieldName,
     newValue: string[]
@@ -107,11 +156,43 @@ export function CreatePropertyForm({
     }
   };
 
+  // Step 1: Smoobu Property Selection
+  if (!showForm) {
+    return (
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground mb-2">
+            Create Property
+          </h2>
+          <p className="text-muted-foreground">
+            Select a property from Smoobu to import its details.
+          </p>
+        </div>
+
+        <SmoobuPropertySelector
+          onSelect={handleSmoobuSelect}
+          isLoading={isLoading}
+        />
+      </div>
+    );
+  }
+
+  // Step 2+: Property Form (pre-populated)
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="max-w-4xl mx-auto space-y-8"
     >
+      {/* Success Banner */}
+      <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+        <p className="text-sm text-foreground">
+          ✓ Smoobu property selected (ID: {selectedSmoobuId})
+        </p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Complete the form below with additional details for your listing.
+        </p>
+      </div>
+
       {/* Property Tier */}
       <FormSection title="Property Type">
         <SelectInput
@@ -127,11 +208,6 @@ export function CreatePropertyForm({
             { value: "standard", label: "Standard - Regular vacation rentals" },
           ]}
         />
-        <p className="text-sm text-muted-foreground -mt-2">
-          {isElite
-            ? "Elite properties include video and PDF flyer options."
-            : "Standard properties have streamlined fields for quick setup."}
-        </p>
       </FormSection>
 
       {/* Basic Information */}
@@ -165,7 +241,7 @@ export function CreatePropertyForm({
         />
       </FormSection>
 
-      {/* Location */}
+      {/* Location (pre-filled from Smoobu) */}
       <FormSection title="Location">
         <TextInput
           name="location"
@@ -191,21 +267,42 @@ export function CreatePropertyForm({
         </div>
 
         <TextInput
-          name="address"
+          name="street"
           control={control}
-          label="Full Address"
-          placeholder="Via Cristoforo Colombo 12, 84011 Amalfi SA"
+          label="Street Address"
+          placeholder="Via Cristoforo Colombo 12"
+        />
+
+        <div className="grid grid-cols-2 gap-4">
+          <TextInput
+            name="zip"
+            control={control}
+            label="ZIP Code"
+            placeholder="84011"
+          />
+          <TextInput
+            name="latitude"
+            control={control}
+            label="Latitude"
+            placeholder="40.6331"
+          />
+        </div>
+
+        <TextInput
+          name="longitude"
+          control={control}
+          label="Longitude"
+          placeholder="14.6028"
         />
       </FormSection>
 
-      {/* Property Details */}
+      {/* Property Details (pre-filled from Smoobu) */}
       <FormSection title="Property Details">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <NumberInput
-            name="maxGuests"
+            name="maxOccupancy"
             control={control}
-            label="Max Guests"
-            required
+            label="Max Occupancy"
             min={1}
             max={50}
           />
@@ -223,28 +320,76 @@ export function CreatePropertyForm({
             min={0}
             max={20}
           />
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <NumberInput
-            name="sqMeters"
+            name="doubleBeds"
             control={control}
-            label="Size (m²)"
-            min={10}
+            label="Double Beds"
+            min={0}
+          />
+          <NumberInput
+            name="singleBeds"
+            control={control}
+            label="Single Beds"
+            min={0}
+          />
+          <NumberInput
+            name="queenSizeBeds"
+            control={control}
+            label="Queen Beds"
+            min={0}
+          />
+          <NumberInput
+            name="kingSizeBeds"
+            control={control}
+            label="King Beds"
+            min={0}
           />
         </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <NumberInput
+            name="sofaBeds"
+            control={control}
+            label="Sofa Beds"
+            min={0}
+          />
+          <NumberInput
+            name="couches"
+            control={control}
+            label="Couches"
+            min={0}
+          />
+          <NumberInput
+            name="childBeds"
+            control={control}
+            label="Child Beds"
+            min={0}
+          />
+        </div>
+
+        <NumberInput
+          name="sqMeters"
+          control={control}
+          label="Size (m²)"
+          min={10}
+        />
       </FormSection>
 
-      {/* Features & Amenities (synced group) */}
+      {/* Features & Amenities (amenities pre-filled from Smoobu) */}
       <FormSection title="Features & Amenities">
         <p className="text-sm text-muted-foreground mb-4">
-          Items are unique across all categories - adding to one removes from
-          others
+          Amenities pre-filled from Smoobu. Items are unique across all
+          categories.
         </p>
 
         <TagsInput
           name="amenities"
           control={control}
           label="Property Amenities"
-          required
-          description="Select all amenities available"
+          description="Pre-filled from Smoobu - you can add more"
           options={getFacilityOptions("amenity")}
           onChangeOverride={(newValue) =>
             handleSyncedChange("amenities", newValue)
@@ -293,56 +438,12 @@ export function CreatePropertyForm({
         />
       </FormSection>
 
-      {/* Pricing */}
-      <FormSection title="Pricing">
-        <div className="grid grid-cols-2 gap-4">
-          <NumberInput
-            name="basePrice"
-            control={control}
-            label="Base Price (cents)"
-            required
-            description="Price in cents per night (e.g., 250000 = €2,500/night)"
-            min={100}
-          />
-          <NumberInput
-            name="cleaningFee"
-            control={control}
-            label="Cleaning Fee (cents)"
-            description="One-time cleaning fee in cents"
-            min={0}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <NumberInput
-            name="minNights"
-            control={control}
-            label="Minimum Nights"
-            min={1}
-          />
-          <NumberInput
-            name="maxNights"
-            control={control}
-            label="Maximum Nights"
-            min={1}
-          />
-        </div>
-
-        <SelectInput
-          name="currency"
-          control={control}
-          label="Currency"
-          required
-          options={[
-            { value: "eur", label: "EUR (€)" },
-            { value: "usd", label: "USD ($)" },
-            { value: "gbp", label: "GBP (£)" },
-          ]}
-        />
-      </FormSection>
-
       {/* Images */}
       <FormSection title="Property Images">
+        <p className="text-sm text-muted-foreground mb-4">
+          Upload high-quality images of your property. The first image will be
+          the primary display image.
+        </p>
         <ImagesInput
           images={images}
           onChange={(newImages) => setValue("images", newImages)}
@@ -376,9 +477,12 @@ export function CreatePropertyForm({
         <button
           type="button"
           className="btn-secondary"
-          onClick={() => window.history.back()}
+          onClick={() => {
+            setShowForm(false);
+            reset();
+          }}
         >
-          Cancel
+          Back to Selection
         </button>
 
         <button
@@ -394,9 +498,16 @@ export function CreatePropertyForm({
 
       {formState.errors && Object.keys(formState.errors).length > 0 && (
         <div className="bg-error/10 border border-error/20 rounded-lg p-4">
-          <p className="text-sm text-error font-medium">
-            Please fix the errors above before submitting.
+          <p className="text-sm text-error font-medium mb-2">
+            Please fix the errors above before submitting:
           </p>
+          <ul className="text-xs text-error space-y-1 list-disc list-inside">
+            {Object.entries(formState.errors).map(([key, error]) => (
+              <li key={key}>
+                {key}: {error?.message?.toString()}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </form>

@@ -3,8 +3,8 @@ import {
   type PriceBreakdown,
   calculatePriceBreakdown,
 } from "@/modules/booking/domain/pricing";
-import { createBookingSchema } from "@/modules/booking/domain/schema";
 import { toDateString } from "@/modules/utils/dates";
+import { createBookingSchema } from "@/schemas";
 /**
  * Booking Store - Context-aware reactive state for booking flow
  * Uses nanostores for cross-framework reactivity (React islands in Astro)
@@ -236,6 +236,5 @@ export function initializeBooking(config: {
     currency: config.currency,
     maxGuests: config.maxGuests,
     minNights: 1,
-    pricingRules: [],
   });
 }

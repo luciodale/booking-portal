@@ -4,17 +4,11 @@
  */
 
 import { experienceImages, experiences, getDb } from "@/db";
-import type {
-  ExperienceListResponse,
-  ExperienceResponse,
-} from "@/modules/api-client/types";
 import { requireAdmin } from "@/modules/auth/auth";
-import {
-  createExperienceSchema,
-  updateExperienceSchema,
-} from "@/modules/experience/domain/schema";
 import { generateImageUrl } from "@/modules/storage/r2-helpers";
 import { genUniqueId } from "@/modules/utils/id";
+import type { ExperienceListResponse, ExperienceResponse } from "@/schemas";
+import { createExperienceSchema, updateExperienceSchema } from "@/schemas";
 import type { APIRoute } from "astro";
 import { and, desc, eq, like, or } from "drizzle-orm";
 

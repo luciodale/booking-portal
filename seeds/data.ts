@@ -8,7 +8,6 @@ import type {
   NewBroker,
   NewExperience,
   NewImage,
-  NewPricingRule,
 } from "../src/db/schema";
 
 // Seed types extend schema insert types with seed-specific fields
@@ -27,44 +26,37 @@ export type SeedBroker = Required<
 >;
 
 export type SeedAsset = Required<
-  Omit<
-    Pick<
-      NewAsset,
-      | "id"
-      | "brokerId"
-      | "tier"
-      | "status"
-      | "title"
-      | "description"
-      | "shortDescription"
-      | "location"
-      | "address"
-      | "city"
-      | "country"
-      | "latitude"
-      | "longitude"
-      | "maxGuests"
-      | "bedrooms"
-      | "bathrooms"
-      | "sqMeters"
-      | "videoUrl"
-      | "pdfAssetPath"
-      | "basePrice"
-      | "currency"
-      | "cleaningFee"
-      | "instantBook"
-      | "minNights"
-      | "maxNights"
-      | "featured"
-      | "sortOrder"
-    >,
-    never
-  > & {
-    amenities: string[];
-    views: string[];
-    highlights: string[];
-  }
->;
+  Pick<
+    NewAsset,
+    | "id"
+    | "brokerId"
+    | "tier"
+    | "status"
+    | "title"
+    | "description"
+    | "shortDescription"
+    | "location"
+    | "street"
+    | "zip"
+    | "city"
+    | "country"
+    | "latitude"
+    | "longitude"
+    | "maxOccupancy"
+    | "bedrooms"
+    | "bathrooms"
+    | "sqMeters"
+    | "videoUrl"
+    | "pdfAssetPath"
+    | "instantBook"
+    | "featured"
+    | "sortOrder"
+  >
+> & {
+  amenities: string[];
+  views: string[];
+  highlights: string[];
+};
 
 export type SeedImage = Required<
   Pick<NewImage, "id" | "assetId" | "r2Key" | "alt" | "isPrimary" | "order">
@@ -95,27 +87,11 @@ export type SeedExperience = Required<
   >
 >;
 
-export type SeedPricingRule = Required<
-  Pick<
-    NewPricingRule,
-    | "id"
-    | "assetId"
-    | "name"
-    | "startDate"
-    | "endDate"
-    | "multiplier"
-    | "minNights"
-    | "priority"
-    | "active"
-  >
->;
-
 export type SeedData = {
   brokers: SeedBroker[];
   assets: SeedAsset[];
   images: SeedImage[];
   experiences: SeedExperience[];
-  pricingRules: SeedPricingRule[];
 };
 
 // ============================================================================
@@ -158,12 +134,13 @@ The pool area is a great place to relax. It features a saltwater infinity pool, 
     shortDescription:
       "1200m² villa with 6 bedrooms, sea views, saltwater pool, spa, wine cellar in exclusive Sol de Mallorca",
     location: "Sol de Mallorca, Spain",
-    address: "Sol de Mallorca, 07180 Calvià, Balearic Islands, Spain",
+    street: "Sol de Mallorca",
+    zip: "07180",
     city: "Calvià",
     country: "Spain",
     latitude: "39.5144",
     longitude: "2.5136",
-    maxGuests: 12,
+    maxOccupancy: 12,
     bedrooms: 6,
     bathrooms: 6,
     sqMeters: 1200,
@@ -200,12 +177,7 @@ The pool area is a great place to relax. It features a saltwater infinity pool, 
     ],
     videoUrl: null,
     pdfAssetPath: null,
-    basePrice: 350000,
-    currency: "eur",
-    cleaningFee: 35000,
     instantBook: false,
-    minNights: 5,
-    maxNights: 30,
     featured: true,
     sortOrder: 1,
   },
@@ -227,12 +199,13 @@ There is WIFI TV in the whole house with Netflix, Amazon Prime and Apple TV+. Th
     shortDescription:
       "300m² chalet with 4 bedrooms, sauna, mountain views, 3 min to WEF venue in Davos",
     location: "Davos, Switzerland",
-    address: "Börtjistrasse 23, 7260 Davos, Switzerland",
+    street: "Börtjistrasse 23",
+    zip: "7260",
     city: "Davos",
     country: "Switzerland",
     latitude: "46.8092",
     longitude: "9.8358",
-    maxGuests: 8,
+    maxOccupancy: 8,
     bedrooms: 4,
     bathrooms: 3,
     sqMeters: 300,
@@ -258,12 +231,7 @@ There is WIFI TV in the whole house with Netflix, Amazon Prime and Apple TV+. Th
     highlights: ["Mountain Chic", "3 min to WEF", "Sauna", "Sunny Location"],
     videoUrl: null,
     pdfAssetPath: null,
-    basePrice: 280000,
-    currency: "eur",
-    cleaningFee: 25000,
     instantBook: false,
-    minNights: 4,
-    maxNights: 14,
     featured: true,
     sortOrder: 2,
   },
@@ -279,12 +247,13 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
     shortDescription:
       "Charming Eixample apartment near Gaudí landmarks with sunny balcony.",
     location: "Barcelona, Spain",
-    address: "Carrer de Mallorca 123, 08008 Barcelona, Spain",
+    street: "Carrer de Mallorca 123",
+    zip: "08008",
     city: "Barcelona",
     country: "Spain",
     latitude: "41.3874",
     longitude: "2.1686",
-    maxGuests: 4,
+    maxOccupancy: 4,
     bedrooms: 2,
     bathrooms: 2,
     sqMeters: 85,
@@ -299,12 +268,7 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
     highlights: ["City Center", "Walking Distance", "Local Shops"],
     videoUrl: null,
     pdfAssetPath: null,
-    basePrice: 45000,
-    currency: "eur",
-    cleaningFee: 8000,
     instantBook: true,
-    minNights: 2,
-    maxNights: 30,
     featured: false,
     sortOrder: 3,
   },
@@ -710,56 +674,6 @@ export const experiences: SeedExperience[] = [
 ];
 
 // ============================================================================
-// Pricing Rules
-// ============================================================================
-export const pricingRules: SeedPricingRule[] = [
-  {
-    id: "pr-mallorca-summer",
-    assetId: "mallorca-villa",
-    name: "Summer Peak Season",
-    startDate: "2026-06-15",
-    endDate: "2026-09-15",
-    multiplier: 150,
-    minNights: 7,
-    priority: 10,
-    active: true,
-  },
-  {
-    id: "pr-mallorca-winter",
-    assetId: "mallorca-villa",
-    name: "Winter Low Season",
-    startDate: "2026-11-01",
-    endDate: "2027-03-31",
-    multiplier: 80,
-    minNights: null,
-    priority: 5,
-    active: true,
-  },
-  {
-    id: "pr-chalet-wef",
-    assetId: "davos-chalet",
-    name: "WEF Week Premium",
-    startDate: "2027-01-18",
-    endDate: "2027-01-25",
-    multiplier: 300,
-    minNights: 7,
-    priority: 20,
-    active: true,
-  },
-  {
-    id: "pr-chalet-ski",
-    assetId: "davos-chalet",
-    name: "Ski Season",
-    startDate: "2026-12-15",
-    endDate: "2027-04-15",
-    multiplier: 175,
-    minNights: 4,
-    priority: 10,
-    active: true,
-  },
-];
-
-// ============================================================================
 // Export all seed data
 // ============================================================================
 export const seedData: SeedData = {
@@ -767,5 +681,4 @@ export const seedData: SeedData = {
   assets,
   images,
   experiences,
-  pricingRules,
 };

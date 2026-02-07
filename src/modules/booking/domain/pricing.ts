@@ -1,7 +1,6 @@
-import type { BookingContextInput } from "@/modules/booking/domain/schema";
-import { fromDateString } from "@/modules/utils/dates";
-import { applyMultiplier, fromCents, toCents } from "@/modules/utils/money";
-import { addDays, differenceInCalendarDays, isWithinInterval } from "date-fns";
+import { fromCents, toCents } from "@/modules/utils/money";
+import type { BookingContextInput } from "@/schemas";
+import { addDays, differenceInCalendarDays } from "date-fns";
 import Decimal from "decimal.js-light";
 
 // ============================================================================
@@ -37,36 +36,15 @@ const SERVICE_FEE_PERCENT = 0.12;
 // ============================================================================
 
 /**
- * Get the price for a specific night, applying any matching pricing rules.
- * Returns the highest-priority active rule that covers the date.
+ * Get the price for a specific night.
+ * Note: Pricing rules are now managed through Smoobu.
+ * This function returns the base price directly.
  */
 export function getNightlyPriceForDate(
   date: Date,
   context: BookingContext
 ): NightlyPriceResult {
-  // Find active rules that cover this date, sorted by priority (highest first)
-  const activeRule = context.pricingRules
-    .filter((rule) => {
-      if (!rule.active) return false;
-      try {
-        const start = fromDateString(rule.startDate);
-        const end = fromDateString(rule.endDate);
-        return isWithinInterval(date, { start, end });
-      } catch {
-        return false;
-      }
-    })
-    .sort((a, b) => b.priority - a.priority)[0];
-
-  if (activeRule) {
-    // Multiplier is stored as integer (100 = 1x, 150 = 1.5x)
-    // Use decimal.js to avoid rounding errors
-    const adjustedPrice = toCents(
-      applyMultiplier(context.basePrice, activeRule.multiplier)
-    );
-    return { price: adjustedPrice, appliedRule: activeRule.name };
-  }
-
+  // Pricing is now managed through Smoobu, so we return the base price
   return { price: context.basePrice, appliedRule: null };
 }
 
@@ -93,7 +71,7 @@ export function calculatePriceBreakdown(
     nights = differenceInCalendarDays(endDate, startDate);
     if (nights <= 0) return null;
 
-    // Iterate through each night to check for pricing rules
+    // Iterate through each night
     for (let i = 0; i < nights; i++) {
       const currentNight = addDays(startDate, i);
       const { price, appliedRule } = getNightlyPriceForDate(

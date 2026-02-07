@@ -11,7 +11,6 @@ export const users = sqliteTable("users", {
   name: text("name"),
   phone: text("phone"),
   avatarUrl: text("avatar_url"),
-  preferredCurrency: text("preferred_currency").default("eur"),
   preferredLanguage: text("preferred_language").default("en"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
@@ -34,10 +33,27 @@ export const brokers = sqliteTable("brokers", {
 });
 
 // ============================================================================
-// Assets table - core entity (apartments, boats, tours)
+// PMC Integrations table - Property Management Company integrations (Smoobu)
+// ============================================================================
+export const pmcIntegrations = sqliteTable("pmc_integrations", {
+  id: text("id").primaryKey(),
+  brokerId: text("broker_id")
+    .notNull()
+    .references(() => brokers.id),
+  provider: text("provider").notNull(), // "smoobu"
+  apiKey: text("api_key").notNull(),
+  smoobuUserId: integer("smoobu_user_id"),
+  smoobuEmail: text("smoobu_email"),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+// ============================================================================
+// Assets table - core entity (hotels from Smoobu)
 // ============================================================================
 export const assets = sqliteTable("assets", {
   id: text("id").primaryKey(),
+  smoobuPropertyId: integer("smoobu_property_id").unique(), // null for experiences
   brokerId: text("broker_id")
     .notNull()
     .references(() => brokers.id),
@@ -57,18 +73,26 @@ export const assets = sqliteTable("assets", {
   description: text("description"),
   shortDescription: text("short_description"), // For cards
 
-  // Location
+  // Location (from Smoobu for hotels)
   location: text("location").notNull(),
-  address: text("address"),
+  street: text("street"),
+  zip: text("zip"),
   city: text("city"),
   country: text("country"),
   latitude: text("latitude"),
   longitude: text("longitude"),
 
-  // Capacity & Size (apartments/boats)
-  maxGuests: integer("max_guests").default(2),
+  // Rooms (from Smoobu for hotels)
+  maxOccupancy: integer("max_occupancy"),
   bedrooms: integer("bedrooms"),
   bathrooms: integer("bathrooms"),
+  doubleBeds: integer("double_beds"),
+  singleBeds: integer("single_beds"),
+  sofaBeds: integer("sofa_beds"),
+  couches: integer("couches"),
+  childBeds: integer("child_beds"),
+  queenSizeBeds: integer("queen_size_beds"),
+  kingSizeBeds: integer("king_size_beds"),
   sqMeters: integer("sq_meters"),
 
   // Features (JSON arrays - auto-parsed by Drizzle)
@@ -80,17 +104,10 @@ export const assets = sqliteTable("assets", {
   videoUrl: text("video_url"), // For Elite tier video backgrounds
   pdfAssetPath: text("pdf_asset_path"), // Static PDF path e.g. /flyers/property-name.pdf
 
-  // Pricing
-  basePrice: integer("base_price").notNull(), // Price in cents per night
-  currency: text("currency").notNull().default("eur"),
-  cleaningFee: integer("cleaning_fee").default(0),
-
   // Booking Options
   instantBook: integer("instant_book", { mode: "boolean" })
     .notNull()
     .default(false),
-  minNights: integer("min_nights").default(1),
-  maxNights: integer("max_nights").default(30),
 
   // Display
   featured: integer("featured", { mode: "boolean" }).notNull().default(false),
@@ -119,25 +136,26 @@ export const images = sqliteTable("images", {
 });
 
 // ============================================================================
-// Pricing Rules - dynamic pricing engine
+// Broker Logs - tracking Smoobu sync, payments, and other events
 // ============================================================================
-export const pricingRules = sqliteTable("pricing_rules", {
+export const brokerLogs = sqliteTable("broker_logs", {
   id: text("id").primaryKey(),
-  assetId: text("asset_id")
+  brokerId: text("broker_id")
     .notNull()
-    .references(() => assets.id, { onDelete: "cascade" }),
-  name: text("name").notNull(), // "Summer Peak", "Holiday Rate"
-  startDate: text("start_date").notNull(),
-  endDate: text("end_date").notNull(),
-  multiplier: integer("multiplier").notNull().default(100), // 100 = 1x, 150 = 1.5x
-  minNights: integer("min_nights"), // Override asset minNights
-  priority: integer("priority").notNull().default(0), // Higher = takes precedence
-  active: integer("active", { mode: "boolean" }).notNull().default(true),
+    .references(() => brokers.id),
+  eventType: text("event_type").notNull(), // "smoobu_booking_success", "smoobu_booking_failure", etc.
+  relatedEntityId: text("related_entity_id"), // booking id, asset id, etc.
+  message: text("message").notNull(),
+  metadata: text("metadata", { mode: "json" }).$type<Record<string, unknown>>(),
+  acknowledged: integer("acknowledged", { mode: "boolean" })
+    .notNull()
+    .default(false),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
 // ============================================================================
-// Availabilities - calendar management
+// Availabilities - DEPRECATED: Now managed by Smoobu for hotels
+// Only used for experiences if needed
 // ============================================================================
 export const availabilities = sqliteTable("availabilities", {
   id: text("id").primaryKey(),
@@ -191,6 +209,9 @@ export const bookings = sqliteTable("bookings", {
   stripeSessionId: text("stripe_session_id"),
   stripePaymentIntentId: text("stripe_payment_intent_id"),
   paidAt: text("paid_at"),
+
+  // Smoobu Integration
+  smoobuReservationId: integer("smoobu_reservation_id"),
 
   // Communication
   guestNote: text("guest_note"), // Message to broker
@@ -329,31 +350,9 @@ export const assetExperiences = sqliteTable("asset_experiences", {
 });
 
 // ============================================================================
-// Channels table - distribution channels (Direct, Airbnb, Booking.com, etc.)
+// DEPRECATED TABLES - Removed with Smoobu integration
+// Channels, channel markups, and pricing rules are now managed by Smoobu
 // ============================================================================
-export const channels = sqliteTable("channels", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(), // "Direct", "Airbnb", "Booking.com"
-  code: text("code").notNull().unique(), // "direct", "airbnb", "booking"
-  active: integer("active", { mode: "boolean" }).notNull().default(true),
-  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-});
-
-// ============================================================================
-// Channel Markups - per-asset per-channel price adjustments
-// ============================================================================
-export const channelMarkups = sqliteTable("channel_markups", {
-  id: text("id").primaryKey(),
-  assetId: text("asset_id")
-    .notNull()
-    .references(() => assets.id, { onDelete: "cascade" }),
-  channelId: text("channel_id")
-    .notNull()
-    .references(() => channels.id, { onDelete: "cascade" }),
-  markupPercent: integer("markup_percent").notNull().default(0), // 15 = +15%
-  active: integer("active", { mode: "boolean" }).notNull().default(true),
-  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-});
 
 // ============================================================================
 // Indexes
@@ -374,13 +373,16 @@ export const assetsLocationIdx = index("idx_assets_city").on(assets.city);
 
 export const imagesAssetIdx = index("idx_images_asset").on(images.assetId);
 
-export const pricingRulesAssetIdx = index("idx_pricing_rules_asset").on(
-  pricingRules.assetId
+export const pmcIntegrationsBrokerIdx = index("idx_pmc_integrations_broker").on(
+  pmcIntegrations.brokerId
 );
-export const pricingRulesDateIdx = index("idx_pricing_rules_dates").on(
-  pricingRules.startDate,
-  pricingRules.endDate
+
+export const brokerLogsBrokerIdx = index("idx_broker_logs_broker").on(
+  brokerLogs.brokerId
 );
+export const brokerLogsAcknowledgedIdx = index(
+  "idx_broker_logs_acknowledged"
+).on(brokerLogs.acknowledged);
 
 export const availabilitiesAssetIdx = index("idx_availabilities_asset").on(
   availabilities.assetId
@@ -443,18 +445,6 @@ export const assetExperiencesAssetExpIdx = index(
   "idx_asset_experiences_asset_exp"
 ).on(assetExperiences.assetId, assetExperiences.experienceId);
 
-export const channelsCodeIdx = index("idx_channels_code").on(channels.code);
-
-export const channelMarkupsAssetIdx = index("idx_channel_markups_asset").on(
-  channelMarkups.assetId
-);
-export const channelMarkupsChannelIdx = index("idx_channel_markups_channel").on(
-  channelMarkups.channelId
-);
-export const channelMarkupsAssetChannelIdx = index(
-  "idx_channel_markups_asset_channel"
-).on(channelMarkups.assetId, channelMarkups.channelId);
-
 // ============================================================================
 // Type exports
 // ============================================================================
@@ -462,12 +452,12 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Broker = typeof brokers.$inferSelect;
 export type NewBroker = typeof brokers.$inferInsert;
+export type PmcIntegration = typeof pmcIntegrations.$inferSelect;
+export type NewPmcIntegration = typeof pmcIntegrations.$inferInsert;
 export type Asset = typeof assets.$inferSelect;
 export type NewAsset = typeof assets.$inferInsert;
 export type Image = typeof images.$inferSelect;
 export type NewImage = typeof images.$inferInsert;
-export type PricingRule = typeof pricingRules.$inferSelect;
-export type NewPricingRule = typeof pricingRules.$inferInsert;
 export type Availability = typeof availabilities.$inferSelect;
 export type NewAvailability = typeof availabilities.$inferInsert;
 export type Booking = typeof bookings.$inferSelect;
@@ -482,7 +472,5 @@ export type ExperienceImage = typeof experienceImages.$inferSelect;
 export type NewExperienceImage = typeof experienceImages.$inferInsert;
 export type AssetExperience = typeof assetExperiences.$inferSelect;
 export type NewAssetExperience = typeof assetExperiences.$inferInsert;
-export type Channel = typeof channels.$inferSelect;
-export type NewChannel = typeof channels.$inferInsert;
-export type ChannelMarkup = typeof channelMarkups.$inferSelect;
-export type NewChannelMarkup = typeof channelMarkups.$inferInsert;
+export type BrokerLog = typeof brokerLogs.$inferSelect;
+export type NewBrokerLog = typeof brokerLogs.$inferInsert;

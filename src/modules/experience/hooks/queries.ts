@@ -4,13 +4,13 @@
  */
 
 import { experienceApi } from "@/modules/api-client/client";
+import { showSuccess } from "@/modules/shared/notificationStore";
 import type {
   CreateExperienceRequest,
   ExperienceListResponse,
   ExperienceResponse,
   UpdateExperienceRequest,
-} from "@/modules/api-client/types";
-import { showSuccess } from "@/modules/shared/notificationStore";
+} from "@/schemas";
 import {
   type UseMutationOptions,
   type UseQueryOptions,
@@ -48,7 +48,10 @@ export function useExperiences(
     category?: string;
     status?: string;
   },
-  options?: Omit<UseQueryOptions<ExperienceListResponse>, "queryKey" | "queryFn">
+  options?: Omit<
+    UseQueryOptions<ExperienceListResponse>,
+    "queryKey" | "queryFn"
+  >
 ) {
   return useQuery({
     queryKey: experienceQueryKeys.list(params),
@@ -144,4 +147,3 @@ export function useDeleteExperience(
     ...options,
   });
 }
-

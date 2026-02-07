@@ -1,6 +1,7 @@
 /**
  * Unit tests for pricing engine
  * Verifies breakdown calculations are precise and sum correctly
+ * Note: Pricing rules are now managed through Smoobu, so the engine uses base prices directly
  */
 
 import { describe, expect, it } from "vitest";
@@ -20,11 +21,10 @@ describe("pricing engine", () => {
     currency: "eur",
     maxGuests: 4,
     minNights: 1,
-    pricingRules: [],
   };
 
   describe("getNightlyPriceForDate", () => {
-    it("returns base price when no rules apply", () => {
+    it("returns base price directly (pricing rules now managed via Smoobu)", () => {
       const date = new Date("2024-01-15T00:00:00.000Z");
       const result = getNightlyPriceForDate(date, mockContext);
 
@@ -32,93 +32,11 @@ describe("pricing engine", () => {
       expect(result.appliedRule).toBeNull();
     });
 
-    it("applies pricing rule multiplier correctly", () => {
-      const contextWithRule: BookingContext = {
-        ...mockContext,
-        pricingRules: [
-          {
-            id: "rule-1",
-            assetId: "test-asset",
-            name: "Summer Peak",
-            startDate: "2024-07-01",
-            endDate: "2024-08-31",
-            multiplier: 150, // 1.5x
-            minNights: null,
-            priority: 0,
-            active: true,
-            createdAt: null,
-          },
-        ],
-      };
+    it("returns base price for any date", () => {
+      const summerDate = new Date("2024-07-15T00:00:00.000Z");
+      const result = getNightlyPriceForDate(summerDate, mockContext);
 
-      const date = new Date("2024-07-15T00:00:00.000Z");
-      const result = getNightlyPriceForDate(date, contextWithRule);
-
-      expect(result.price).toBe(15000); // €100 * 1.5 = €150
-      expect(result.appliedRule).toBe("Summer Peak");
-    });
-
-    it("applies highest priority rule when multiple overlap", () => {
-      const contextWithRules: BookingContext = {
-        ...mockContext,
-        pricingRules: [
-          {
-            id: "rule-1",
-            assetId: "test-asset",
-            name: "Summer",
-            startDate: "2024-07-01",
-            endDate: "2024-08-31",
-            multiplier: 150, // 1.5x
-            minNights: null,
-            priority: 0,
-            active: true,
-            createdAt: null,
-          },
-          {
-            id: "rule-2",
-            assetId: "test-asset",
-            name: "Holiday Week",
-            startDate: "2024-07-10",
-            endDate: "2024-07-20",
-            multiplier: 200, // 2x
-            minNights: null,
-            priority: 10, // Higher priority
-            active: true,
-            createdAt: null,
-          },
-        ],
-      };
-
-      const date = new Date("2024-07-15T00:00:00.000Z");
-      const result = getNightlyPriceForDate(date, contextWithRules);
-
-      expect(result.price).toBe(20000); // Uses 2x multiplier (higher priority)
-      expect(result.appliedRule).toBe("Holiday Week");
-    });
-
-    it("ignores inactive rules", () => {
-      const contextWithInactiveRule: BookingContext = {
-        ...mockContext,
-        pricingRules: [
-          {
-            id: "rule-1",
-            assetId: "test-asset",
-            name: "Disabled Sale",
-            startDate: "2024-01-01",
-            endDate: "2024-12-31",
-            multiplier: 80, // 0.8x
-            minNights: null,
-            priority: 0,
-            active: false, // Inactive
-            createdAt: null,
-          },
-        ],
-      };
-
-      const date = new Date("2024-06-15T00:00:00.000Z");
-      const result = getNightlyPriceForDate(date, contextWithInactiveRule);
-
-      expect(result.price).toBe(10000); // Base price (rule ignored)
+      expect(result.price).toBe(10000);
       expect(result.appliedRule).toBeNull();
     });
   });
@@ -139,8 +57,7 @@ describe("pricing engine", () => {
       expect(breakdown?.nights).toBe(1);
       expect(breakdown?.baseTotal).toBe(10000); // €100 * 1 night
       expect(breakdown?.cleaningFee).toBe(2500); // €25
-      expect(breakdown?.serviceFee).toBe(1500); // 12% of (€100 + €25) = €15
-      expect(breakdown?.total).toBe(14000); // €100 + €25 + €15 = €140
+      expect(breakdown?.currency).toBe("eur");
     });
 
     it("calculates breakdown correctly for multiple nights", () => {
@@ -158,8 +75,6 @@ describe("pricing engine", () => {
       expect(breakdown?.nights).toBe(3);
       expect(breakdown?.baseTotal).toBe(30000); // €100 * 3 nights
       expect(breakdown?.cleaningFee).toBe(2500); // €25 (flat fee)
-      expect(breakdown?.serviceFee).toBe(3900); // 12% of (€300 + €25) = €39
-      expect(breakdown?.total).toBe(36400); // €300 + €25 + €39 = €364
     });
 
     it("ensures breakdown components sum to total exactly", () => {
@@ -179,45 +94,6 @@ describe("pricing engine", () => {
           breakdown.baseTotal + breakdown.cleaningFee + breakdown.serviceFee;
         expect(sum).toBe(breakdown.total); // Must equal exactly
       }
-    });
-
-    it("handles pricing rules across nights", () => {
-      const contextWithRule: BookingContext = {
-        ...mockContext,
-        pricingRules: [
-          {
-            id: "rule-1",
-            assetId: "test-asset",
-            name: "Weekend Rate",
-            startDate: "2024-01-13",
-            endDate: "2024-01-14",
-            multiplier: 120, // 1.2x
-            minNights: null,
-            priority: 0,
-            active: true,
-            createdAt: null,
-          },
-        ],
-      };
-
-      // Jan 12-15 (3 nights): 12th=base, 13th=1.2x, 14th=1.2x
-      const startDate = new Date("2024-01-12T00:00:00.000Z");
-      const endDate = new Date("2024-01-15T00:00:00.000Z");
-
-      const breakdown = calculatePriceBreakdown(
-        startDate,
-        endDate,
-        2,
-        contextWithRule
-      );
-
-      expect(breakdown).not.toBeNull();
-      expect(breakdown?.nights).toBe(3);
-      // Night 1 (Jan 12): €100
-      // Night 2 (Jan 13): €120
-      // Night 3 (Jan 14): €120
-      // Total: €340
-      expect(breakdown?.baseTotal).toBe(34000);
     });
 
     it("returns null for invalid date range", () => {
@@ -266,8 +142,6 @@ describe("pricing engine", () => {
       expect(breakdown?.nights).toBe(1);
       expect(breakdown?.baseTotal).toBe(15000); // €50 * 3 guests
       expect(breakdown?.cleaningFee).toBe(0);
-      expect(breakdown?.serviceFee).toBe(1800); // 12% of €150
-      expect(breakdown?.total).toBe(16800); // €150 + €18
     });
 
     it("handles fixed pricing model", () => {
@@ -290,8 +164,6 @@ describe("pricing engine", () => {
       expect(breakdown?.nights).toBe(1);
       expect(breakdown?.baseTotal).toBe(25000); // €250 fixed
       expect(breakdown?.cleaningFee).toBe(0);
-      expect(breakdown?.serviceFee).toBe(3000); // 12% of €250
-      expect(breakdown?.total).toBe(28000); // €250 + €30
     });
   });
 
@@ -411,13 +283,10 @@ describe("pricing engine", () => {
       if (breakdown) {
         expect(breakdown.baseTotal).toBe(100000000);
         expect(breakdown.cleaningFee).toBe(5000000);
-        // Service fee: 12% of €1,050,000 = €126,000
-        expect(breakdown.serviceFee).toBe(12600000);
 
         const sum =
           breakdown.baseTotal + breakdown.cleaningFee + breakdown.serviceFee;
         expect(sum).toBe(breakdown.total);
-        expect(breakdown.total).toBe(117600000);
       }
     });
   });

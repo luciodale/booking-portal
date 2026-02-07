@@ -1,127 +1,246 @@
-import { getAssetById, getPricingRulesByAssetId } from "@/data/helpers";
-import { genUniqueId } from "@/modules/utils/id";
-import {
-  type BookingContext,
-  calculatePriceBreakdown,
-} from "@/modules/booking/domain/pricing";
-import { createBookingSchema } from "@/modules/booking/domain/schema";
-import { fromDateString } from "@/modules/utils/dates";
-import type { APIRoute } from "astro";
+/**
+ * Booking Handler - Integrated with Smoobu
+ *
+ * Flow:
+ * 1. Validate booking request
+ * 2. Check availability with Smoobu (server-side, don't trust client)
+ * 3. Create Stripe checkout session with Smoobu price
+ * 4. On payment success webhook: Create Smoobu reservation
+ * 5. Log success/failure to brokerLogs
+ */
 
-export const bookingHandler: APIRoute = async ({ request }) => {
+import { SMOOBU_BASE_URL } from "@/constants";
+import { assets, bookings, brokerLogs, getDb, pmcIntegrations } from "@/db";
+import { genUniqueId } from "@/modules/utils/id";
+import { createBookingSchema } from "@/schemas";
+import type { APIRoute } from "astro";
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+
+// ============================================================================
+// Extended Schema for Smoobu Booking
+// ============================================================================
+
+const smoobuBookingSchema = createBookingSchema.extend({
+  smoobuPropertyId: z.number().int().positive(),
+});
+
+// ============================================================================
+// Response Helpers
+// ============================================================================
+
+function jsonSuccess<T>(data: T, status = 200): Response {
+  return new Response(JSON.stringify({ success: true, data }), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+function jsonError(message: string, status = 500, details?: unknown): Response {
+  return new Response(
+    JSON.stringify({
+      success: false,
+      error: { message, details },
+    }),
+    {
+      status,
+      headers: { "Content-Type": "application/json" },
+    }
+  );
+}
+
+// ============================================================================
+// Booking Handler
+// ============================================================================
+
+export const bookingHandler: APIRoute = async ({ request, locals }) => {
   try {
+    const D1Database = locals.runtime?.env?.DB;
+    if (!D1Database) {
+      return jsonError("Database not available", 503);
+    }
+
+    const db = getDb(D1Database);
     const body = await request.json();
 
-    // 1. Zod Validation (Shared Schema)
-    const validation = createBookingSchema.safeParse(body);
-
+    // 1. Validate booking request
+    const validation = smoobuBookingSchema.safeParse(body);
     if (!validation.success) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: "Validation failed",
-          errors: validation.error.flatten().fieldErrors,
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return jsonError("Validation failed", 400, validation.error.issues);
     }
 
-    const { assetId, checkIn, checkOut, guests, currency, clientPrice } =
+    const { assetId, checkIn, checkOut, guests, smoobuPropertyId } =
       validation.data;
 
-    // 2. Fetch Source of Truth (Database/Mocks)
-    const asset = getAssetById(assetId);
+    // 2. Fetch asset and verify it exists
+    const [asset] = await db
+      .select()
+      .from(assets)
+      .where(eq(assets.id, assetId))
+      .limit(1);
+
     if (!asset) {
-      return new Response(
-        JSON.stringify({ success: false, message: "Property not found" }),
-        { status: 404, headers: { "Content-Type": "application/json" } }
-      );
+      return jsonError("Property not found", 404);
     }
 
-    // 3. Re-construct Booking Context (Server-Side)
-    const pricingRules = getPricingRulesByAssetId(assetId);
+    // TODO: Get actual broker ID from auth context
+    const brokerId = "broker-001";
 
-    const context: BookingContext = {
-      assetId: asset.id,
-      pricingModel: "per_night",
-      basePrice: asset.basePrice,
-      cleaningFee: asset.cleaningFee ?? 0,
-      currency: asset.currency,
-      maxGuests: asset.maxGuests ?? 2,
-      minNights: asset.minNights ?? 1,
-      pricingRules,
-    };
+    // 3. Get Smoobu integration
+    const [integration] = await db
+      .select()
+      .from(pmcIntegrations)
+      .where(eq(pmcIntegrations.brokerId, brokerId))
+      .limit(1);
 
-    // 4. Server-Side Price Calculation (The Security Gate)
-    const startDate = fromDateString(checkIn);
-    const endDate = fromDateString(checkOut);
+    if (!integration) {
+      return jsonError("Smoobu integration not found", 404);
+    }
 
-    const serverBreakdown = calculatePriceBreakdown(
-      startDate,
-      endDate,
-      guests,
-      context
+    // 4. Check availability with Smoobu (SERVER-SIDE - don't trust client)
+    const availabilityResponse = await fetch(
+      `${SMOOBU_BASE_URL}/booking/checkApartmentAvailability`,
+      {
+        method: "POST",
+        headers: {
+          "Api-Key": integration.apiKey,
+          "Content-Type": "application/json",
+          "Cache-Control": "no-cache",
+        },
+        body: JSON.stringify({
+          arrivalDate: checkIn,
+          departureDate: checkOut,
+          apartments: [smoobuPropertyId],
+          customerId: integration.smoobuUserId,
+          guests,
+        }),
+      }
     );
 
-    if (!serverBreakdown) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: "Unable to calculate price",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+    if (!availabilityResponse.ok) {
+      return jsonError("Failed to check availability with Smoobu", 500);
     }
 
-    // 5. Price Validation (Optional Tolerance)
-    // We allow clientPrice to be passed just for comparison logging, usually we rely on server price
-    if (clientPrice && Math.abs(clientPrice - serverBreakdown.total) > 100) {
-      console.warn(
-        `Price Mismatch! Client: ${clientPrice}, Server: ${serverBreakdown.total}`
-      );
-      // In strict mode, we might reject here. For now, we accept but use SERVER price.
-    }
+    const availabilityData = (await availabilityResponse.json()) as {
+      availableApartments?: number[];
+      prices?: Record<number, { price: number; currency: string }>;
+      errorMessages?: Record<
+        number,
+        {
+          errorCode: number;
+          message: string;
+          minimumLengthOfStay?: number;
+        }
+      >;
+    };
 
-    // Simulate database write
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    const bookingId = genUniqueId("BK");
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: `Reservation confirmed for ${asset.title}!`,
-        bookingId,
-        details: {
-          propertyTitle: asset.title,
+    // Check if property is available
+    if (
+      !availabilityData.availableApartments?.includes(smoobuPropertyId) ||
+      !availabilityData.prices?.[smoobuPropertyId]
+    ) {
+      // Log unavailability
+      await db.insert(brokerLogs).values({
+        id: genUniqueId("log"),
+        brokerId,
+        eventType: "smoobu_booking_failure",
+        relatedEntityId: assetId,
+        message: "Property not available for selected dates",
+        metadata: {
           checkIn,
           checkOut,
           guests,
-          // ALWAYS return server-calculated totals
-          total: serverBreakdown.total,
-          currency: serverBreakdown.currency,
-          breakdown: serverBreakdown,
+          smoobuPropertyId,
+          errorMessages: availabilityData.errorMessages,
         },
-      }),
-      {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }
+        acknowledged: false,
+        createdAt: new Date().toISOString(),
+      });
+
+      return jsonError(
+        "Property not available for selected dates",
+        400,
+        availabilityData.errorMessages?.[smoobuPropertyId]
+      );
+    }
+
+    // Get price from Smoobu
+    const smoobuPrice = availabilityData.prices[smoobuPropertyId];
+    const totalPrice = Math.round(smoobuPrice.price * 100); // Convert to cents
+    const currency = smoobuPrice.currency.toLowerCase();
+
+    // Calculate nights
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    const nights = Math.ceil(
+      (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
     );
+
+    // 5. TODO: Create Stripe Checkout Session
+    // For now, simulate booking creation
+
+    const bookingId = genUniqueId("booking");
+
+    // 6. Create booking in database (pending payment)
+    await db.insert(bookings).values({
+      id: bookingId,
+      assetId,
+      userId: "user-001", // TODO: Get from auth
+      checkIn,
+      checkOut,
+      nights,
+      guests,
+      baseTotal: totalPrice,
+      cleaningFee: 0,
+      serviceFee: 0,
+      totalPrice,
+      currency,
+      status: "pending",
+      smoobuReservationId: null, // Will be set after Smoobu reservation created
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    // 7. TODO: On payment success webhook, create Smoobu reservation
+    // This would be in a separate webhook handler
+
+    // Log successful booking initiation
+    await db.insert(brokerLogs).values({
+      id: genUniqueId("log"),
+      brokerId,
+      eventType: "smoobu_booking_success",
+      relatedEntityId: bookingId,
+      message: "Booking initiated successfully",
+      metadata: {
+        bookingId,
+        assetId,
+        smoobuPropertyId,
+        checkIn,
+        checkOut,
+        totalPrice,
+        currency,
+      },
+      acknowledged: false,
+      createdAt: new Date().toISOString(),
+    });
+
+    return jsonSuccess({
+      bookingId,
+      message: "Booking initiated successfully",
+      details: {
+        propertyTitle: asset.title,
+        checkIn,
+        checkOut,
+        guests,
+        nights,
+        totalPrice,
+        currency,
+      },
+    });
   } catch (error) {
     console.error("Booking API Error:", error);
-    return new Response(
-      JSON.stringify({
-        success: false,
-        message: "Server error processing booking",
-      }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
+    return jsonError(
+      error instanceof Error ? error.message : "Failed to process booking"
     );
   }
 };

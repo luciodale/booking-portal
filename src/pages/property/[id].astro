@@ -4,7 +4,7 @@ import PageLayout from '@/layouts/PageLayout.astro';
 import Badge from '@/modules/ui/astro/Badge.astro';
 import ImageGallery from '@/modules/ui/astro/ImageGallery.astro';
 
-import { getPricingRulesByAssetId } from '@/data/helpers';
+
 import type { BookingContext } from '@/modules/booking/domain/pricing';
 // React island components for interactive booking
 import BookingInitializer from '@/modules/booking/ui/BookingInitializer';
@@ -55,7 +55,6 @@ const property = {
 // ----------------------------------------------------------------------------
 // Build Booking Context (Server-Side)
 // ----------------------------------------------------------------------------
-const pricingRules = getPricingRulesByAssetId(asset.id);
 
 const bookingContext: BookingContext = {
   assetId: asset.id,
@@ -65,7 +64,6 @@ const bookingContext: BookingContext = {
   currency: asset.currency,
   maxGuests: asset.maxGuests ?? 2,
   minNights: asset.minNights ?? 1,
-  pricingRules,
 };
 
 // Get linked experiences with discounts

@@ -4,7 +4,6 @@
  */
 
 import { getDb, images } from "@/db";
-import type { UploadImagesResponse } from "@/modules/api-client/types";
 import { requireAdmin } from "@/modules/auth/auth";
 import {
   convertToWebP,
@@ -17,6 +16,7 @@ import {
   uploadImageToR2,
 } from "@/modules/storage/r2-helpers";
 import { genUniqueId } from "@/modules/utils/id";
+import type { UploadImagesResponse } from "@/schemas";
 import type { APIRoute } from "astro";
 
 // ============================================================================

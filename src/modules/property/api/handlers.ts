@@ -3,19 +3,13 @@
  * Extracted from pages/api/backoffice/properties.ts and properties/[id].ts
  */
 
-import { assets, getDb, images, pricingRules } from "@/db";
-import type {
-  PropertyListResponse,
-  PropertyResponse,
-} from "@/modules/api-client/types";
+import { assets, getDb, images } from "@/db";
 import { requireAdmin } from "@/modules/auth/auth";
-import {
-  createPropertySchema,
-  updatePropertySchema,
-} from "@/modules/property/domain/schema";
 import { displayToKebab } from "@/modules/property/domain/sync-features";
 import { generateImageUrl } from "@/modules/storage/r2-helpers";
 import { genUniqueId } from "@/modules/utils/id";
+import type { PropertyListResponse, PropertyResponse } from "@/schemas";
+import { createPropertySchema, updatePropertySchema } from "@/schemas";
 import type { APIRoute } from "astro";
 import { and, desc, eq, like, or } from "drizzle-orm";
 
@@ -177,7 +171,6 @@ export const createProperty: APIRoute = async ({ request, locals }) => {
     const response: PropertyResponse = {
       ...newProperty,
       images: [],
-      pricingRules: [],
     };
 
     return jsonSuccess(response, 201);
@@ -224,15 +217,9 @@ export const getProperty: APIRoute = async ({ params, locals }) => {
       .from(images)
       .where(eq(images.assetId, id));
 
-    const propertyPricingRules = await db
-      .select()
-      .from(pricingRules)
-      .where(eq(pricingRules.assetId, id));
-
     const response: PropertyResponse = {
       ...property,
       images: propertyImages,
-      pricingRules: propertyPricingRules,
     };
 
     return jsonSuccess(response);
@@ -305,15 +292,9 @@ export const updateProperty: APIRoute = async ({ params, request, locals }) => {
       .from(images)
       .where(eq(images.assetId, id));
 
-    const propertyPricingRules = await db
-      .select()
-      .from(pricingRules)
-      .where(eq(pricingRules.assetId, id));
-
     const response: PropertyResponse = {
       ...updated,
       images: propertyImages,
-      pricingRules: propertyPricingRules,
     };
 
     return jsonSuccess(response);
