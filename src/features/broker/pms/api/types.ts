@@ -1,32 +1,34 @@
-export type PmsIntegrationBase = {
-  id: string;
-  provider: string;
-};
+import type { PmsIntegration as DbPmsIntegration } from "@/db";
 
-export type SmoobuIntegration = PmsIntegrationBase & {
-  provider: "smoobu";
-  pmsUserId?: number;
-  pmsEmail?: string;
-};
+export type TPmsIntegration = DbPmsIntegration;
 
-export type PmsIntegration = SmoobuIntegration;
+export type TSafePmsIntegration = Omit<TPmsIntegration, "apiKey">;
 
 export type IntegrationStatusResponse = {
   hasIntegration: boolean;
-  integration: PmsIntegration | null;
+  integration: TSafePmsIntegration | null;
 };
 
-export type SaveSmoobuIntegrationParams = {
-  provider: "smoobu";
-  apiKey: string;
-  pmsUserId: number;
-  pmsEmail: string;
-};
+/** GET /api/backoffice/integrations — response data (single source of truth) */
+export type TGetIntegrationsResponse = IntegrationStatusResponse;
 
-export type SaveIntegrationParams = SaveSmoobuIntegrationParams;
+/** POST /api/backoffice/integrations — request body (single source of truth) */
+export type {
+  TSmoobuCreateBodyInput as TPostIntegrationsRequest,
+} from "@/features/broker/pms/integrations/smoobu/createBodySchema";
+
+/** POST /api/backoffice/integrations — response data (created integration, no apiKey) */
+export type TPostIntegrationsResponse = {
+  id: string;
+  provider: string;
+  pmsUserId: number | null;
+  pmsEmail: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+};
 
 export function isSmoobuIntegration(
-  i: PmsIntegration | null
-): i is SmoobuIntegration {
+  i: TSafePmsIntegration | null
+): i is TSafePmsIntegration & { provider: "smoobu" } {
   return i?.provider === "smoobu";
 }

@@ -3,12 +3,14 @@
  * Receives integrationStatus + isLoading from parent (dashboard).
  */
 
+import { insertIntegration } from "@/features/broker/pms/api/client-server/insertIntegration";
 import {
-  type IntegrationStatusResponse,
-  type PmsIntegration,
+  type TGetIntegrationsResponse,
+  type TPostIntegrationsRequest,
+  type TPostIntegrationsResponse,
+  type TSafePmsIntegration,
   isSmoobuIntegration,
-  saveIntegration,
-} from "@/features/broker/pms/api";
+} from "@/features/broker/pms/api/types";
 import { PMS_INTEGRATION_STATUS_QUERY_KEY } from "@/features/broker/pms/constants/integrations";
 import { verifySmoobuApiKey } from "@/features/broker/pms/integrations/smoobu/verifyApiKey";
 import { PmsSetupCard } from "@/features/broker/pms/ui/PmsSetupCard";
@@ -19,7 +21,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 export type SmoobuSetupCardProps = {
-  integrationStatus: IntegrationStatusResponse | undefined;
+  integrationStatus: TGetIntegrationsResponse | undefined;
   isLoading: boolean;
 };
 
@@ -42,8 +44,12 @@ export function SmoobuSetupCard({
     onError: () => setVerifiedUser(null),
   });
 
-  const saveMutation = useMutation({
-    mutationFn: saveIntegration,
+  const saveMutation = useMutation<
+    TPostIntegrationsResponse,
+    Error,
+    TPostIntegrationsRequest
+  >({
+    mutationFn: insertIntegration,
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: PMS_INTEGRATION_STATUS_QUERY_KEY,
@@ -82,7 +88,7 @@ export function SmoobuSetupCard({
       isLoading={isLoading}
       connectedTitle="Smoobu Connected"
       connectedDescription="Your Smoobu account is connected and ready to use."
-      getConnectedDetail={(integration: PmsIntegration) =>
+      getConnectedDetail={(integration: TSafePmsIntegration) =>
         isSmoobuIntegration(integration) && integration.pmsEmail ? (
           <p className="text-xs text-muted-foreground">
             Connected as: {integration.pmsEmail}

@@ -3,6 +3,6 @@
  * Verifies Smoobu API key by calling /api/me endpoint
  */
 
-import { verifyApiKey } from "@/features/broker/pms/integrations/smoobu/handlers";
+import { GETVerifyApiKey } from "@/features/broker/pms/integrations/smoobu/server-service/GETVerifyApiKey";
 
-export const POST = verifyApiKey;
+export const POST = GETVerifyApiKey;

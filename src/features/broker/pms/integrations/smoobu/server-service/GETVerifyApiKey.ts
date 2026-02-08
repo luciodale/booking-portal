@@ -6,25 +6,12 @@ import { SMOOBU_BASE_URL } from "@/constants";
 import type { SmoobuErrorResponse, SmoobuUser } from "@/schemas/smoobu";
 import { verifyApiKeyRequestSchema } from "@/schemas/smoobu";
 import type { APIRoute } from "astro";
+import {
+  jsonError,
+  jsonSuccess,
+} from "../../../api/server-handler/responseHelpers";
 
-function jsonSuccess<T>(data: T, status = 200): Response {
-  return new Response(JSON.stringify({ success: true, data }), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
-
-function jsonError(message: string, status = 500, details?: unknown): Response {
-  return new Response(
-    JSON.stringify({
-      success: false,
-      error: { message, details },
-    }),
-    { status, headers: { "Content-Type": "application/json" } }
-  );
-}
-
-export const verifyApiKey: APIRoute = async ({ request }) => {
+export const GETVerifyApiKey: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
     const validation = verifyApiKeyRequestSchema.safeParse(body);

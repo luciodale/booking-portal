@@ -3,7 +3,7 @@
  * Shown when broker is not yet integrated.
  */
 
-import type { IntegrationStatusResponse } from "@/features/broker/pms/api";
+import type { TGetIntegrationsResponse } from "@/features/broker/pms/api/types";
 import {
   type PmsProvider,
   availablePms,
@@ -18,7 +18,7 @@ const pmsOptions = availablePms.map((pms) => ({
 }));
 
 export type PmsIntegrationProps = {
-  integrationStatus: IntegrationStatusResponse | undefined;
+  integrationStatus: TGetIntegrationsResponse | undefined;
   isLoading: boolean;
 };
 

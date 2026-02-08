@@ -4,17 +4,17 @@
  */
 
 import type {
-  IntegrationStatusResponse,
-  PmsIntegration,
-} from "@/features/broker/pms/api";
+  TGetIntegrationsResponse,
+  TSafePmsIntegration,
+} from "@/features/broker/pms/api/types";
 import type { ReactNode } from "react";
 
 export type PmsSetupCardProps = {
-  integrationStatus: IntegrationStatusResponse | undefined;
+  integrationStatus: TGetIntegrationsResponse | undefined;
   isLoading: boolean;
   connectedTitle: string;
   connectedDescription: string;
-  getConnectedDetail?: (integration: PmsIntegration) => ReactNode;
+  getConnectedDetail?: (integration: TSafePmsIntegration) => ReactNode;
   setupTitle: string;
   setupDescription: string;
   children: ReactNode;
