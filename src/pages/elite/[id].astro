@@ -1,107 +1,112 @@
 ---
-import { experienceCategoryLabels, getLinkedExperiences, getPriceInUnits } from '@/data/helpers';
-import { assets, getDb, images } from "@/db";
-import PageLayout from '@/layouts/PageLayout.astro';
-import type { BookingContext } from '@/modules/booking/domain/pricing';
-import BookingInitializer from '@/modules/booking/ui/BookingInitializer';
-import { DateRangePicker } from '@/modules/booking/ui/DateRangePicker';
-import GuestSelector from '@/modules/booking/ui/GuestSelector';
-import PriceBreakdown from '@/modules/booking/ui/PriceBreakdown';
-import ReserveButton from '@/modules/booking/ui/ReserveButton';
-import { kebabToDisplay } from "@/modules/property/domain/sync-features";
-import { getFacilityIconName } from "@/modules/shared/constants";
-import { generateImageUrl } from "@/modules/storage/r2-helpers";
-import Badge from '@/modules/ui/astro/Badge.astro';
-import Button from '@/modules/ui/astro/Button.astro';
-import ImageGallery from '@/modules/ui/astro/ImageGallery.astro';
-import { asc, eq } from "drizzle-orm";
+import { experienceCategoryLabels } from "@/data/helpers";
+import { assetExperiences, assets, experiences, experienceImages, getDb, images } from "@/db";
+import PageLayout from "@/layouts/PageLayout.astro";
+import { kebabToDisplay } from "@/features/broker/property/domain/sync-features";
+import { getFacilityIconName } from "@/modules/constants";
+import { generateImageUrl } from "@/modules/r2/r2-helpers";
+import Badge from "@/modules/ui/astro/Badge.astro";
+import Button from "@/modules/ui/astro/Button.astro";
+import ImageGallery from "@/modules/ui/astro/ImageGallery.astro";
+import { and, asc, eq } from "drizzle-orm";
 
-// Server-rendered dynamic route
 export const prerender = false;
 
-// Get property ID from URL
 const { id } = Astro.params;
-
-if (!id) {
-  return Astro.redirect('/elite');
-}
+if (!id) return Astro.redirect("/elite");
 
 const db = getDb(Astro.locals.runtime.env.DB);
 
-// Get property from database
 const [asset] = await db
   .select()
   .from(assets)
   .where(eq(assets.id, id))
   .limit(1);
 
-if (!asset || asset.tier !== 'elite') {
-  return Astro.redirect('/elite');
-}
+if (!asset || asset.tier !== "elite") return Astro.redirect("/elite");
 
-// Get all images for this asset
-const assetImages = await db
+const assetImagesList = await db
   .select()
   .from(images)
   .where(eq(images.assetId, asset.id))
   .orderBy(asc(images.order));
 
-const imageUrls = assetImages.map((img) => generateImageUrl(img.r2Key));
+const imageUrls = assetImagesList.map((img) => generateImageUrl(img.r2Key));
 
-// Prepare property object for template (JSON fields are auto-parsed by Drizzle)
 const property = {
   id: asset.id,
   title: asset.title,
   location: asset.location,
-  address: asset.address ?? asset.location,
+  address: asset.street ?? asset.location,
   tier: asset.tier,
-  tagline: asset.shortDescription ?? 'Exceptional Luxury Awaits',
-  description: asset.description ?? '',
-  price: getPriceInUnits(asset.basePrice),
-  currency: asset.currency.toUpperCase(),
+  tagline: asset.shortDescription ?? "Exceptional Luxury Awaits",
+  description: asset.description ?? "",
   bedrooms: asset.bedrooms ?? 0,
   bathrooms: asset.bathrooms ?? 0,
-  maxGuests: asset.maxGuests ?? 2,
+  maxGuests: asset.maxOccupancy ?? 2,
   sqMeters: asset.sqMeters ?? 0,
   images: imageUrls,
-  amenities: (asset.amenities) ?? [],
-  highlights: (asset.highlights) ?? [],
-  views: (asset.views) ?? [],
+  amenities: asset.amenities ?? [],
+  highlights: asset.highlights ?? [],
+  views: asset.views ?? [],
 };
 
-// Get linked experiences with discounts
-const rawLinkedExperiences = getLinkedExperiences(asset.id);
-const linkedExperiences = rawLinkedExperiences.map(exp => ({
-  id: exp.id,
-  title: exp.title,
-  location: exp.city ?? exp.location,
-  imageUrl: exp.imageUrl ?? '',
-  price: getPriceInUnits(exp.basePrice),
-  duration: exp.duration ?? '',
-  category: exp.category ? experienceCategoryLabels[exp.category] : 'Other',
-  discountPercent: exp.discountPercent,
-}));
+// Linked experiences from DB
+const links = await db
+  .select({
+    experienceId: assetExperiences.experienceId,
+    discountPercent: assetExperiences.discountPercent,
+  })
+  .from(assetExperiences)
+  .where(eq(assetExperiences.assetId, asset.id));
 
-// Build Booking Context (Server-Side)
-const bookingContext: BookingContext = {
-  assetId: asset.id,
-  pricingModel: 'per_night',
-  basePrice: asset.basePrice, // cents
-  cleaningFee: asset.cleaningFee ?? 0, // cents
-  currency: asset.currency,
-  maxGuests: asset.maxGuests ?? 2,
-  minNights: asset.minNights ?? 1,
-};
+const linkedExperiences = await Promise.all(
+  links.map(async (link) => {
+    const [exp] = await db
+      .select()
+      .from(experiences)
+      .where(eq(experiences.id, link.experienceId))
+      .limit(1);
+    if (!exp) return null;
+
+    const [primaryImg] = await db
+      .select()
+      .from(experienceImages)
+      .where(
+        and(
+          eq(experienceImages.experienceId, exp.id),
+          eq(experienceImages.isPrimary, true)
+        )
+      )
+      .limit(1);
+
+    const imageUrl = primaryImg
+      ? generateImageUrl(primaryImg.r2Key)
+      : exp.imageUrl ?? "";
+
+    return {
+      id: exp.id,
+      title: exp.title,
+      location: exp.city ?? exp.location,
+      imageUrl,
+      duration: exp.duration ?? "",
+      category: exp.category ? experienceCategoryLabels[exp.category] ?? exp.category : "Other",
+      discountPercent: link.discountPercent ?? 0,
+    };
+  })
+);
+
+const linkedExperiencesFiltered = linkedExperiences.filter(
+  (e): e is NonNullable<typeof e> => e !== null
+);
 ---
 
-<PageLayout 
+<PageLayout
   title={`${property.title} | Elite Collection`}
   description={property.description.substring(0, 160)}
   showMarble
 >
-  <!-- Cinematic Hero -->
   <section class="relative h-content-fit overflow-hidden">
-    <!-- Background Image -->
     <div class="absolute inset-0">
       <img
         src={property.images[0]}
@@ -111,43 +116,30 @@ const bookingContext: BookingContext = {
       <div class="absolute inset-0 bg-linear-to-b from-black/30 via-black/20 to-background" />
       <div class="absolute inset-0 bg-linear-to-b from-black/50 via-transparent to-transparent" />
     </div>
-    
-    <!-- Content -->
     <div class="relative h-full flex flex-col justify-end pb-20 px-6">
       <div class="container mx-auto">
-        <!-- Back Navigation -->
-        <a 
-          href="/elite" 
+        <a
+          href="/elite"
           class="inline-flex items-center gap-2 mb-8 text-white/80 hover:text-white transition-colors backdrop-blur-sm bg-white/10 px-4 py-2 rounded-full"
         >
           <i data-lucide="chevron-left" class="w-5 h-5"></i>
           Elite Collection
         </a>
-        
-        <!-- Elite Badge -->
         <div class="mb-6">
           <Badge variant="elite" />
         </div>
-        
-        <!-- Title -->
         <h1 class="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight">
           {property.title}
         </h1>
-        
-        <!-- Tagline -->
         <p class="text-xl md:text-2xl text-white/80 font-light italic mb-6 max-w-2xl">
           {property.tagline}
         </p>
-        
-        <!-- Location -->
         <div class="flex items-center gap-3 text-white/90">
           <i data-lucide="map-pin" class="w-6 h-6 text-primary"></i>
           <span class="text-lg">{property.location}</span>
         </div>
       </div>
     </div>
-    
-    <!-- Scroll Indicator -->
     <div class="absolute bottom-8 left-1/2 -translate-x-1/2 animate-float">
       <div class="w-8 h-12 rounded-full border-2 border-white/30 flex items-start justify-center p-2">
         <div class="w-1.5 h-3 bg-white/60 rounded-full animate-pulse" />
@@ -155,11 +147,9 @@ const bookingContext: BookingContext = {
     </div>
   </section>
 
-  <!-- Quick Stats Bar -->
   <section class="sticky top-header-height z-30 glass border-y border-border/50">
     <div class="container mx-auto px-6 py-5">
       <div class="flex flex-wrap items-center justify-between gap-6">
-        <!-- Stats -->
         <div class="flex items-center gap-8">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
@@ -170,9 +160,7 @@ const bookingContext: BookingContext = {
               <div class="text-xs text-muted-foreground uppercase tracking-wide">Bedrooms</div>
             </div>
           </div>
-          
           <div class="w-px h-10 bg-border" />
-          
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <i data-lucide="users" class="w-5 h-5 text-primary"></i>
@@ -182,9 +170,7 @@ const bookingContext: BookingContext = {
               <div class="text-xs text-muted-foreground uppercase tracking-wide">Guests</div>
             </div>
           </div>
-          
           <div class="w-px h-10 bg-border" />
-          
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <i data-lucide="move" class="w-5 h-5 text-primary"></i>
@@ -195,39 +181,27 @@ const bookingContext: BookingContext = {
             </div>
           </div>
         </div>
-        
-        <!-- CTA only - price shown in booking sidebar -->
         <div class="flex items-center gap-6">
-          <div class="text-right">
-            <div class="text-sm text-muted-foreground">Select dates below</div>
-            <div class="text-lg text-muted-foreground">to see pricing</div>
-          </div>
           <Button>Reserve Now</Button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Gallery Grid -->
   <section class="py-16 px-6">
     <div class="container mx-auto">
       <ImageGallery images={property.images} title={property.title} variant="elite" />
     </div>
   </section>
 
-  <!-- Main Content Grid -->
   <section class="py-8 px-6">
     <div class="container mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-16">
-        
-        <!-- Left Column - Property Details -->
         <div class="lg:col-span-2 space-y-12">
-          
-          <!-- Highlights -->
           <div>
             <h2 class="section-title text-2xl font-bold text-foreground mb-6">Signature Features</h2>
             <div class="grid grid-cols-2 gap-4">
-              {property.highlights.map(highlight => (
+              {property.highlights.map((highlight) => (
                 <div class="flex items-center gap-4 p-5 bg-card rounded-xl border border-border/50 group hover:border-primary/30 transition-colors">
                   <div class="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors">
                     <i data-lucide="check" class="w-6 h-6 text-primary"></i>
@@ -237,31 +211,27 @@ const bookingContext: BookingContext = {
               ))}
             </div>
           </div>
-          
           <div class="divider-elegant" />
-          
-          <!-- Description -->
           <div>
             <h2 class="section-title text-2xl font-bold text-foreground mb-6">The Experience</h2>
             <div class="prose prose-invert max-w-none space-y-6">
-              {property.description.split('\n\n').map((paragraph, idx) => (
-                <p class:list={[
-                  "text-muted-foreground leading-relaxed",
-                  idx === 0 && "text-lg text-foreground/90"
-                ]}>
+              {property.description.split("\n\n").map((paragraph, idx) => (
+                <p
+                  class:list={[
+                    "text-muted-foreground leading-relaxed",
+                    idx === 0 && "text-lg text-foreground/90",
+                  ]}
+                >
                   {paragraph}
                 </p>
               ))}
             </div>
           </div>
-          
           <div class="divider-elegant" />
-          
-          <!-- Amenities -->
           <div>
             <h2 class="section-title text-2xl font-bold text-foreground mb-6">Exclusive Amenities</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {property.amenities.map(amenity => (
+              {property.amenities.map((amenity) => (
                 <div class="flex items-center gap-4 px-4 py-3.5 bg-card rounded-xl border border-border/50 hover:border-primary/30 transition-colors">
                   <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
                     <i data-lucide={getFacilityIconName(amenity, "amenity")} class="w-4 h-4 text-primary"></i>
@@ -271,14 +241,11 @@ const bookingContext: BookingContext = {
               ))}
             </div>
           </div>
-          
           <div class="divider-elegant" />
-          
-          <!-- Views -->
           <div>
             <h2 class="section-title text-2xl font-bold text-foreground mb-6">Panoramic Views</h2>
             <div class="flex flex-wrap gap-3">
-              {property.views.map(view => (
+              {property.views.map((view) => (
                 <span class="flex items-center gap-3 px-5 py-2.5 bg-card rounded-full border border-border/50 text-foreground text-sm font-medium">
                   <i data-lucide="eye" class="w-5 h-5 text-primary"></i>
                   {kebabToDisplay(view)}
@@ -286,48 +253,17 @@ const bookingContext: BookingContext = {
               ))}
             </div>
           </div>
-          
         </div>
-        
-        <!-- Right Column - Booking Sidebar -->
+
         <div class="lg:col-span-1">
-          <!-- Invisible initializer island - sets up the booking store -->
-          <BookingInitializer
-            client:load
-            context={bookingContext}
-          />
-          
           <div class="sticky top-40">
             <div class="p-8 rounded-2xl bg-card border border-border card-elite marble-border">
-              <!-- Price Header - Hidden until dates selected -->
               <div class="mb-8 text-center">
-                <div class="text-sm text-primary uppercase tracking-widest mb-2">Select Your Dates</div>
-                <p class="text-sm text-muted-foreground mt-3">Pricing will be calculated based on your stay</p>
+                <div class="text-sm text-primary uppercase tracking-widest mb-2">Reserve</div>
+                <p class="text-sm text-muted-foreground mt-3">Contact us for availability and pricing</p>
               </div>
-              
-              <div class="h-px bg-linear-to-r from-transparent via-border to-transparent mb-8" />
-              
-              <!-- Interactive Date & Guest Selection -->
-              <div class="space-y-5 mb-8">
-                <!-- Date Range Picker Island -->
-                <DateRangePicker client:load />
-                
-                <!-- Guest Selector Island -->
-                <GuestSelector client:load />
-              </div>
-              
-              <!-- Reserve Button Island -->
-              <ReserveButton client:load />
-              
-              <p class="text-center text-sm text-muted-foreground mt-5">
-                You won't be charged yet
-              </p>
-              
-              <!-- Dynamic Price Breakdown Island -->
-              <PriceBreakdown client:load />
+              <Button>Reserve Now</Button>
             </div>
-            
-            <!-- Contact Concierge -->
             <div class="mt-5 p-5 rounded-xl bg-card border border-border">
               <button class="w-full flex items-center justify-center gap-3 py-2 text-foreground hover:text-primary transition-colors font-medium">
                 <i data-lucide="message-circle" class="w-5 h-5"></i>
@@ -336,13 +272,11 @@ const bookingContext: BookingContext = {
             </div>
           </div>
         </div>
-        
       </div>
     </div>
   </section>
-  
-  <!-- Exclusive Experiences -->
-  {linkedExperiences.length > 0 && (
+
+  {linkedExperiencesFiltered.length > 0 && (
     <section class="py-20 px-6 bg-card/50">
       <div class="container mx-auto">
         <div class="text-center mb-12">
@@ -352,11 +286,9 @@ const bookingContext: BookingContext = {
             Complement your stay with handpicked experiences, available exclusively for Elite guests
           </p>
         </div>
-        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {linkedExperiences.map((exp) => (
+          {linkedExperiencesFiltered.map((exp) => (
             <div class="group rounded-2xl overflow-hidden bg-card card-hover border border-border">
-              <!-- Image -->
               <div class="relative aspect-16/10 overflow-hidden">
                 <img
                   src={exp.imageUrl}
@@ -364,8 +296,6 @@ const bookingContext: BookingContext = {
                   class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
                 <div class="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
-                
-                <!-- Discount Badge -->
                 {exp.discountPercent > 0 && (
                   <div class="absolute top-4 right-4">
                     <span class="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg">
@@ -373,8 +303,6 @@ const bookingContext: BookingContext = {
                     </span>
                   </div>
                 )}
-                
-                <!-- Category & Duration -->
                 <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between">
                   <span class="badge-elite">{exp.category}</span>
                   <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm">
@@ -382,8 +310,6 @@ const bookingContext: BookingContext = {
                   </span>
                 </div>
               </div>
-              
-              <!-- Content -->
               <div class="p-6">
                 <h3 class="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                   {exp.title}
@@ -393,16 +319,13 @@ const bookingContext: BookingContext = {
                   {exp.location}
                 </p>
                 <div class="flex items-center justify-between">
-                  <div>
-                    <span class="text-sm text-muted-foreground">Available as add-on</span>
-                  </div>
+                  <span class="text-sm text-muted-foreground">Available as add-on</span>
                   <Button variant="secondary">View Details</Button>
                 </div>
               </div>
             </div>
           ))}
         </div>
-        
         <div class="text-center mt-10">
           <a href="/experiences" class="text-primary hover:text-primary-hover transition-colors font-medium inline-flex items-center gap-2">
             Explore all experiences
@@ -412,8 +335,7 @@ const bookingContext: BookingContext = {
       </div>
     </section>
   )}
-  
-  <!-- Location -->
+
   <section class="py-20 px-6">
     <div class="container mx-auto">
       <div class="text-center mb-12">
@@ -428,5 +350,4 @@ const bookingContext: BookingContext = {
       </div>
     </div>
   </section>
-  
 </PageLayout>

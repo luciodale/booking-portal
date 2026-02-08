@@ -3,6 +3,7 @@
  * Replaces native select with a custom dropdown
  */
 
+import { cn } from "@/modules/utils/cn";
 import {
   autoUpdate,
   flip,
@@ -15,7 +16,6 @@ import {
   useListNavigation,
   useRole,
 } from "@floating-ui/react";
-import { cn } from "@/modules/utils/cn";
 import { ChevronDown } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -32,6 +32,7 @@ interface SelectProps {
   disabled?: boolean;
   className?: string;
   error?: boolean;
+  id?: string;
 }
 
 export function Select({
@@ -42,6 +43,7 @@ export function Select({
   disabled = false,
   className,
   error = false,
+  id,
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -92,6 +94,7 @@ export function Select({
     <>
       <button
         type="button"
+        id={id}
         ref={refs.setReference}
         disabled={disabled}
         className={cn(
@@ -106,7 +109,7 @@ export function Select({
         <span className="truncate">{displayLabel}</span>
         <ChevronDown
           className={cn(
-            "w-4 h-4 transition-transform flex-shrink-0 ml-2",
+            "w-4 h-4 transition-transform shrink-0 ml-2",
             isOpen && "rotate-180"
           )}
         />
@@ -131,7 +134,6 @@ export function Select({
                   ref={(node) => {
                     listRef.current[index] = node;
                   }}
-                  role="option"
                   aria-selected={isSelected}
                   tabIndex={isActive ? 0 : -1}
                   className={cn(
@@ -155,4 +157,3 @@ export function Select({
     </>
   );
 }
-

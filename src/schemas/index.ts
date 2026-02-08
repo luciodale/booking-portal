@@ -7,7 +7,6 @@
 // Domain Schemas (derived from Drizzle)
 // ============================================================================
 
-export * from "./booking";
 export * from "./experience";
 export * from "./property";
 export * from "./smoobu";
@@ -29,22 +28,17 @@ export type {
   UpdateExperienceInput,
 } from "./experience";
 
-export type {
-  BookingContextInput,
-  CreateBookingInput,
-} from "./booking";
-
 // ============================================================================
 // Legacy Type Aliases (for backward compatibility with deleted api-client/types)
 // ============================================================================
 
-export type PropertyResponse = PropertyWithDetails;
-export type CreatePropertyRequest = CreatePropertyInput;
-export type UpdatePropertyRequest = UpdatePropertyInput;
+export type PropertyResponse = import("./property").PropertyWithDetails;
+export type CreatePropertyRequest = import("./property").CreatePropertyInput;
+export type UpdatePropertyRequest = import("./property").UpdatePropertyInput;
 
-export type ExperienceResponse = ExperienceWithDetails;
-export type CreateExperienceRequest = CreateExperienceInput;
-export type UpdateExperienceRequest = UpdateExperienceInput;
+export type ExperienceResponse = import("./experience").ExperienceWithDetails;
+export type CreateExperienceRequest = import("./experience").CreateExperienceInput;
+export type UpdateExperienceRequest = import("./experience").UpdateExperienceInput;
 
 // ============================================================================
 // Common API Response Wrappers

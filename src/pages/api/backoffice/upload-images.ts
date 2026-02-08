@@ -1,4 +1,4 @@
-import { uploadImages } from "@/modules/property/api/image-handlers";
+import { uploadImages } from "@/features/broker/property/api/image-handlers";
 
 export const prerender = false;
 

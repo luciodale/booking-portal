@@ -1,90 +1,116 @@
 ---
-import { experienceCategoryLabels, getAssetById, getLinkedExperiences, getPriceInUnits } from '@/data/helpers';
-import PageLayout from '@/layouts/PageLayout.astro';
-import Badge from '@/modules/ui/astro/Badge.astro';
-import ImageGallery from '@/modules/ui/astro/ImageGallery.astro';
+import { experienceCategoryLabels } from "@/data/helpers";
+import {
+  assetExperiences,
+  assets,
+  experiences,
+  experienceImages,
+  getDb,
+  images,
+} from "@/db";
+import PageLayout from "@/layouts/PageLayout.astro";
+import { kebabToDisplay } from "@/features/broker/property/domain/sync-features";
+import { getFacilityIconName } from "@/modules/constants";
+import { generateImageUrl } from "@/modules/r2/r2-helpers";
+import Badge from "@/modules/ui/astro/Badge.astro";
+import Button from "@/modules/ui/astro/Button.astro";
+import ImageGallery from "@/modules/ui/astro/ImageGallery.astro";
+import { and, asc, eq } from "drizzle-orm";
 
-
-import type { BookingContext } from '@/modules/booking/domain/pricing';
-// React island components for interactive booking
-import BookingInitializer from '@/modules/booking/ui/BookingInitializer';
-import { DateRangePicker } from '@/modules/booking/ui/DateRangePicker';
-import GuestSelector from '@/modules/booking/ui/GuestSelector';
-import PriceBreakdown from '@/modules/booking/ui/PriceBreakdown';
-import ReserveButton from '@/modules/booking/ui/ReserveButton';
-import { getFacilityIconName } from "@/modules/shared/constants";
-
-// Server-rendered dynamic route
 export const prerender = false;
 
-// Get property ID from URL
 const { id } = Astro.params;
+if (!id) return Astro.redirect("/");
 
-// Get property from centralized mock data
-const asset = getAssetById(id || '3');
+const db = getDb(Astro.locals.runtime.env.DB);
 
-if (!asset) {
-  return Astro.redirect('/');
-}
+const [asset] = await db
+  .select()
+  .from(assets)
+  .where(eq(assets.id, id))
+  .limit(1);
 
-// Redirect Elite properties to the Elite route
-if (asset.tier === 'elite') {
-  return Astro.redirect(`/elite/${asset.id}`);
-}
+if (!asset) return Astro.redirect("/");
+if (asset.tier === "elite") return Astro.redirect(`/elite/${asset.id}`);
 
-// Prepare property object for template (JSON fields are auto-parsed by Drizzle)
+const assetImagesList = await db
+  .select()
+  .from(images)
+  .where(eq(images.assetId, asset.id))
+  .orderBy(asc(images.order));
+
+const imageUrls = assetImagesList.map((img) => generateImageUrl(img.r2Key));
+
 const property = {
   id: asset.id,
   title: asset.title,
   location: asset.location,
-  address: asset.address ?? asset.location,
+  address: asset.street ?? asset.location,
   tier: asset.tier,
-  description: asset.description ?? '',
-  price: getPriceInUnits(asset.basePrice),
-  currency: asset.currency.toUpperCase(),
+  description: asset.description ?? "",
   bedrooms: asset.bedrooms ?? 0,
   bathrooms: asset.bathrooms ?? 0,
-  maxGuests: asset.maxGuests ?? 2,
+  maxGuests: asset.maxOccupancy ?? 2,
   sqMeters: asset.sqMeters ?? 0,
-  images: asset.images,
+  images: imageUrls,
   amenities: asset.amenities ?? [],
   highlights: asset.highlights ?? [],
   views: asset.views ?? [],
 };
 
-// ----------------------------------------------------------------------------
-// Build Booking Context (Server-Side)
-// ----------------------------------------------------------------------------
+const links = await db
+  .select({
+    experienceId: assetExperiences.experienceId,
+    discountPercent: assetExperiences.discountPercent,
+  })
+  .from(assetExperiences)
+  .where(eq(assetExperiences.assetId, asset.id));
 
-const bookingContext: BookingContext = {
-  assetId: asset.id,
-  pricingModel: 'per_night',
-  basePrice: asset.basePrice, // cents
-  cleaningFee: asset.cleaningFee ?? 0, // cents
-  currency: asset.currency,
-  maxGuests: asset.maxGuests ?? 2,
-  minNights: asset.minNights ?? 1,
-};
+const linkedExperiences = await Promise.all(
+  links.map(async (link) => {
+    const [exp] = await db
+      .select()
+      .from(experiences)
+      .where(eq(experiences.id, link.experienceId))
+      .limit(1);
+    if (!exp) return null;
 
-// Get linked experiences with discounts
-const rawLinkedExperiences = getLinkedExperiences(asset.id);
-const linkedExperiences = rawLinkedExperiences.map(exp => ({
-  id: exp.id,
-  title: exp.title,
-  location: exp.city ?? exp.location,
-  imageUrl: exp.imageUrl ?? '',
-  price: getPriceInUnits(exp.basePrice),
-  duration: exp.duration ?? '',
-  category: exp.category ? experienceCategoryLabels[exp.category] : 'Other',
-  discountPercent: exp.discountPercent,
-}));
+    const [primaryImg] = await db
+      .select()
+      .from(experienceImages)
+      .where(
+        and(
+          eq(experienceImages.experienceId, exp.id),
+          eq(experienceImages.isPrimary, true)
+        )
+      )
+      .limit(1);
+
+    const imageUrl = primaryImg
+      ? generateImageUrl(primaryImg.r2Key)
+      : exp.imageUrl ?? "";
+
+    return {
+      id: exp.id,
+      title: exp.title,
+      location: exp.city ?? exp.location,
+      imageUrl,
+      duration: exp.duration ?? "",
+      category: exp.category ? experienceCategoryLabels[exp.category] ?? exp.category : "Other",
+      discountPercent: link.discountPercent ?? 0,
+    };
+  })
+);
+
+const linkedExperiencesFiltered = linkedExperiences.filter(
+  (e): e is NonNullable<typeof e> => e !== null
+);
 ---
 
-<PageLayout 
+<PageLayout
   title={`${property.title} | Properties`}
   description={property.description.substring(0, 160)}
 >
-  <!-- Back Navigation -->
   <section class="pt-8 px-6">
     <div class="container mx-auto">
       <a href="/" class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
@@ -94,27 +120,19 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
     </div>
   </section>
 
-  <!-- Hero Image Gallery -->
   <section class="py-10 px-6">
     <div class="container mx-auto">
-      <!-- Tier Badge Above Gallery -->
       <div class="mb-6">
         <Badge variant={property.tier} />
       </div>
-      
       <ImageGallery images={property.images} title={property.title} variant="standard" />
     </div>
   </section>
 
-  <!-- Main Content Grid -->
   <section class="py-8 px-6">
     <div class="container mx-auto">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
-        
-        <!-- Left Column - Property Details -->
         <div class="lg:col-span-2 space-y-10">
-          
-          <!-- Title & Location -->
           <div>
             <h1 class="text-3xl md:text-4xl font-bold text-foreground mb-3">
               {property.title}
@@ -124,8 +142,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
               <span>{property.location}</span>
             </div>
           </div>
-          
-          <!-- Key Stats -->
+
           <div class="grid grid-cols-2 md:grid-cols-4 gap-8 p-8 bg-card rounded-2xl">
             <div class="text-center">
               <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
@@ -156,105 +173,71 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
               <div class="text-sm text-muted-foreground">m²</div>
             </div>
           </div>
-          
+
           <div class="divider-elegant"></div>
-          
-          <!-- Highlights -->
+
           <div>
             <h2 class="text-xl font-semibold text-foreground mb-4">Highlights</h2>
             <div class="flex flex-wrap gap-3">
-              {property.highlights.map(highlight => (
+              {property.highlights.map((highlight) => (
                 <span class="flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium">
                   <i data-lucide="check" class="w-4 h-4"></i>
-                  {highlight}
+                  {kebabToDisplay(highlight)}
                 </span>
               ))}
             </div>
           </div>
-          
-          <!-- Description -->
+
           <div>
             <h2 class="text-xl font-semibold text-foreground mb-4">About This Property</h2>
             <div class="prose prose-invert max-w-none">
-              {property.description.split('\n\n').map(paragraph => (
+              {property.description.split("\n\n").map((paragraph) => (
                 <p class="text-muted-foreground leading-relaxed mb-4">{paragraph}</p>
               ))}
             </div>
           </div>
-          
+
           <div class="divider-elegant"></div>
-          
-          <!-- Amenities -->
+
           <div>
             <h2 class="text-xl font-semibold text-foreground mb-6">Amenities</h2>
             <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {property.amenities.map(amenity => (
+              {property.amenities.map((amenity) => (
                 <div class="flex items-center gap-4 px-4 py-3.5 bg-card rounded-xl border border-border/50">
                   <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
                     <i data-lucide={getFacilityIconName(amenity, "amenity")} class="w-4 h-4 text-primary"></i>
                   </div>
-                  <span class="text-foreground text-sm font-medium">{amenity}</span>
+                  <span class="text-foreground text-sm font-medium">{kebabToDisplay(amenity)}</span>
                 </div>
               ))}
             </div>
           </div>
-          
+
           <div class="divider-elegant"></div>
-          
-          <!-- Views -->
+
           <div>
             <h2 class="text-xl font-semibold text-foreground mb-4">Views</h2>
             <div class="flex flex-wrap gap-3">
-              {property.views.map(view => (
+              {property.views.map((view) => (
                 <span class="amenity-chip">
                   <i data-lucide="eye" class="w-4 h-4"></i>
-                  {view}
+                  {kebabToDisplay(view)}
                 </span>
               ))}
             </div>
           </div>
-          
         </div>
-        
-        
-        <!-- Right Column - Booking Sidebar -->
+
         <div class="lg:col-span-1">
-          <!-- Invisible initializer island - sets up the booking store -->
-          <BookingInitializer
-            client:load
-            context={bookingContext}
-          />
-          
           <div class="sticky top-28">
             <div class="p-7 rounded-2xl bg-card border border-border">
-              <!-- Price - Hidden until dates selected, shown in breakdown below -->
               <div class="mb-8">
                 <div class="text-sm text-muted-foreground">
-                  Select dates below to see pricing
+                  Contact us for availability and pricing
                 </div>
               </div>
-              
-              <!-- Interactive Date & Guest Selection -->
-              <div class="space-y-5 mb-8">
-                <!-- Date Range Picker Island -->
-                <DateRangePicker client:load />
-                
-                <!-- Guest Selector Island -->
-                <GuestSelector client:load />
-              </div>
-              
-              <!-- Reserve Button Island -->
-              <ReserveButton client:load />
-              
-              <p class="text-center text-sm text-muted-foreground mt-5">
-                You won't be charged yet
-              </p>
-              
-              <!-- Dynamic Price Breakdown Island -->
-              <PriceBreakdown client:load />
+              <Button>Reserve Now</Button>
             </div>
-            
-            <!-- Contact Host -->
             <div class="mt-5 p-5 rounded-xl bg-card border border-border">
               <button class="w-full flex items-center justify-center gap-3 py-2 text-foreground hover:text-primary transition-colors font-medium">
                 <i data-lucide="message-circle" class="w-5 h-5"></i>
@@ -263,13 +246,11 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
             </div>
           </div>
         </div>
-        
       </div>
     </div>
   </section>
-  
-  <!-- Linked Experiences Section -->
-  {linkedExperiences.length > 0 && (
+
+  {linkedExperiencesFiltered.length > 0 && (
     <section class="py-16 px-6 bg-card/50">
       <div class="container mx-auto">
         <div class="flex items-center justify-between mb-8">
@@ -281,11 +262,9 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
             View all experiences →
           </a>
         </div>
-        
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {linkedExperiences.map((exp) => (
+          {linkedExperiencesFiltered.map((exp) => (
             <div class="group rounded-2xl overflow-hidden bg-card card-hover border border-border">
-              <!-- Image -->
               <div class="relative aspect-[16/9] overflow-hidden">
                 <img
                   src={exp.imageUrl}
@@ -293,8 +272,6 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
                   class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                
-                <!-- Discount Badge -->
                 {exp.discountPercent > 0 && (
                   <div class="absolute top-4 right-4">
                     <span class="px-3 py-1 rounded-full bg-primary text-primary-foreground text-xs font-bold">
@@ -302,21 +279,15 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
                     </span>
                   </div>
                 )}
-                
-                <!-- Category Badge -->
                 <div class="absolute top-4 left-4">
                   <span class="badge-elite">{exp.category}</span>
                 </div>
-                
-                <!-- Duration -->
                 <div class="absolute bottom-4 right-4">
                   <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm">
                     {exp.duration}
                   </span>
                 </div>
               </div>
-              
-              <!-- Content -->
               <div class="p-5">
                 <h3 class="text-lg font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
                   {exp.title}
@@ -326,10 +297,8 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
                   {exp.location}
                 </p>
                 <div class="flex items-center justify-between">
-                  <div>
-                    <span class="text-sm text-muted-foreground">Available as add-on</span>
-                  </div>
-                  <button class="btn-secondary text-sm py-2 px-4">View Details</button>
+                  <span class="text-sm text-muted-foreground">Available as add-on</span>
+                  <Button variant="secondary">View Details</Button>
                 </div>
               </div>
             </div>
@@ -338,8 +307,7 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
       </div>
     </section>
   )}
-  
-  <!-- Location Map Placeholder -->
+
   <section class="py-16 px-6">
     <div class="container mx-auto">
       <h2 class="text-2xl font-bold text-foreground mb-6">Location</h2>
@@ -352,5 +320,4 @@ const linkedExperiences = rawLinkedExperiences.map(exp => ({
       </div>
     </div>
   </section>
-  
 </PageLayout>

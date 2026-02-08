@@ -1,16 +1,38 @@
 ---
-import { mockAssets } from "@/data/mocks";
+import { assets, getDb, images } from "@/db";
 import PageLayout from "@/layouts/PageLayout.astro";
+import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import Button from "@/modules/ui/astro/Button.astro";
 import Heading from "@/modules/ui/astro/Heading.astro";
 import Hero from "@/modules/ui/astro/Hero.astro";
 import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
+import { and, desc, eq } from "drizzle-orm";
 
-// Transform assets to PropertyCard format
-const featuredProperties = mockAssets.slice(0, 6).map((asset) => ({
-  asset,
-  imageUrl: asset.images[0],
-}));
+export const prerender = false;
+
+const db = getDb(Astro.locals.runtime.env.DB);
+
+const assetsRaw = await db
+  .select()
+  .from(assets)
+  .where(eq(assets.status, "published"))
+  .orderBy(desc(assets.createdAt))
+  .limit(12);
+
+const featuredProperties = await Promise.all(
+  assetsRaw.map(async (asset) => {
+    const [primaryImage] = await db
+      .select()
+      .from(images)
+      .where(and(eq(images.assetId, asset.id), eq(images.isPrimary, true)))
+      .limit(1);
+
+    return {
+      asset,
+      imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
+    };
+  }),
+);
 
 const eliteProperties = featuredProperties.filter(
   (p) => p.asset.tier === "elite",
@@ -21,7 +43,6 @@ const standardProperties = featuredProperties.filter(
 ---
 
 <PageLayout title="Home">
-  <!-- Hero Section -->
   <Hero
     badge="Premium Collection"
     title="Discover Extraordinary Places to Stay"
@@ -31,7 +52,6 @@ const standardProperties = featuredProperties.filter(
     backgroundImage="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80"
   />
 
-  <!-- Elite Collection -->
   <section class="py-20 px-6">
     <div class="container mx-auto">
       <div class="flex items-center justify-between mb-12">
@@ -53,12 +73,13 @@ const standardProperties = featuredProperties.filter(
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {eliteProperties.map((property) => <PropertyCard {...property} />)}
+        {eliteProperties.map((property) => (
+          <PropertyCard {...property} price={null} />
+        ))}
       </div>
     </div>
   </section>
 
-  <!-- Standard Collection -->
   <section class="py-20 px-6 bg-card">
     <div class="container mx-auto">
       <div class="flex items-center justify-between mb-12">
@@ -78,12 +99,13 @@ const standardProperties = featuredProperties.filter(
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {standardProperties.map((property) => <PropertyCard {...property} />)}
+        {standardProperties.map((property) => (
+          <PropertyCard {...property} price={null} />
+        ))}
       </div>
     </div>
   </section>
 
-  <!-- CTA Section -->
   <section class="py-24 px-6 relative overflow-hidden">
     <div class="absolute inset-0">
       <div

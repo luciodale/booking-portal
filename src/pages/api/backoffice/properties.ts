@@ -1,7 +1,7 @@
 import {
   createProperty,
   listProperties,
-} from "@/modules/property/api/handlers";
+} from "@/features/broker/property/api/handlers";
 
 export const prerender = false;
 

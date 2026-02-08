@@ -22,6 +22,8 @@ export const smoobuUserSchema = z.object({
   id: z.number(),
   email: z.string().email(),
   name: z.string().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
 });
 
 export type SmoobuUser = z.infer<typeof smoobuUserSchema>;
@@ -190,7 +192,7 @@ export const smoobuCreateBookingRequestSchema = z.object({
   departureTime: z.string().optional(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  email: z.string().email().optional(),
+  email: z.email().optional(),
   phone: z.string().optional(),
   notice: z.string().optional(),
   adults: z.number().optional(),

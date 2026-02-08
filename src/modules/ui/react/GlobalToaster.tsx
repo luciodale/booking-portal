@@ -1,4 +1,4 @@
-import { notificationStore } from "@/modules/shared/notificationStore";
+import { notificationStore } from "@/modules/ui/react/stores/notificationStore";
 import { useStore } from "@nanostores/react";
 import { useEffect } from "react";
 import { Toaster, toast } from "sonner";

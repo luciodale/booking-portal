@@ -2,7 +2,7 @@ import {
   deleteProperty,
   getProperty,
   updateProperty,
-} from "@/modules/property/api/handlers";
+} from "@/features/broker/property/api/handlers";
 
 export const prerender = false;
 

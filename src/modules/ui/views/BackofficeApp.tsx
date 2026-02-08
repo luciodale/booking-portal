@@ -1,23 +1,16 @@
-import { experiencesRoute } from "@/modules/experience/routes/experiences";
-import { editExperienceRoute } from "@/modules/experience/routes/experiences.$id.edit";
-import { createExperienceRoute } from "@/modules/experience/routes/experiences.new";
-import { rootRoute } from "@/modules/property/routes/BackofficeRoot";
-import { indexRoute } from "@/modules/property/routes/index";
-import { propertiesRoute } from "@/modules/property/routes/properties";
-import { editPropertyRoute } from "@/modules/property/routes/properties.$id.edit";
-import { createPropertyRoute } from "@/modules/property/routes/properties.new";
+import { brokenRoute } from "@/features/broker/property/routes/broken";
+import { rootRoute } from "@/features/broker/property/routes/BackofficeRoot";
+import { indexRoute } from "@/features/broker/property/routes/index";
+import { propertiesRoute } from "@/features/broker/property/routes/properties";
+import { editPropertyRoute } from "@/features/broker/property/routes/properties.$id.edit";
+import { createPropertyRoute } from "@/features/broker/property/routes/properties.new";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  // Properties
   propertiesRoute,
-  createPropertyRoute,
   editPropertyRoute,
-  // Experiences
-  experiencesRoute,
-  createExperienceRoute,
-  editExperienceRoute,
+  brokenRoute.addChildren([createPropertyRoute]),
 ]);
 
 const router = createRouter({

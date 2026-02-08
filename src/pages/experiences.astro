@@ -1,34 +1,59 @@
 ---
-import { experienceCategoryLabels, getPriceInUnits } from '@/data/helpers';
-import { mockExperiences } from '@/data/mocks';
-import PageLayout from '@/layouts/PageLayout.astro';
-import { ExperienceListWithPricing } from '@/modules/experience/ui/ExperienceListWithPricing';
-import Button from '@/modules/ui/astro/Button.astro';
-import Heading from '@/modules/ui/astro/Heading.astro';
-import Hero from '@/modules/ui/astro/Hero.astro';
+import { experienceCategoryLabels } from "@/data/helpers";
+import { experienceImages, experiences, getDb } from "@/db";
+import PageLayout from "@/layouts/PageLayout.astro";
+import { generateImageUrl } from "@/modules/r2/r2-helpers";
+import Button from "@/modules/ui/astro/Button.astro";
+import Heading from "@/modules/ui/astro/Heading.astro";
+import Hero from "@/modules/ui/astro/Hero.astro";
+import { and, asc, eq } from "drizzle-orm";
 
-// Transform experiences for display
-const experiences = mockExperiences.map(exp => ({
-  id: exp.id,
-  title: exp.title,
-  location: exp.location,
-  imageUrl: exp.imageUrl ?? '',
-  price: getPriceInUnits(exp.basePrice),
-  duration: exp.duration ?? '',
-  category: exp.category ? experienceCategoryLabels[exp.category] : 'Other',
-}));
+export const prerender = false;
 
-const experienceIds = experiences.map(e => e.id);
+const db = getDb(Astro.locals.runtime.env.DB);
 
-const categories = ['All', 'Sailing', 'Food & Wine', 'Adventure', 'Culture'];
+const experiencesRaw = await db
+  .select()
+  .from(experiences)
+  .where(eq(experiences.status, "published"))
+  .orderBy(asc(experiences.createdAt));
+
+const experiencesWithImages = await Promise.all(
+  experiencesRaw.map(async (exp) => {
+    const [primaryImg] = await db
+      .select()
+      .from(experienceImages)
+      .where(
+        and(
+          eq(experienceImages.experienceId, exp.id),
+          eq(experienceImages.isPrimary, true)
+        )
+      )
+      .limit(1);
+
+    const imageUrl = primaryImg
+      ? generateImageUrl(primaryImg.r2Key)
+      : exp.imageUrl ?? "";
+
+    return {
+      id: exp.id,
+      title: exp.title,
+      location: exp.city ?? exp.location,
+      imageUrl,
+      duration: exp.duration ?? "",
+      category: exp.category ? experienceCategoryLabels[exp.category] ?? exp.category : "Other",
+    };
+  })
+);
+
+const categories = ["All", "Sailing", "Food & Wine", "Adventure", "Culture"];
 ---
 
-<PageLayout 
-  title="Experiences" 
+<PageLayout
+  title="Experiences"
   description="Curated luxury experiences to complement your stay."
   showMarble
 >
-  <!-- Hero -->
   <Hero
     badge="Exclusive Access"
     title="Unforgettable Experiences"
@@ -37,22 +62,16 @@ const categories = ['All', 'Sailing', 'Food & Wine', 'Adventure', 'Culture'];
     height="medium"
   />
 
-  <!-- Date Picker -->
-  <section class="border-b border-border/50 bg-card/50">
-    <div class="container mx-auto px-6 py-6">
-      <ExperienceListWithPricing client:load experienceIds={experienceIds} />
-    </div>
-  </section>
-
-  <!-- Categories -->
   <section class="py-8 px-6 border-b border-border">
     <div class="container mx-auto">
       <div class="flex flex-wrap items-center gap-3">
         {categories.map((cat, i) => (
-          <button class:list={[
-            "amenity-chip",
-            { "!bg-primary !text-primary-foreground": i === 0 }
-          ]}>
+          <button
+            class:list={[
+              "amenity-chip",
+              { "!bg-primary !text-primary-foreground": i === 0 },
+            ]}
+          >
             {cat}
           </button>
         ))}
@@ -60,18 +79,15 @@ const categories = ['All', 'Sailing', 'Food & Wine', 'Adventure', 'Culture'];
     </div>
   </section>
 
-  <!-- Experiences Grid -->
   <section class="py-16 px-6">
     <div class="container mx-auto">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="experience-grid">
-        {experiences.map((exp, index) => (
-          <a 
-            href={`/experience/${exp.id}`}
-            class="group block rounded-2xl overflow-hidden bg-card card-hover animate-slide-up opacity-0 experience-card-wrapper"
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {experiencesWithImages.map((exp, index) => (
+          <a
+            href={`/experiences/${exp.id}`}
+            class="group block rounded-2xl overflow-hidden bg-card card-hover animate-slide-up opacity-0"
             style={`animation-delay: ${0.1 + index * 0.1}s`}
-            data-experience-id={exp.id}
           >
-            <!-- Image -->
             <div class="relative aspect-[4/3] overflow-hidden">
               <img
                 src={exp.imageUrl}
@@ -80,32 +96,23 @@ const categories = ['All', 'Sailing', 'Food & Wine', 'Adventure', 'Culture'];
                 loading="lazy"
               />
               <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              
-              <!-- Category Badge -->
               <div class="absolute top-4 left-4">
                 <span class="badge-elite">{exp.category}</span>
               </div>
-              
-              <!-- Duration -->
               <div class="absolute bottom-4 right-4">
                 <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm">
                   {exp.duration}
                 </span>
               </div>
             </div>
-            
-            <!-- Content -->
             <div class="p-5">
               <h3 class="text-lg font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
                 {exp.title}
               </h3>
-              <p class="text-muted-foreground text-sm mb-4 flex items-center gap-1">
+              <p class="text-muted-foreground text-sm flex items-center gap-1">
                 <i data-lucide="map-pin" class="w-4 h-4"></i>
                 {exp.location}
               </p>
-              <div class="text-foreground experience-price">
-                <span class="text-lg font-medium text-muted-foreground">Select dates for pricing</span>
-              </div>
             </div>
           </a>
         ))}
@@ -113,40 +120,6 @@ const categories = ['All', 'Sailing', 'Food & Wine', 'Adventure', 'Culture'];
     </div>
   </section>
 
-  <script>
-    // Listen for price updates and update experience cards
-    window.addEventListener('pricesUpdated', ((event: CustomEvent) => {
-      const prices = event.detail.prices;
-      
-      document.querySelectorAll('.experience-card-wrapper').forEach((wrapper) => {
-        const experienceId = wrapper.getAttribute('data-experience-id');
-        if (!experienceId) return;
-        
-        const priceData = prices[experienceId];
-        const priceDiv = wrapper.querySelector('.experience-price');
-        
-        if (!priceDiv) return;
-        
-        if (priceData) {
-          // Show computed price (per person for experiences)
-          const currency = priceData.currency === 'eur' ? '€' : priceData.currency.toUpperCase();
-          const displayPrice = (priceData.computedPrice / 100).toLocaleString();
-          
-          priceDiv.innerHTML = `
-            <span class="text-xl font-bold">${currency}${displayPrice}</span>
-            <span class="text-muted-foreground text-sm"> / person</span>
-          `;
-        } else {
-          // Show placeholder
-          priceDiv.innerHTML = `
-            <span class="text-lg font-medium text-muted-foreground">Select dates for pricing</span>
-          `;
-        }
-      });
-    }) as EventListener);
-  </script>
-
-  <!-- CTA -->
   <section class="py-20 px-6 bg-card text-center">
     <div class="container mx-auto max-w-2xl">
       <Heading level={2} class="mb-4">

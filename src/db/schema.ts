@@ -33,17 +33,17 @@ export const brokers = sqliteTable("brokers", {
 });
 
 // ============================================================================
-// PMC Integrations table - Property Management Company integrations (Smoobu)
+// PMS Integrations table - Property Management System integrations (Smoobu)
 // ============================================================================
-export const pmcIntegrations = sqliteTable("pmc_integrations", {
+export const pmsIntegrations = sqliteTable("pms_integrations", {
   id: text("id").primaryKey(),
   brokerId: text("broker_id")
     .notNull()
     .references(() => brokers.id),
   provider: text("provider").notNull(), // "smoobu"
   apiKey: text("api_key").notNull(),
-  smoobuUserId: integer("smoobu_user_id"),
-  smoobuEmail: text("smoobu_email"),
+  pmsUserId: integer("pms_user_id"),
+  pmsEmail: text("pms_email"),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
@@ -193,7 +193,7 @@ export const bookings = sqliteTable("bookings", {
   guests: integer("guests").notNull().default(1),
 
   // Pricing breakdown
-  baseTotal: integer("base_total").notNull(), // Base price * nights
+  baseTotal: integer("base_total").notNull(),
   cleaningFee: integer("cleaning_fee").notNull().default(0),
   serviceFee: integer("service_fee").notNull().default(0),
   totalPrice: integer("total_price").notNull(), // Final price in cents
@@ -373,8 +373,8 @@ export const assetsLocationIdx = index("idx_assets_city").on(assets.city);
 
 export const imagesAssetIdx = index("idx_images_asset").on(images.assetId);
 
-export const pmcIntegrationsBrokerIdx = index("idx_pmc_integrations_broker").on(
-  pmcIntegrations.brokerId
+export const pmsIntegrationsBrokerIdx = index("idx_pms_integrations_broker").on(
+  pmsIntegrations.brokerId
 );
 
 export const brokerLogsBrokerIdx = index("idx_broker_logs_broker").on(
@@ -452,8 +452,8 @@ export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Broker = typeof brokers.$inferSelect;
 export type NewBroker = typeof brokers.$inferInsert;
-export type PmcIntegration = typeof pmcIntegrations.$inferSelect;
-export type NewPmcIntegration = typeof pmcIntegrations.$inferInsert;
+export type PmsIntegration = typeof pmsIntegrations.$inferSelect;
+export type NewPmsIntegration = typeof pmsIntegrations.$inferInsert;
 export type Asset = typeof assets.$inferSelect;
 export type NewAsset = typeof assets.$inferInsert;
 export type Image = typeof images.$inferSelect;

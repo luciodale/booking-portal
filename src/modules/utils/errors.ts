@@ -2,7 +2,7 @@
  * Error utilities for formatting and displaying errors
  */
 
-import type { ApiError } from "@/modules/api-client/client";
+import type { ApiError } from "@/modules/ui-api/client";
 import type { ZodIssue } from "zod";
 
 /**

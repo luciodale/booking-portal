@@ -1,0 +1,67 @@
+---
+import { assets, getDb, images } from "@/db";
+import PageLayout from "@/layouts/PageLayout.astro";
+import { generateImageUrl } from "@/modules/r2/r2-helpers";
+import Button from "@/modules/ui/astro/Button.astro";
+import Hero from "@/modules/ui/astro/Hero.astro";
+import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
+import { and, desc, eq } from "drizzle-orm";
+
+export const prerender = false;
+
+const db = getDb(Astro.locals.runtime.env.DB);
+
+const standardPropertiesRaw = await db
+  .select()
+  .from(assets)
+  .where(and(eq(assets.tier, "standard"), eq(assets.status, "published")))
+  .orderBy(desc(assets.createdAt));
+
+const standardProperties = await Promise.all(
+  standardPropertiesRaw.map(async (asset) => {
+    const [primaryImage] = await db
+      .select()
+      .from(images)
+      .where(and(eq(images.assetId, asset.id), eq(images.isPrimary, true)))
+      .limit(1);
+
+    return {
+      asset,
+      imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
+    };
+  }),
+);
+---
+
+<PageLayout
+  title="Standard Collection"
+  description="Quality stays at exceptional value."
+>
+  <Hero
+    badge="Standard"
+    title="Standard Collection"
+    subtitle="Quality stays at exceptional value."
+    height="medium"
+  />
+
+  <section class="py-16 px-6">
+    <div class="container mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {
+          standardProperties.map((property, index) => (
+            <div
+              class="animate-slide-up opacity-0"
+              style={`animation-delay: ${0.1 + index * 0.1}s`}
+            >
+              <PropertyCard {...property} price={null} />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-20 px-6 text-center">
+    <Button variant="secondary" href="/">Back to Home</Button>
+  </section>
+</PageLayout>
