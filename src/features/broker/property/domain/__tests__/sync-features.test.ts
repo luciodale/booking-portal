@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  type FeatureFields,
   displayToKebab,
   kebabToDisplay,
   syncFeatureFields,
 } from "../sync-features";
 
 describe("syncFeatureFields", () => {
-  const emptyFields: FeatureFields = {
+  const emptyFields = {
     amenities: [],
     highlights: [],
     views: [],
@@ -40,7 +39,7 @@ describe("syncFeatureFields", () => {
 
   describe("syncing across fields", () => {
     it("removes item from other fields when added", () => {
-      const current: FeatureFields = {
+      const current = {
         amenities: ["pool", "wifi"],
         highlights: [],
         views: [],
@@ -56,7 +55,7 @@ describe("syncFeatureFields", () => {
     });
 
     it("removes item from multiple other fields", () => {
-      const current: FeatureFields = {
+      const current = {
         amenities: ["pool"],
         highlights: ["spa"],
         views: ["pool", "sea"],
@@ -72,7 +71,7 @@ describe("syncFeatureFields", () => {
     });
 
     it("handles item moving from highlights to views", () => {
-      const current: FeatureFields = {
+      const current = {
         amenities: [],
         highlights: ["sunset"],
         views: ["sea"],
@@ -90,7 +89,7 @@ describe("syncFeatureFields", () => {
 
   describe("removing items", () => {
     it("removes item without affecting other fields", () => {
-      const current: FeatureFields = {
+      const current = {
         amenities: ["pool", "wifi"],
         highlights: ["spa"],
         views: ["sea"],
@@ -108,7 +107,7 @@ describe("syncFeatureFields", () => {
 
   describe("no changes", () => {
     it("returns same values when nothing added", () => {
-      const current: FeatureFields = {
+      const current = {
         amenities: ["pool"],
         highlights: ["spa"],
         views: ["sea"],
@@ -122,7 +121,7 @@ describe("syncFeatureFields", () => {
 
   describe("edge cases", () => {
     it("handles empty new value", () => {
-      const current: FeatureFields = {
+      const current = {
         amenities: ["pool", "wifi"],
         highlights: [],
         views: [],
@@ -138,7 +137,7 @@ describe("syncFeatureFields", () => {
     });
 
     it("does not affect other fields when removing all items", () => {
-      const current: FeatureFields = {
+      const current = {
         amenities: ["pool"],
         highlights: ["spa"],
         views: ["sea"],

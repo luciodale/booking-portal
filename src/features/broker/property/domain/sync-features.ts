@@ -3,7 +3,7 @@
  * Pure functions for syncing amenities/highlights/views to prevent duplicates
  */
 
-export type FeatureFields = {
+type FeatureFields = {
   amenities: string[];
   highlights: string[];
   views: string[];
