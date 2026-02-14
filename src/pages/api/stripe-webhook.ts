@@ -1,5 +1,5 @@
 import { getDb } from "@/db";
-import { assets, bookings, brokerLogs, pmsIntegrations } from "@/db/schema";
+import { assets, bookings, brokerLogs, pmsIntegrations, users } from "@/db/schema";
 import { createSmoobuBooking } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCreateBooking";
 import { getStripeKeys } from "@/features/public/booking/stripe-config";
 import { createEventLogger } from "@/modules/logging/eventLogger";
@@ -51,54 +51,75 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const db = getDb(D1Database);
 
   try {
-    // Look up booking by stripe session ID
-    const [booking] = await db
-      .select()
+    const meta = session.metadata ?? {};
+
+    // Idempotency: skip if booking with this stripeSessionId already exists
+    const [existingBooking] = await db
+      .select({ id: bookings.id })
       .from(bookings)
       .where(eq(bookings.stripeSessionId, session.id))
       .limit(1);
 
-    if (!booking) {
-      console.error(`No booking found for stripe session: ${session.id}`);
+    if (existingBooking) {
+      return new Response("OK", { status: 200 });
+    }
+
+    // Look up internal userId from clerkUserId
+    const [user] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.clerkUserId, meta.clerkUserId ?? ""))
+      .limit(1);
+
+    if (!user) {
+      console.error(`No user found for clerkUserId: ${meta.clerkUserId}`);
       log.error({
         source: "stripe-webhook",
-        message: `No booking found for stripe session: ${session.id}`,
-        metadata: { stripeSessionId: session.id },
+        message: `No user found for clerkUserId: ${meta.clerkUserId}`,
+        metadata: { stripeSessionId: session.id, clerkUserId: meta.clerkUserId },
       });
       return new Response("OK", { status: 200 });
     }
 
-    // Idempotency: skip if already confirmed
-    if (booking.status === "confirmed") {
-      return new Response("OK", { status: 200 });
-    }
+    // Create booking from session metadata
+    const bookingId = nanoid();
+    const totalPriceCents = Number(meta.totalPriceCents);
 
-    // Update booking status
-    await db
-      .update(bookings)
-      .set({
-        status: "confirmed",
-        stripePaymentIntentId: session.payment_intent as string | null,
-        paidAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      })
-      .where(eq(bookings.id, booking.id));
+    await db.insert(bookings).values({
+      id: bookingId,
+      assetId: meta.propertyId ?? "",
+      userId: user.id,
+      checkIn: meta.checkIn ?? "",
+      checkOut: meta.checkOut ?? "",
+      nights: Number(meta.nights),
+      guests: Number(meta.guests),
+      baseTotal: totalPriceCents,
+      cleaningFee: 0,
+      serviceFee: 0,
+      totalPrice: totalPriceCents,
+      currency: meta.currency ?? "eur",
+      status: "confirmed",
+      stripeSessionId: session.id,
+      stripePaymentIntentId: (session.payment_intent as string) ?? null,
+      paidAt: new Date().toISOString(),
+      guestNote: meta.guestNote || null,
+    });
 
     // Fetch asset + integration for Smoobu booking creation
     const [asset] = await db
       .select()
       .from(assets)
-      .where(eq(assets.id, booking.assetId))
+      .where(eq(assets.id, meta.propertyId ?? ""))
       .limit(1);
 
     if (!asset?.smoobuPropertyId) {
       console.error(
-        `Asset ${booking.assetId} not found or missing smoobuPropertyId`
+        `Asset ${meta.propertyId} not found or missing smoobuPropertyId`
       );
       log.error({
         source: "stripe-webhook",
-        message: `Asset ${booking.assetId} not found or missing smoobuPropertyId`,
-        metadata: { bookingId: booking.id, assetId: booking.assetId },
+        message: `Asset ${meta.propertyId} not found or missing smoobuPropertyId`,
+        metadata: { bookingId, assetId: meta.propertyId },
       });
       return new Response("OK", { status: 200 });
     }
@@ -114,27 +135,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
       log.error({
         source: "stripe-webhook",
         message: `No Smoobu integration for user ${asset.userId}`,
-        metadata: { bookingId: booking.id, userId: asset.userId },
+        metadata: { bookingId, userId: asset.userId },
       });
       return new Response("OK", { status: 200 });
     }
 
     // Create Smoobu reservation
-    const metadata = session.metadata ?? {};
     try {
       const smoobuResult = await createSmoobuBooking(integration.apiKey, {
-        arrivalDate: booking.checkIn,
-        departureDate: booking.checkOut,
+        arrivalDate: meta.checkIn ?? "",
+        departureDate: meta.checkOut ?? "",
         channelId: SMOOBU_CHANNEL_ID,
         apartmentId: asset.smoobuPropertyId,
-        firstName: metadata.guestFirstName,
-        lastName: metadata.guestLastName,
-        email: metadata.guestEmail,
-        phone: metadata.guestPhone || undefined,
-        adults: metadata.adults ? Number(metadata.adults) : undefined,
-        children: metadata.children ? Number(metadata.children) : undefined,
-        notice: booking.guestNote ?? undefined,
-        price: booking.totalPrice / 100,
+        firstName: meta.guestFirstName,
+        lastName: meta.guestLastName,
+        email: meta.guestEmail,
+        phone: meta.guestPhone || undefined,
+        adults: meta.adults ? Number(meta.adults) : undefined,
+        children: meta.children ? Number(meta.children) : undefined,
+        notice: meta.guestNote || undefined,
+        price: totalPriceCents / 100,
         priceStatus: 1,
       });
 
@@ -145,13 +165,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
           smoobuReservationId: smoobuResult.id,
           updatedAt: new Date().toISOString(),
         })
-        .where(eq(bookings.id, booking.id));
+        .where(eq(bookings.id, bookingId));
 
       log.info({
         source: "stripe-webhook",
-        message: `Booking ${booking.id} confirmed, Smoobu reservation ${smoobuResult.id} created`,
+        message: `Booking ${bookingId} confirmed, Smoobu reservation ${smoobuResult.id} created`,
         metadata: {
-          bookingId: booking.id,
+          bookingId,
           smoobuReservationId: smoobuResult.id,
           stripeSessionId: session.id,
         },
@@ -162,8 +182,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         id: nanoid(),
         userId: asset.userId,
         eventType: "smoobu_booking_success",
-        relatedEntityId: booking.id,
-        message: `Smoobu reservation ${smoobuResult.id} created for booking ${booking.id}`,
+        relatedEntityId: bookingId,
+        message: `Smoobu reservation ${smoobuResult.id} created for booking ${bookingId}`,
         metadata: {
           smoobuReservationId: smoobuResult.id,
           stripeSessionId: session.id,
@@ -173,8 +193,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.error("Smoobu booking creation failed:", smoobuError);
       log.error({
         source: "stripe-webhook",
-        message: `Smoobu booking creation failed for booking ${booking.id}: ${smoobuError instanceof Error ? smoobuError.message : "Unknown error"}`,
-        metadata: { bookingId: booking.id, stripeSessionId: session.id },
+        message: `Smoobu booking creation failed for booking ${bookingId}: ${smoobuError instanceof Error ? smoobuError.message : "Unknown error"}`,
+        metadata: { bookingId, stripeSessionId: session.id },
       });
 
       // Log failure
@@ -182,8 +202,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
         id: nanoid(),
         userId: asset.userId,
         eventType: "smoobu_booking_failure",
-        relatedEntityId: booking.id,
-        message: `Failed to create Smoobu reservation for booking ${booking.id}: ${smoobuError instanceof Error ? smoobuError.message : "Unknown error"}`,
+        relatedEntityId: bookingId,
+        message: `Failed to create Smoobu reservation for booking ${bookingId}: ${smoobuError instanceof Error ? smoobuError.message : "Unknown error"}`,
         metadata: { stripeSessionId: session.id },
       });
     }

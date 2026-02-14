@@ -1,5 +1,5 @@
 import { getDb } from "@/db";
-import { assets, bookings, pmsIntegrations } from "@/db/schema";
+import { assets, pmsIntegrations } from "@/db/schema";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
 import { computeStayPrice } from "@/features/public/booking/domain/computeStayPrice";
@@ -8,7 +8,6 @@ import { requireAuth } from "@/modules/auth/auth";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { nanoid } from "nanoid";
 import Stripe from "stripe";
 import { z } from "zod";
 
@@ -45,7 +44,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!D1Database)
       return jsonResponse({ error: "Database not available" }, 503);
 
-    const { secretKey: stripeKey } = getStripeKeys(locals.runtime?.env ?? {} as Env);
+    const { secretKey: stripeKey } = getStripeKeys(
+      locals.runtime?.env ?? ({} as Env)
+    );
     if (!stripeKey)
       return jsonResponse({ error: "Stripe not configured" }, 503);
 
@@ -164,28 +165,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    // Create booking row
-    const bookingId = nanoid();
     const priceInCents = Math.round(serverPrice * 100);
 
-    await db.insert(bookings).values({
-      id: bookingId,
-      assetId: propertyId,
-      userId: authContext.userId,
-      checkIn,
-      checkOut,
-      nights,
-      guests,
-      baseTotal: priceInCents,
-      cleaningFee: 0,
-      serviceFee: 0,
-      totalPrice: priceInCents,
-      currency: currency.toLowerCase(),
-      status: "pending",
-      guestNote: guestInfo.guestNote ?? null,
-    });
-
-    // Create Stripe Checkout Session
+    // Create Stripe Checkout Session (booking is created by webhook after payment)
     const stripe = new Stripe(stripeKey);
 
     const origin = new URL(request.url).origin;
@@ -206,9 +188,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
         },
       ],
       metadata: {
-        bookingId,
         propertyId,
         smoobuPropertyId: propId,
+        clerkUserId: authContext.clerkUserId,
+        checkIn,
+        checkOut,
+        nights: String(nights),
+        guests: String(guests),
+        currency: currency.toLowerCase(),
+        totalPriceCents: String(priceInCents),
+        guestNote: guestInfo.guestNote ?? "",
         guestFirstName: guestInfo.firstName,
         guestLastName: guestInfo.lastName,
         guestEmail: guestInfo.email,
@@ -220,16 +209,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
       cancel_url: `${origin}/elite/${propertyId}`,
     });
 
-    // Update booking with Stripe session ID
-    await db
-      .update(bookings)
-      .set({ stripeSessionId: session.id })
-      .where(eq(bookings.id, bookingId));
-
     log.info({
       source: "checkout",
-      message: `Checkout session created for booking ${bookingId}`,
-      metadata: { bookingId, propertyId, stripeSessionId: session.id },
+      message: "Checkout session created",
+      metadata: { propertyId, stripeSessionId: session.id },
     });
 
     return jsonResponse({ url: session.url });
@@ -243,7 +226,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       createEventLogger(D1).error({
         source: "checkout",
         message: `Checkout failed: ${error instanceof Error ? error.message : "Unknown error"}`,
-        metadata: { error: error instanceof Error ? error.message : String(error) },
+        metadata: {
+          error: error instanceof Error ? error.message : String(error),
+        },
       });
     }
     return jsonResponse(
