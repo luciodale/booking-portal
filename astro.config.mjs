@@ -13,6 +13,8 @@ export default defineConfig({
   integrations: [
     react(),
     clerk({
+      publishableKey:
+        "pk_test_ZXF1aXBwZWQtc2hyZXctMTUuY2xlcmsuYWNjb3VudHMuZGV2JA",
       signInUrl: "/sign-in",
       signUpUrl: "/sign-up",
       signInFallbackRedirectUrl: "/",
