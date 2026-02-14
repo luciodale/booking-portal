@@ -1,7 +1,7 @@
 {
   "extends": "astro/tsconfigs/strict",
   "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "scripts"],
+  "exclude": ["dist", "scripts", "**/__tests__", "**/*.test.ts"],
   "compilerOptions": {
     "strictNullChecks": true,
     "noImplicitAny": true,
