@@ -42,7 +42,15 @@ function main() {
 
   try {
     const result = Bun.spawnSync(
-      ["bunx", "wrangler", "d1", "execute", DB_NAME, `--file=${sqlPath}`, "--remote"],
+      [
+        "bunx",
+        "wrangler",
+        "d1",
+        "execute",
+        DB_NAME,
+        `--file=${sqlPath}`,
+        "--remote",
+      ],
       {
         cwd: ROOT_DIR,
         stdout: "pipe",

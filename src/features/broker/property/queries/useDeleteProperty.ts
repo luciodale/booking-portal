@@ -1,4 +1,4 @@
-import { propertyApi } from "@/features/broker/property/api/client-server";
+import { propertyApi } from "@/features/broker/property/api/client-server/propertyApi";
 import { propertyQueryKeys } from "@/features/broker/property/constants/queryKeys";
 import type { UseMutationOptions } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

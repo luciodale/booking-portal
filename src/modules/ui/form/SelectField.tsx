@@ -3,8 +3,8 @@
  * Type-safe select dropdown with react-hook-form integration
  */
 
-import { cn } from "@/modules/utils/cn";
 import { Select } from "@/modules/ui/Select";
+import { cn } from "@/modules/utils/cn";
 import { Controller, type FieldValues } from "react-hook-form";
 import { FormError } from "./FormError";
 import type { SelectFieldProps } from "./types";

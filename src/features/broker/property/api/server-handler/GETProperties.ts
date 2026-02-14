@@ -1,14 +1,15 @@
-import { assets, getDb, images } from "@/db";
-import { requireAdmin } from "@/modules/auth/auth";
+import { getDb } from "@/db";
+import { assets, images } from "@/db/schema";
+import { requireAuth } from "@/modules/auth/auth";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
-import type { PropertyListResponse } from "@/schemas";
+import type { PropertyListResponse } from "@/schemas/api";
 import type { APIRoute } from "astro";
 import { and, desc, eq, like, or } from "drizzle-orm";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ locals, url }) => {
   try {
-    await requireAdmin();
+    requireAuth(locals);
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {

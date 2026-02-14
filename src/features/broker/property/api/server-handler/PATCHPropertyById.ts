@@ -1,15 +1,16 @@
-import { assets, getDb, images } from "@/db";
-import { requireAdmin } from "@/modules/auth/auth";
+import { getDb } from "@/db";
+import { assets, images } from "@/db/schema";
 import { displayToKebab } from "@/features/broker/property/domain/sync-features";
-import type { PropertyResponse } from "@/schemas";
-import { updatePropertySchema } from "@/schemas";
+import { requireAuth } from "@/modules/auth/auth";
+import type { PropertyWithDetails } from "@/schemas/property";
+import { updatePropertySchema } from "@/schemas/property";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   try {
-    await requireAdmin();
+    requireAuth(locals);
 
     const { id } = params;
     if (!id) {
@@ -63,7 +64,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       .from(images)
       .where(eq(images.assetId, id));
 
-    const response: PropertyResponse = {
+    const response: PropertyWithDetails = {
       ...updated,
       images: propertyImages,
     };

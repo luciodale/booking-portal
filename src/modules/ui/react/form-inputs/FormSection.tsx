@@ -15,4 +15,3 @@ export function FormSection({ title, children }: FormSectionProps) {
     </section>
   );
 }
-

@@ -11,7 +11,9 @@ export function mapSmoobuListingToCreatePropertyPartial(
   details: SmoobuApartmentDetails
 ): Partial<CreatePropertyInput> {
   const { location, rooms, equipments } = details;
-  const locationStr = [location.city, location.country].filter(Boolean).join(", ");
+  const locationStr = [location.city, location.country]
+    .filter(Boolean)
+    .join(", ");
   const partial: Partial<CreatePropertyInput> = {
     smoobuPropertyId: listItem.id,
     title: listItem.name,

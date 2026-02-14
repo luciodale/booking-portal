@@ -1,8 +1,6 @@
-import {
-  useDeleteExperience,
-  useExperiences,
-} from "@/features/broker/experience/queries";
-import { experienceCategoryLabels } from "@/data/helpers";
+import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
+import { useDeleteExperience } from "@/features/broker/experience/queries/useDeleteExperience";
+import { useExperiences } from "@/features/broker/experience/queries/useExperiences";
 import { Select } from "@/modules/ui/Select";
 import { cn } from "@/modules/utils/cn";
 import { Link } from "@tanstack/react-router";
@@ -51,10 +49,12 @@ export function ExperienceListView() {
           onChange={setCategoryFilter}
           options={[
             { value: "", label: "All Categories" },
-            ...Object.entries(experienceCategoryLabels).map(([value, label]) => ({
-              value,
-              label,
-            })),
+            ...Object.entries(experienceCategoryLabels).map(
+              ([value, label]) => ({
+                value,
+                label,
+              })
+            ),
           ]}
           placeholder="All Categories"
           className="w-auto min-w-40"
@@ -150,7 +150,7 @@ export function ExperienceListView() {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
                     {exp.category
-                      ? experienceCategoryLabels[exp.category] ?? exp.category
+                      ? (experienceCategoryLabels[exp.category] ?? exp.category)
                       : "—"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">

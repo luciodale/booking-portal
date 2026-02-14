@@ -1,13 +1,13 @@
 ---
 interface Props {
-  variant?: 'primary' | 'secondary';
+  variant?: "primary" | "secondary";
   href?: string;
   class?: string;
 }
 
-const { variant = 'primary', href, class: className } = Astro.props;
-const Tag = href ? 'a' : 'button';
-const buttonClass = variant === 'primary' ? 'btn-primary' : 'btn-secondary';
+const { variant = "primary", href, class: className } = Astro.props;
+const Tag = href ? "a" : "button";
+const buttonClass = variant === "primary" ? "btn-primary" : "btn-secondary";
 ---
 
 <Tag

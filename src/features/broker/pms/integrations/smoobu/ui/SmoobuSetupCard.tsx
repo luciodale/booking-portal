@@ -14,7 +14,7 @@ import {
 import { PMS_INTEGRATION_STATUS_QUERY_KEY } from "@/features/broker/pms/constants/integrations";
 import { verifySmoobuApiKey } from "@/features/broker/pms/integrations/smoobu/verifyApiKey";
 import { PmsSetupCard } from "@/features/broker/pms/ui/PmsSetupCard";
-import { TextInput } from "@/modules/ui/react/form-inputs";
+import { TextInput } from "@/modules/ui/react/form-inputs/TextInput";
 import type { SmoobuUser } from "@/schemas/smoobu";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";

@@ -70,9 +70,5 @@ export function kebabToDisplay(tag: string): string {
  * @returns Kebab-case tag string
  */
 export function displayToKebab(input: string): string {
-  return input
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, "-");
+  return input.trim().toLowerCase().replace(/\s+/g, "-");
 }
-

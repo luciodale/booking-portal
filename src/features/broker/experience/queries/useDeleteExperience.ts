@@ -1,4 +1,4 @@
-import { deleteExperience } from "@/features/broker/experience/api/client-server";
+import { deleteExperience } from "@/features/broker/experience/api/client-server/deleteExperience";
 import { experienceQueryKeys } from "@/features/broker/experience/constants/queryKeys";
 import { showSuccess } from "@/modules/ui/react/stores/notificationStore";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

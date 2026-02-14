@@ -1,4 +1,4 @@
-import { imageApi } from "@/features/broker/property/api/client-server";
+import { imageApi } from "@/features/broker/property/api/client-server/propertyApi";
 import type { UploadImagesResponse } from "@/features/broker/property/api/types";
 import { propertyQueryKeys } from "@/features/broker/property/constants/queryKeys";
 import type { UseMutationOptions } from "@tanstack/react-query";

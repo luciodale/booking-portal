@@ -1,4 +1,4 @@
-import { updateExperience } from "@/features/broker/experience/api/client-server";
+import { updateExperience } from "@/features/broker/experience/api/client-server/updateExperience";
 import { experienceQueryKeys } from "@/features/broker/experience/constants/queryKeys";
 import { showSuccess } from "@/modules/ui/react/stores/notificationStore";
 import type { UpdateExperienceInput } from "@/schemas/experience";

@@ -1,4 +1,4 @@
-import { queryExperiences } from "@/features/broker/experience/api/client-server";
+import { queryExperiences } from "@/features/broker/experience/api/client-server/queryExperiences";
 import { experienceQueryKeys } from "@/features/broker/experience/constants/queryKeys";
 import { useQuery } from "@tanstack/react-query";
 

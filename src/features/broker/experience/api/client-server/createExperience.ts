@@ -1,4 +1,7 @@
-import type { CreateExperienceInput, ExperienceWithDetails } from "@/schemas/experience";
+import type {
+  CreateExperienceInput,
+  ExperienceWithDetails,
+} from "@/schemas/experience";
 
 export async function createExperience(
   data: CreateExperienceInput

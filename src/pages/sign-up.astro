@@ -1,0 +1,14 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { SignUpForm } from "@/modules/auth/ui/SignUpForm";
+import Header from "@/modules/ui/astro/Header.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Sign Up">
+  <Header />
+  <main class="min-h-content-fit flex items-center justify-center px-6 py-16">
+    <SignUpForm client:load />
+  </main>
+</BaseLayout>

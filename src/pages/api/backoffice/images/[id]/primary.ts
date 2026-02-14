@@ -3,8 +3,9 @@
  * PUT /api/backoffice/images/[id]/primary
  */
 
-import { getDb, images } from "@/db";
-import { requireAdmin } from "@/modules/auth/auth";
+import { getDb } from "@/db";
+import { images } from "@/db/schema";
+import { requireAuth } from "@/modules/auth/auth";
 import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 
@@ -12,7 +13,7 @@ export const prerender = false;
 
 export const PUT: APIRoute = async ({ params, locals }) => {
   try {
-    await requireAdmin();
+    requireAuth(locals);
 
     const { id } = params;
     if (!id) {
@@ -51,7 +52,9 @@ export const PUT: APIRoute = async ({ params, locals }) => {
     await db
       .update(images)
       .set({ isPrimary: false })
-      .where(and(eq(images.assetId, image.assetId), eq(images.isPrimary, true)));
+      .where(
+        and(eq(images.assetId, image.assetId), eq(images.isPrimary, true))
+      );
 
     // Set this image as primary
     await db.update(images).set({ isPrimary: true }).where(eq(images.id, id));
@@ -65,7 +68,9 @@ export const PUT: APIRoute = async ({ params, locals }) => {
     return new Response(
       JSON.stringify({
         error:
-          error instanceof Error ? error.message : "Failed to set primary image",
+          error instanceof Error
+            ? error.message
+            : "Failed to set primary image",
       }),
       {
         status: 500,
@@ -74,4 +79,3 @@ export const PUT: APIRoute = async ({ params, locals }) => {
     );
   }
 };
-

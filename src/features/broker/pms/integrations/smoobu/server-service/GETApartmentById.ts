@@ -2,9 +2,9 @@
  * Fetch single apartment details from Smoobu API (server-side, uses broker apiKey).
  */
 
-import { SMOOBU_BASE_URL } from "@/constants";
 import type { SmoobuApartmentDetails } from "@/schemas/smoobu";
 import { smoobuApartmentDetailsSchema } from "@/schemas/smoobu";
+import { SMOOBU_BASE_URL } from "../constants";
 
 export async function fetchApartmentById(
   apiKey: string,

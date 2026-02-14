@@ -1,4 +1,6 @@
-import { assets, getDb, pmsIntegrations } from "@/db";
+import { getDb } from "@/db";
+import { assets, pmsIntegrations } from "@/db/schema";
+import { fetchApartmentById } from "@/features/broker/pms/integrations/smoobu/server-service/GETApartmentById";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
@@ -11,17 +13,19 @@ export const GET: APIRoute = async ({ params, locals, url }) => {
 
     if (!id || !startDate || !endDate) {
       return new Response(
-        JSON.stringify({ error: "Missing required params: id, startDate, endDate" }),
+        JSON.stringify({
+          error: "Missing required params: id, startDate, endDate",
+        }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return new Response(
-        JSON.stringify({ error: "Database not available" }),
-        { status: 503, headers: { "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Database not available" }), {
+        status: 503,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const db = getDb(D1Database);
@@ -52,17 +56,20 @@ export const GET: APIRoute = async ({ params, locals, url }) => {
       );
     }
 
-    const rates = await fetchSmoobuRates(
-      integration.apiKey,
-      asset.smoobuPropertyId,
-      startDate,
-      endDate
-    );
+    const [rates, apartment] = await Promise.all([
+      fetchSmoobuRates(
+        integration.apiKey,
+        asset.smoobuPropertyId,
+        startDate,
+        endDate
+      ),
+      fetchApartmentById(integration.apiKey, asset.smoobuPropertyId),
+    ]);
 
-    return new Response(JSON.stringify({ data: rates }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ data: rates, currency: apartment.currency }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   } catch (error) {
     console.error("Error fetching rates:", error);
     return new Response(

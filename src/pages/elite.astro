@@ -1,5 +1,6 @@
 ---
-import { assets, getDb, images } from "@/db";
+import { getDb } from "@/db";
+import { assets, images } from "@/db/schema";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import Button from "@/modules/ui/astro/Button.astro";
@@ -29,7 +30,7 @@ const eliteProperties = await Promise.all(
       asset,
       imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
     };
-  }),
+  })
 );
 
 const filters = [

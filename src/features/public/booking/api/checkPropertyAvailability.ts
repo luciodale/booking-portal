@@ -6,6 +6,7 @@ export async function checkPropertyAvailability(
     arrivalDate: string;
     departureDate: string;
     guests?: number;
+    currency?: string;
   }
 ): Promise<SmoobuAvailabilityResponse> {
   const response = await fetch(`/api/properties/${propertyId}/availability`, {

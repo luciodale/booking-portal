@@ -1,5 +1,6 @@
-import { getDb, pmsIntegrations } from "@/db";
-import { requireAdmin } from "@/modules/auth/auth";
+import { getDb } from "@/db";
+import { pmsIntegrations } from "@/db/schema";
+import { resolveBrokerId } from "@/features/broker/auth/resolveBrokerId";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import type { TGetIntegrationsResponse } from "../types";
@@ -7,15 +8,13 @@ import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ locals }) => {
   try {
-    await requireAdmin();
-
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
       return jsonError("Database not available", 503);
     }
 
     const db = getDb(D1Database);
-    const brokerId = "broker-001"; // TODO: from auth context
+    const brokerId = await resolveBrokerId(locals, db);
 
     const [integration] = await db
       .select()

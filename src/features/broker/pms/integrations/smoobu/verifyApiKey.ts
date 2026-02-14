@@ -2,12 +2,12 @@
  * Verify Smoobu API key before storing in backoffice (integration connect flow).
  */
 
-import { SmoobuApiError } from "@/modules/integrations/smoobu";
-import type { ApiErrorResponse, ApiSuccessResponse } from "@/schemas";
+import type { ApiErrorResponse, ApiSuccessResponse } from "@/schemas/api";
 import type {
   SmoobuApiKeyVerificationRequest,
   SmoobuUser,
 } from "@/schemas/smoobu";
+import { SmoobuApiError } from "./SmoobuApiError";
 
 export async function verifySmoobuApiKey(
   request: SmoobuApiKeyVerificationRequest

@@ -2,7 +2,6 @@
  * Smoobu server handlers (verify API key for integration setup)
  */
 
-import { SMOOBU_BASE_URL } from "@/constants";
 import type { SmoobuErrorResponse, SmoobuUser } from "@/schemas/smoobu";
 import { verifyApiKeyRequestSchema } from "@/schemas/smoobu";
 import type { APIRoute } from "astro";
@@ -10,6 +9,7 @@ import {
   jsonError,
   jsonSuccess,
 } from "../../../api/server-handler/responseHelpers";
+import { SMOOBU_BASE_URL } from "../constants";
 
 export const GETVerifyApiKey: APIRoute = async ({ request }) => {
   try {

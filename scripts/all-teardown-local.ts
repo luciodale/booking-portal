@@ -19,7 +19,9 @@ function run(cmd: string[]): void {
     stdin: "inherit",
   });
   if (result.exitCode !== 0) {
-    throw new Error(`Command failed with exit code ${result.exitCode}: ${cmd.join(" ")}`);
+    throw new Error(
+      `Command failed with exit code ${result.exitCode}: ${cmd.join(" ")}`
+    );
   }
 }
 

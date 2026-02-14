@@ -2,9 +2,9 @@
  * Fetch rates from Smoobu API (server-side).
  */
 
-import { SMOOBU_BASE_URL } from "@/constants";
 import type { SmoobuRatesResponse } from "@/schemas/smoobu";
 import { smoobuRatesResponseSchema } from "@/schemas/smoobu";
+import { SMOOBU_BASE_URL } from "../constants";
 
 export async function fetchSmoobuRates(
   apiKey: string,

@@ -1,15 +1,14 @@
-import { getDb, pmsIntegrations } from "@/db";
-import { requireAdmin } from "@/modules/auth/auth";
+import { getDb } from "@/db";
+import { pmsIntegrations } from "@/db/schema";
+import { resolveBrokerId } from "@/features/broker/auth/resolveBrokerId";
+import type { TGetIntegrationListingDetailResponse } from "@/features/broker/pms/api/types";
+import { fetchApartmentById } from "@/features/broker/pms/integrations/smoobu/server-service/GETApartmentById";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { fetchApartmentById } from "@/features/broker/pms/integrations/smoobu/server-service/GETApartmentById";
-import type { TGetIntegrationListingDetailResponse } from "@/features/broker/pms/api/types";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ params, locals }) => {
   try {
-    await requireAdmin();
-
     const idParam = params?.id;
     const id = idParam ? Number(idParam) : Number.NaN;
     if (!Number.isInteger(id) || id < 1) {
@@ -22,7 +21,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     }
 
     const db = getDb(D1Database);
-    const brokerId = "broker-001"; // TODO: from auth context
+    const brokerId = await resolveBrokerId(locals, db);
 
     const [integration] = await db
       .select()
@@ -39,7 +38,9 @@ export const GET: APIRoute = async ({ params, locals }) => {
   } catch (error) {
     console.error("Error fetching integration listing:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to fetch integration listing"
+      error instanceof Error
+        ? error.message
+        : "Failed to fetch integration listing"
     );
   }
 };

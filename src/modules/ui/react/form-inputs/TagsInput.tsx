@@ -4,7 +4,12 @@
 
 import { cn } from "@/modules/utils/cn";
 import { useState } from "react";
-import { type Control, Controller, type FieldValues, type Path } from "react-hook-form";
+import {
+  type Control,
+  Controller,
+  type FieldValues,
+  type Path,
+} from "react-hook-form";
 
 interface TagsInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -163,4 +168,3 @@ export function TagsInput<T extends FieldValues>({
     />
   );
 }
-

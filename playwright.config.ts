@@ -41,5 +41,8 @@ export default defineConfig({
     command: "bun run dev",
     url: "http://localhost:4321",
     reuseExistingServer: !process.env.CI,
+    env: {
+      CLERK_TESTING: "1",
+    },
   },
 });

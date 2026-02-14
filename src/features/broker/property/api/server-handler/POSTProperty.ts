@@ -1,16 +1,17 @@
-import { assets, getDb } from "@/db";
-import { requireAdmin } from "@/modules/auth/auth";
+import { getDb } from "@/db";
+import { assets } from "@/db/schema";
 import { displayToKebab } from "@/features/broker/property/domain/sync-features";
+import { requireAuth } from "@/modules/auth/auth";
 import { genUniqueId } from "@/modules/utils/id";
-import type { PropertyResponse } from "@/schemas";
-import { createPropertySchema } from "@/schemas";
+import type { PropertyWithDetails } from "@/schemas/property";
+import { createPropertySchema } from "@/schemas/property";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    await requireAdmin();
+    requireAuth(locals);
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
@@ -52,7 +53,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       })
       .returning();
 
-    const response: PropertyResponse = {
+    const response: PropertyWithDetails = {
       ...newProperty,
       images: [],
     };

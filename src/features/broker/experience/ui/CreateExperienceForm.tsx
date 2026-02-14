@@ -2,14 +2,12 @@
  * CreateExperienceForm - Form for creating a new experience
  */
 
-import { experienceCategoryLabels } from "@/data/helpers";
-import {
-  FormSection,
-  NumberInput,
-  SelectInput,
-  TextInput,
-  TextareaInput,
-} from "@/modules/ui/react/form-inputs";
+import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
+import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
+import { NumberInput } from "@/modules/ui/react/form-inputs/NumberInput";
+import { SelectInput } from "@/modules/ui/react/form-inputs/SelectInput";
+import { TextInput } from "@/modules/ui/react/form-inputs/TextInput";
+import { TextareaInput } from "@/modules/ui/react/form-inputs/TextareaInput";
 import type { CreateExperienceInput } from "@/schemas/experience";
 import { createExperienceSchema } from "@/schemas/experience";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -151,11 +149,7 @@ export function CreateExperienceForm({
       </FormSection>
 
       <div className="flex justify-end gap-4">
-        <button
-          type="button"
-          className="btn-secondary"
-          onClick={() => reset()}
-        >
+        <button type="button" className="btn-secondary" onClick={() => reset()}>
           Reset
         </button>
 

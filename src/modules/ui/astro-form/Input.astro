@@ -1,24 +1,24 @@
 ---
 interface Props {
-    name: string;
-    label?: string;
-    type?: "text" | "email" | "password" | "number" | "tel" | "url";
-    placeholder?: string;
-    value?: string;
-    required?: boolean;
-    disabled?: boolean;
-    class?: string;
+  name: string;
+  label?: string;
+  type?: "text" | "email" | "password" | "number" | "tel" | "url";
+  placeholder?: string;
+  value?: string;
+  required?: boolean;
+  disabled?: boolean;
+  class?: string;
 }
 
 const {
-    name,
-    label,
-    type = "text",
-    placeholder,
-    value,
-    required = false,
-    disabled = false,
-    class: className,
+  name,
+  label,
+  type = "text",
+  placeholder,
+  value,
+  required = false,
+  disabled = false,
+  class: className,
 } = Astro.props;
 ---
 

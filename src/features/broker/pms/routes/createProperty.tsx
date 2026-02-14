@@ -5,21 +5,21 @@
  * Step 3: Smart form with per-field Smoobu link buttons + images + submit
  */
 
-import { mapSmoobuListingToCreatePropertyPartial } from "@/features/broker/property/domain/mapIntegrationListingToPrefill";
-import { displayToKebab } from "@/features/broker/property/domain/sync-features";
-import { useCreateProperty } from "@/features/broker/property/queries";
-import { createSectionRoute } from "@/features/broker/property/routes/createSection";
-import {
-  CreatePropertyForm,
-  type CreatePropertyFormData,
-} from "@/features/broker/property/ui";
 import { useIntegrationListingDetails } from "@/features/broker/pms/queries/useIntegrationListingDetails";
 import { useIntegrationListings } from "@/features/broker/pms/queries/useIntegrationListings";
 import { useIsPmsIntegrated } from "@/features/broker/pms/queries/useIsPmsIntegrated";
+import { mapSmoobuListingToCreatePropertyPartial } from "@/features/broker/property/domain/mapIntegrationListingToPrefill";
+import { displayToKebab } from "@/features/broker/property/domain/sync-features";
+import { useCreateProperty } from "@/features/broker/property/queries/useCreateProperty";
+import { createSectionRoute } from "@/features/broker/property/routes/CreateSection";
+import {
+  CreatePropertyForm,
+  type CreatePropertyFormData,
+} from "@/features/broker/property/ui/CreatePropertyForm";
 import { Select } from "@/modules/ui/Select";
 import { showError } from "@/modules/ui/react/stores/notificationStore";
 import { getErrorMessages } from "@/modules/utils/errors";
-import { createRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Link, createRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 // =============================================================================
@@ -75,9 +75,9 @@ function CreatePropertyPage() {
     useIsPmsIntegrated();
   const listingsQuery = useIntegrationListings(!!isIntegrated);
 
-  const [selectedTier, setSelectedTier] = useState<
-    "elite" | "standard" | null
-  >(null);
+  const [selectedTier, setSelectedTier] = useState<"elite" | "standard" | null>(
+    null
+  );
   const [selectedListing, setSelectedListing] = useState<{
     id: number;
     name: string;

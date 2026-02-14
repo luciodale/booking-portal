@@ -1,4 +1,4 @@
-import { propertyApi } from "@/features/broker/property/api/client-server";
+import { propertyApi } from "@/features/broker/property/api/client-server/propertyApi";
 import type { PropertyListResponse } from "@/features/broker/property/api/types";
 import { propertyQueryKeys } from "@/features/broker/property/constants/queryKeys";
 import type { UseQueryOptions } from "@tanstack/react-query";

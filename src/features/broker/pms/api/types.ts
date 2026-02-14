@@ -1,4 +1,4 @@
-import type { PmsIntegration as DbPmsIntegration } from "@/db";
+import type { PmsIntegration as DbPmsIntegration } from "@/db/schema";
 
 export type TPmsIntegration = DbPmsIntegration;
 
@@ -13,9 +13,7 @@ export type IntegrationStatusResponse = {
 export type TGetIntegrationsResponse = IntegrationStatusResponse;
 
 /** POST /api/backoffice/integrations — request body (single source of truth) */
-export type {
-  TSmoobuCreateBodyInput as TPostIntegrationsRequest,
-} from "@/features/broker/pms/integrations/smoobu/createBodySchema";
+export type { TSmoobuCreateBodyInput as TPostIntegrationsRequest } from "@/features/broker/pms/integrations/smoobu/createBodySchema";
 
 /** POST /api/backoffice/integrations — response data (created integration, no apiKey) */
 export type TPostIntegrationsResponse = {

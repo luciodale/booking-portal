@@ -3,13 +3,11 @@
  * Each field saves independently via inline save buttons
  */
 
-import {
-  propertyQueryKeys,
-  useProperty,
-  useUpdateProperty,
-} from "@/features/broker/property/queries";
+import { propertyQueryKeys } from "@/features/broker/property/constants/queryKeys";
+import { useProperty } from "@/features/broker/property/queries/useProperty";
+import { useUpdateProperty } from "@/features/broker/property/queries/useUpdateProperty";
 import { getFacilityOptions } from "@/modules/constants";
-import type { UpdatePropertyRequest } from "@/schemas";
+import type { UpdatePropertyInput } from "@/schemas/property";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   EditableFeatureGroupField,
@@ -35,9 +33,9 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
     });
   };
 
-  const saveField = async <K extends keyof UpdatePropertyRequest>(
+  const saveField = async <K extends keyof UpdatePropertyInput>(
     field: K,
-    value: UpdatePropertyRequest[K]
+    value: UpdatePropertyInput[K]
   ) => {
     await updateProperty.mutateAsync({
       id: propertyId,
@@ -45,7 +43,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
     });
   };
 
-  const saveFields = async (data: Partial<UpdatePropertyRequest>) => {
+  const saveFields = async (data: Partial<UpdatePropertyInput>) => {
     await updateProperty.mutateAsync({
       id: propertyId,
       data,

@@ -1,0 +1,15 @@
+---
+import { BookingsHistoryView } from "@/features/public/bookings/ui/BookingsHistoryView";
+import PageLayout from "@/layouts/PageLayout.astro";
+
+export const prerender = false;
+---
+
+<PageLayout title="My Bookings">
+  <section class="py-16 px-6">
+    <div class="container mx-auto max-w-3xl">
+      <h1 class="text-3xl font-bold text-foreground mb-8">My Bookings</h1>
+      <BookingsHistoryView client:load />
+    </div>
+  </section>
+</PageLayout>

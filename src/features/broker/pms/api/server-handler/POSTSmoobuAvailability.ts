@@ -1,4 +1,5 @@
-import { assets, getDb, pmsIntegrations } from "@/db";
+import { getDb } from "@/db";
+import { assets, pmsIntegrations } from "@/db/schema";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";

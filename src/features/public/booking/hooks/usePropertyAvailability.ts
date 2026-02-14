@@ -7,6 +7,7 @@ export function usePropertyAvailability(propertyId: string) {
       arrivalDate: string;
       departureDate: string;
       guests?: number;
+      currency?: string;
     }) => checkPropertyAvailability(propertyId, params),
   });
 }

@@ -71,7 +71,11 @@ function uploadToR2Sync(
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       const result = Bun.spawnSync(
         [
-          "bunx", "wrangler", "r2", "object", "put",
+          "bunx",
+          "wrangler",
+          "r2",
+          "object",
+          "put",
           `${BUCKET_NAME}/${key}`,
           `--file=${tempFile}`,
           `--content-type=${contentType}`,
@@ -87,7 +91,9 @@ function uploadToR2Sync(
 
       if (result.exitCode === 0) return; // Success
 
-      lastError = new Error(result.stderr.toString() || "Unknown wrangler error");
+      lastError = new Error(
+        result.stderr.toString() || "Unknown wrangler error"
+      );
       if (attempt < MAX_RETRIES) {
         // Exponential backoff: sync sleep via Bun
         Bun.sleepSync(500 * 2 ** (attempt - 1));

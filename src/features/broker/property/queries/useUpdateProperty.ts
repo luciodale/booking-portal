@@ -1,7 +1,7 @@
-import { propertyApi } from "@/features/broker/property/api/client-server";
+import { propertyApi } from "@/features/broker/property/api/client-server/propertyApi";
 import type {
-  PropertyResponse,
-  UpdatePropertyRequest,
+  PropertyWithDetails,
+  UpdatePropertyInput,
 } from "@/features/broker/property/api/types";
 import { propertyQueryKeys } from "@/features/broker/property/constants/queryKeys";
 import type { UseMutationOptions } from "@tanstack/react-query";
@@ -9,16 +9,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useUpdateProperty(
   options?: UseMutationOptions<
-    PropertyResponse,
+    PropertyWithDetails,
     Error,
-    { id: string; data: UpdatePropertyRequest },
+    { id: string; data: UpdatePropertyInput },
     unknown
   >
 ) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdatePropertyRequest }) =>
+    mutationFn: ({ id, data }: { id: string; data: UpdatePropertyInput }) =>
       propertyApi.update(id, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({

@@ -3,14 +3,17 @@
  * Shared logic for executing SQL against D1 database
  */
 
-import { join } from "node:path";
 import { unlinkSync } from "node:fs";
+import { join } from "node:path";
 
 const DB_NAME = "booking-portal-db";
 
 export type Mode = "local" | "remote";
 
-function runWrangler(args: string[], cwd: string): { ok: boolean; stdout: string } {
+function runWrangler(
+  args: string[],
+  cwd: string
+): { ok: boolean; stdout: string } {
   const result = Bun.spawnSync(["bunx", "wrangler", ...args], {
     cwd,
     stdout: "pipe",
@@ -31,7 +34,9 @@ function runWranglerInherit(args: string[], cwd: string): void {
     stdin: "inherit",
   });
   if (result.exitCode !== 0) {
-    throw new Error(`wrangler ${args.join(" ")} failed with exit code ${result.exitCode}`);
+    throw new Error(
+      `wrangler ${args.join(" ")} failed with exit code ${result.exitCode}`
+    );
   }
 }
 
@@ -48,7 +53,10 @@ export async function executeSql(sqlPath: string, mode: Mode): Promise<void> {
   const cwd = join(import.meta.dir, "../..");
   const modeFlag = mode === "local" ? "--local" : "--remote";
 
-  runWranglerInherit(["d1", "execute", DB_NAME, `--file=${sqlPath}`, modeFlag], cwd);
+  runWranglerInherit(
+    ["d1", "execute", DB_NAME, `--file=${sqlPath}`, modeFlag],
+    cwd
+  );
   console.log("✅ SQL executed successfully");
 }
 
@@ -120,12 +128,15 @@ export async function generateSql(rootDir: string): Promise<void> {
 
   if (!exists) {
     console.log("\n⚠️  No SQL file found, running generate-sql first...");
-    const result = Bun.spawnSync(["bun", "run", join(rootDir, "scripts/generate-sql.ts")], {
-      cwd: rootDir,
-      stdout: "inherit",
-      stderr: "inherit",
-      stdin: "inherit",
-    });
+    const result = Bun.spawnSync(
+      ["bun", "run", join(rootDir, "scripts/generate-sql.ts")],
+      {
+        cwd: rootDir,
+        stdout: "inherit",
+        stderr: "inherit",
+        stdin: "inherit",
+      }
+    );
 
     if (result.exitCode !== 0) {
       throw new Error("generate-sql failed");

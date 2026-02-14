@@ -17,12 +17,14 @@ type BookingGuestInput = z.input<typeof bookingGuestSchema>;
 type BookingFormProps = {
   maxGuests: number;
   isAvailable: boolean;
+  isSubmitting: boolean;
   onSubmit: (data: BookingGuestInput) => void;
 };
 
 export function BookingForm({
   maxGuests,
   isAvailable,
+  isSubmitting,
   onSubmit,
 }: BookingFormProps) {
   const {
@@ -42,11 +44,14 @@ export function BookingForm({
             First Name
           </label>
           <input
+            data-testid="booking-firstname"
             {...register("firstName")}
             className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           />
           {errors.firstName && (
-            <p className="text-xs text-red-400 mt-1">{errors.firstName.message}</p>
+            <p className="text-xs text-red-400 mt-1">
+              {errors.firstName.message}
+            </p>
           )}
         </div>
         <div>
@@ -54,18 +59,24 @@ export function BookingForm({
             Last Name
           </label>
           <input
+            data-testid="booking-lastname"
             {...register("lastName")}
             className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           />
           {errors.lastName && (
-            <p className="text-xs text-red-400 mt-1">{errors.lastName.message}</p>
+            <p className="text-xs text-red-400 mt-1">
+              {errors.lastName.message}
+            </p>
           )}
         </div>
       </div>
 
       <div>
-        <label className="block text-xs text-muted-foreground mb-1">Email</label>
+        <label className="block text-xs text-muted-foreground mb-1">
+          Email
+        </label>
         <input
+          data-testid="booking-email"
           type="email"
           {...register("email")}
           className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
@@ -80,6 +91,7 @@ export function BookingForm({
           Phone (optional)
         </label>
         <input
+          data-testid="booking-phone"
           type="tel"
           {...register("phone")}
           className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
@@ -88,8 +100,11 @@ export function BookingForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-muted-foreground mb-1">Adults</label>
+          <label className="block text-xs text-muted-foreground mb-1">
+            Adults
+          </label>
           <input
+            data-testid="booking-adults"
             type="number"
             min={1}
             max={maxGuests}
@@ -101,8 +116,11 @@ export function BookingForm({
           )}
         </div>
         <div>
-          <label className="block text-xs text-muted-foreground mb-1">Children</label>
+          <label className="block text-xs text-muted-foreground mb-1">
+            Children
+          </label>
           <input
+            data-testid="booking-children"
             type="number"
             min={0}
             max={maxGuests}
@@ -124,24 +142,29 @@ export function BookingForm({
       </div>
 
       <button
+        data-testid="booking-submit"
         type="submit"
-        disabled={!isAvailable}
+        disabled={!isAvailable || isSubmitting}
         className={`
           w-full py-3 rounded-xl text-sm font-semibold transition-all
-          ${isAvailable
-            ? "bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
-            : "bg-muted text-muted-foreground cursor-not-allowed"
+          ${
+            isAvailable && !isSubmitting
+              ? "bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+              : "bg-muted text-muted-foreground cursor-not-allowed"
           }
         `}
       >
-        {isAvailable ? "Proceed to Payment" : "Select available dates first"}
+        {isSubmitting ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="animate-spin inline-block w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full" />
+            Processing...
+          </span>
+        ) : isAvailable ? (
+          "Proceed to Payment"
+        ) : (
+          "Select available dates first"
+        )}
       </button>
-
-      {isAvailable && (
-        <p className="text-[11px] text-muted-foreground text-center">
-          Payment integration coming soon
-        </p>
-      )}
     </form>
   );
 }

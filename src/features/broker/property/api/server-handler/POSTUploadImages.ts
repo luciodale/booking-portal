@@ -1,5 +1,6 @@
-import { getDb, images } from "@/db";
-import { requireAdmin } from "@/modules/auth/auth";
+import { getDb } from "@/db";
+import { images } from "@/db/schema";
+import { requireAuth } from "@/modules/auth/auth";
 import {
   convertToWebP,
   validateImageSize,
@@ -11,13 +12,13 @@ import {
   uploadImageToR2,
 } from "@/modules/r2/r2-helpers";
 import { genUniqueId } from "@/modules/utils/id";
-import type { UploadImagesResponse } from "@/schemas";
+import type { UploadImagesResponse } from "@/schemas/api";
 import type { APIRoute } from "astro";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    await requireAdmin();
+    requireAuth(locals);
 
     const D1Database = locals.runtime?.env?.DB;
     const R2Bucket = locals.runtime?.env?.R2_IMAGES_BUCKET;

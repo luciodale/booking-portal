@@ -3,10 +3,8 @@
  * Displays all properties with search and filtering
  */
 
-import {
-  useDeleteProperty,
-  useProperties,
-} from "@/features/broker/property/queries";
+import { useDeleteProperty } from "@/features/broker/property/queries/useDeleteProperty";
+import { useProperties } from "@/features/broker/property/queries/useProperties";
 import { Select } from "@/modules/ui/Select";
 import { cn } from "@/modules/utils/cn";
 import { Link } from "@tanstack/react-router";
@@ -33,6 +31,7 @@ export function PropertyList() {
 
         <Link
           to="/create/properties/new"
+          data-testid="property-create"
           className="btn-primary"
         >
           Create New Property
@@ -46,6 +45,7 @@ export function PropertyList() {
           placeholder="Search properties..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          data-testid="property-search"
           className="input flex-1"
         />
 
@@ -130,6 +130,7 @@ export function PropertyList() {
               data.properties.map((property) => (
                 <tr
                   key={property.id}
+                  data-testid={`property-row-${property.id}`}
                   className="hover:bg-secondary/50 transition-colors"
                 >
                   <td className="px-6 py-4">

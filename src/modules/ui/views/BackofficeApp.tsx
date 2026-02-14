@@ -3,10 +3,11 @@ import { editExperienceRoute } from "@/features/broker/experience/routes/experie
 import { createExperienceRoute } from "@/features/broker/experience/routes/experiences.new";
 import { createPropertyRoute } from "@/features/broker/pms/routes/createProperty";
 import { rootRoute } from "@/features/broker/property/routes/BackofficeRoot";
-import { createSectionRoute } from "@/features/broker/property/routes/createSection";
+import { createSectionRoute } from "@/features/broker/property/routes/CreateSection";
 import { indexRoute } from "@/features/broker/property/routes/index";
 import { propertiesRoute } from "@/features/broker/property/routes/properties";
 import { editPropertyRoute } from "@/features/broker/property/routes/properties.$id.edit";
+import { ClerkProviderWrapper } from "@/modules/auth/ui/ClerkProviderWrapper";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 
 const routeTree = rootRoute.addChildren([
@@ -31,5 +32,9 @@ declare module "@tanstack/react-router" {
 }
 
 export default function BackofficeApp() {
-  return <RouterProvider router={router} />;
+  return (
+    <ClerkProviderWrapper>
+      <RouterProvider router={router} />
+    </ClerkProviderWrapper>
+  );
 }

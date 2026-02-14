@@ -1,24 +1,24 @@
 ---
 interface Props {
-    name: string;
-    label?: string;
-    options: Array<{ value: string; text: string; disabled?: boolean }>;
-    placeholder?: string;
-    value?: string;
-    required?: boolean;
-    disabled?: boolean;
-    class?: string;
+  name: string;
+  label?: string;
+  options: Array<{ value: string; text: string; disabled?: boolean }>;
+  placeholder?: string;
+  value?: string;
+  required?: boolean;
+  disabled?: boolean;
+  class?: string;
 }
 
 const {
-    name,
-    label,
-    options,
-    placeholder,
-    value,
-    required = false,
-    disabled = false,
-    class: className,
+  name,
+  label,
+  options,
+  placeholder,
+  value,
+  required = false,
+  disabled = false,
+  class: className,
 } = Astro.props;
 ---
 

@@ -1,4 +1,4 @@
-import type { ExperienceListResponse } from "@/schemas";
+import type { ExperienceListResponse } from "@/schemas/api";
 
 export async function queryExperiences(params?: {
   search?: string;

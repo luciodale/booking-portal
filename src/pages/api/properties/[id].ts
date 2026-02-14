@@ -1,4 +1,5 @@
-import { assets, getDb, images } from "@/db";
+import { getDb } from "@/db";
+import { assets, images } from "@/db/schema";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import type { APIRoute } from "astro";
 import { asc, eq } from "drizzle-orm";

@@ -2,9 +2,9 @@
  * Check apartment availability via Smoobu API (server-side).
  */
 
-import { SMOOBU_BASE_URL } from "@/constants";
 import type { SmoobuAvailabilityResponse } from "@/schemas/smoobu";
 import { smoobuAvailabilityResponseSchema } from "@/schemas/smoobu";
+import { SMOOBU_BASE_URL } from "../constants";
 
 export async function checkSmoobuAvailability(
   apiKey: string,
@@ -35,6 +35,11 @@ export async function checkSmoobuAvailability(
   const json = (await response.json()) as unknown;
   const parsed = smoobuAvailabilityResponseSchema.safeParse(json);
   if (!parsed.success) {
+    console.error(
+      "Smoobu availability validation errors:",
+      parsed.error.issues
+    );
+    console.error("Smoobu raw response:", JSON.stringify(json, null, 2));
     throw new Error("Invalid Smoobu availability response");
   }
   return parsed.data;

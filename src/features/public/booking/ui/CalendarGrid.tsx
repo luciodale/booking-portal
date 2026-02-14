@@ -1,4 +1,5 @@
 import {
+  addMonths,
   formatDate,
   formatMonthYear,
   formatPrice,
@@ -6,7 +7,6 @@ import {
   getStartPadding,
   isBeforeToday,
   isSame,
-  addMonths,
 } from "@/features/public/booking/domain/dateUtils";
 import type { SmoobuRateDay } from "@/schemas/smoobu";
 
@@ -38,9 +38,10 @@ export function CalendarGrid({
   const months = [currentMonth, addMonths(currentMonth, 1)];
 
   return (
-    <div className="space-y-4">
+    <div data-testid="calendar-grid" className="space-y-4">
       <div className="flex items-center justify-between">
         <button
+          data-testid="calendar-prev"
           type="button"
           onClick={onPrevMonth}
           className="p-2 rounded-lg hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
@@ -49,6 +50,7 @@ export function CalendarGrid({
           <ChevronLeft />
         </button>
         <button
+          data-testid="calendar-next"
           type="button"
           onClick={onNextMonth}
           className="p-2 rounded-lg hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
@@ -58,7 +60,7 @@ export function CalendarGrid({
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-2 gap-6">
         {months.map((month) => (
           <MonthGrid
             key={formatDate(month)}
@@ -119,7 +121,8 @@ function MonthGrid({
           const dateStr = formatDate(day);
           const rate = rateMap[dateStr];
           const past = isBeforeToday(day);
-          const unavailable = past || (rate !== undefined && rate.available === 0);
+          const unavailable =
+            past || (rate !== undefined && rate.available === 0);
           const isCheckIn = checkIn ? isSame(day, checkIn) : false;
           const isCheckOut = checkOut ? isSame(day, checkOut) : false;
           const inRange =
@@ -130,6 +133,7 @@ function MonthGrid({
           return (
             <button
               key={dateStr}
+              data-testid={`calendar-day-${dateStr}`}
               type="button"
               disabled={unavailable}
               onClick={() => onDateClick(day)}
@@ -158,7 +162,16 @@ function MonthGrid({
 
 function ChevronLeft() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="m15 18-6-6 6-6" />
     </svg>
   );
@@ -166,7 +179,16 @@ function ChevronLeft() {
 
 function ChevronRight() {
   return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="m9 18 6-6-6-6" />
     </svg>
   );

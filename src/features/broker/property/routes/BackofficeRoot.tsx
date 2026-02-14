@@ -1,3 +1,5 @@
+import { BackofficeUserMenu } from "@/features/broker/ui/BackofficeUserMenu";
+import { useAuth } from "@clerk/clerk-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
 
@@ -12,8 +14,23 @@ const queryClient = new QueryClient({
   },
 });
 
-export const rootRoute = createRootRoute({
-  component: () => (
+function BackofficeLayout() {
+  const { isLoaded, isSignedIn } = useAuth();
+
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-border border-t-primary" />
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    window.location.href = "/sign-in";
+    return null;
+  }
+
+  return (
     <QueryClientProvider client={queryClient}>
       <div className="min-h-screen bg-background">
         <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border">
@@ -35,12 +52,14 @@ export const rootRoute = createRootRoute({
             <div className="flex items-center gap-6">
               <Link
                 to="/properties"
+                data-testid="nav-properties"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Properties
               </Link>
               <Link
                 to="/experiences"
+                data-testid="nav-experiences"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 Experiences
@@ -51,6 +70,7 @@ export const rootRoute = createRootRoute({
               >
                 Create Property
               </Link>
+              <BackofficeUserMenu />
             </div>
           </nav>
         </header>
@@ -59,5 +79,9 @@ export const rootRoute = createRootRoute({
         </main>
       </div>
     </QueryClientProvider>
-  ),
+  );
+}
+
+export const rootRoute = createRootRoute({
+  component: BackofficeLayout,
 });

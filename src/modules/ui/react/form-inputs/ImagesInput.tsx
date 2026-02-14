@@ -246,4 +246,3 @@ export function ImagesInput({ images, onChange, error }: ImagesInputProps) {
     </div>
   );
 }
-

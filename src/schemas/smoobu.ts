@@ -135,26 +135,40 @@ export const smoobuAvailabilityRequestSchema = z.object({
   discountCode: z.string().optional(),
 });
 
+const emptyArrayToRecord = <T extends z.ZodTypeAny>(
+  recordSchema: z.ZodRecord<z.ZodString, T>
+) =>
+  z
+    .union([
+      recordSchema,
+      z.array(z.never()).transform(() => ({}) as z.infer<typeof recordSchema>),
+    ])
+    .default({} as z.infer<typeof recordSchema>);
+
 export const smoobuAvailabilityResponseSchema = z.object({
-  availableApartments: z.array(z.number()),
-  prices: z.record(
-    z.string(), // apartmentId
-    z.object({
-      price: z.number(),
-      currency: z.string(),
-    })
+  availableApartments: z.array(z.number()).default([]),
+  prices: emptyArrayToRecord(
+    z.record(
+      z.string(),
+      z.object({
+        price: z.number(),
+        currency: z.string(),
+      })
+    )
   ),
-  errorMessages: z.record(
-    z.string(), // apartmentId
-    z.object({
-      errorCode: z.number(),
-      message: z.string(),
-      minimumLengthOfStay: z.number().optional(),
-      numberOfGuest: z.number().optional(),
-      leadTime: z.number().optional(),
-      minimumLengthBetweenBookings: z.number().optional(),
-      arrivalDays: z.array(z.string()).optional(),
-    })
+  errorMessages: emptyArrayToRecord(
+    z.record(
+      z.string(),
+      z.object({
+        errorCode: z.number(),
+        message: z.string(),
+        minimumLengthOfStay: z.number().optional(),
+        numberOfGuest: z.number().optional(),
+        leadTime: z.number().optional(),
+        minimumLengthBetweenBookings: z.number().optional(),
+        arrivalDays: z.array(z.string()).optional(),
+      })
+    )
   ),
 });
 

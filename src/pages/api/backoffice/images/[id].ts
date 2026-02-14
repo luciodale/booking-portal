@@ -3,8 +3,9 @@
  * DELETE /api/backoffice/images/[id]
  */
 
-import { getDb, images } from "@/db";
-import { requireAdmin } from "@/modules/auth/auth";
+import { getDb } from "@/db";
+import { images } from "@/db/schema";
+import { requireAuth } from "@/modules/auth/auth";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 
@@ -12,7 +13,7 @@ export const prerender = false;
 
 export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
-    await requireAdmin();
+    requireAuth(locals);
 
     const { id } = params;
     if (!id) {
@@ -85,7 +86,8 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     console.error("Error deleting image:", error);
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : "Failed to delete image",
+        error:
+          error instanceof Error ? error.message : "Failed to delete image",
       }),
       {
         status: 500,
@@ -94,4 +96,3 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     );
   }
 };
-

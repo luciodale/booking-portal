@@ -1,0 +1,225 @@
+import { getDb } from "@/db";
+import { assets, bookings, pmsIntegrations } from "@/db/schema";
+import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
+import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
+import { computeStayPrice } from "@/features/public/booking/domain/computeStayPrice";
+import { requireAuth } from "@/modules/auth/auth";
+import type { APIRoute } from "astro";
+import { eq } from "drizzle-orm";
+import { nanoid } from "nanoid";
+import Stripe from "stripe";
+import { z } from "zod";
+
+const checkoutBodySchema = z.object({
+  propertyId: z.string().min(1),
+  checkIn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  checkOut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  guests: z.number().int().min(1),
+  currency: z.string().min(1),
+  totalPrice: z.number().positive(),
+  guestInfo: z.object({
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    email: z.string().email(),
+    phone: z.string().optional(),
+    adults: z.number().int().min(1),
+    children: z.number().int().min(0),
+    guestNote: z.string().optional(),
+  }),
+});
+
+function jsonResponse(data: unknown, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+export const POST: APIRoute = async ({ request, locals }) => {
+  try {
+    const authContext = requireAuth(locals);
+
+    const D1Database = locals.runtime?.env?.DB;
+    const stripeKey = locals.runtime?.env?.STRIPE_SECRET_KEY;
+    if (!D1Database)
+      return jsonResponse({ error: "Database not available" }, 503);
+    if (!stripeKey)
+      return jsonResponse({ error: "Stripe not configured" }, 503);
+
+    const body = checkoutBodySchema.safeParse(await request.json());
+    if (!body.success) {
+      return jsonResponse(
+        { error: "Invalid request", details: body.error.issues },
+        400
+      );
+    }
+
+    const {
+      propertyId,
+      checkIn,
+      checkOut,
+      guests,
+      currency,
+      totalPrice,
+      guestInfo,
+    } = body.data;
+    const db = getDb(D1Database);
+
+    // Fetch asset + integration
+    const [asset] = await db
+      .select()
+      .from(assets)
+      .where(eq(assets.id, propertyId))
+      .limit(1);
+
+    if (!asset || !asset.smoobuPropertyId) {
+      return jsonResponse(
+        { error: "Property not found or not linked to PMS" },
+        404
+      );
+    }
+
+    const [integration] = await db
+      .select()
+      .from(pmsIntegrations)
+      .where(eq(pmsIntegrations.brokerId, asset.brokerId))
+      .limit(1);
+
+    if (
+      !integration ||
+      integration.provider !== "smoobu" ||
+      !integration.pmsUserId
+    ) {
+      return jsonResponse({ error: "No PMS integration found" }, 404);
+    }
+
+    // Re-verify availability server-side
+    const availability = await checkSmoobuAvailability(integration.apiKey, {
+      arrivalDate: checkIn,
+      departureDate: checkOut,
+      apartments: [asset.smoobuPropertyId],
+      customerId: integration.pmsUserId,
+      guests,
+    });
+
+    if (!availability.availableApartments.includes(asset.smoobuPropertyId)) {
+      return jsonResponse(
+        { error: "Property is no longer available for these dates" },
+        409
+      );
+    }
+
+    // Re-compute price server-side for integrity
+    const propId = String(asset.smoobuPropertyId);
+    let serverPrice: number;
+
+    const smoobuPrice = availability.prices[propId];
+    if (smoobuPrice) {
+      serverPrice = smoobuPrice.price;
+    } else {
+      const ratesResponse = await fetchSmoobuRates(
+        integration.apiKey,
+        asset.smoobuPropertyId,
+        checkIn,
+        checkOut
+      );
+      const rateMap = ratesResponse.data[propId] ?? {};
+      const computed = computeStayPrice(checkIn, checkOut, rateMap);
+      if (!computed.hasPricing) {
+        return jsonResponse(
+          { error: "Unable to compute price for this stay" },
+          400
+        );
+      }
+      serverPrice = computed.total;
+    }
+
+    // Reject if client-submitted price diverges more than 1% from server price
+    if (Math.abs(serverPrice - totalPrice) / serverPrice > 0.01) {
+      return jsonResponse(
+        { error: "Price has changed. Please refresh and try again." },
+        409
+      );
+    }
+
+    // Compute nights
+    const checkInDate = new Date(checkIn + "T00:00:00");
+    const checkOutDate = new Date(checkOut + "T00:00:00");
+    const nights = Math.round(
+      (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Create booking row
+    const bookingId = nanoid();
+    const priceInCents = Math.round(serverPrice * 100);
+
+    await db.insert(bookings).values({
+      id: bookingId,
+      assetId: propertyId,
+      userId: authContext.userId,
+      checkIn,
+      checkOut,
+      nights,
+      guests,
+      baseTotal: priceInCents,
+      cleaningFee: 0,
+      serviceFee: 0,
+      totalPrice: priceInCents,
+      currency: currency.toLowerCase(),
+      status: "pending",
+      guestNote: guestInfo.guestNote ?? null,
+    });
+
+    // Create Stripe Checkout Session
+    const stripe = new Stripe(stripeKey);
+
+    const origin = new URL(request.url).origin;
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      customer_email: guestInfo.email,
+      line_items: [
+        {
+          price_data: {
+            currency: currency.toLowerCase(),
+            unit_amount: priceInCents,
+            product_data: {
+              name: asset.title,
+              description: `${nights} night${nights !== 1 ? "s" : ""} · ${checkIn} to ${checkOut}`,
+            },
+          },
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        bookingId,
+        propertyId,
+        smoobuPropertyId: propId,
+        guestFirstName: guestInfo.firstName,
+        guestLastName: guestInfo.lastName,
+        guestEmail: guestInfo.email,
+        guestPhone: guestInfo.phone ?? "",
+        adults: String(guestInfo.adults),
+        children: String(guestInfo.children),
+      },
+      success_url: `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/elite/${propertyId}`,
+    });
+
+    // Update booking with Stripe session ID
+    await db
+      .update(bookings)
+      .set({ stripeSessionId: session.id })
+      .where(eq(bookings.id, bookingId));
+
+    return jsonResponse({ url: session.url });
+  } catch (error) {
+    console.error("Checkout error:", error);
+    if (error instanceof Error && error.message === "Unauthorized") {
+      return jsonResponse({ error: "Sign in required" }, 401);
+    }
+    return jsonResponse(
+      { error: error instanceof Error ? error.message : "Checkout failed" },
+      500
+    );
+  }
+};

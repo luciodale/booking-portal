@@ -84,11 +84,17 @@ describe("dates utilities", () => {
 
       for (const dateStr of testCases) {
         const date = fromDateString(dateStr);
-        
+
         // Verify UTC components
-        expect(date.getUTCFullYear()).toBe(Number.parseInt(dateStr.substring(0, 4)));
-        expect(date.getUTCMonth()).toBe(Number.parseInt(dateStr.substring(5, 7)) - 1);
-        expect(date.getUTCDate()).toBe(Number.parseInt(dateStr.substring(8, 10)));
+        expect(date.getUTCFullYear()).toBe(
+          Number.parseInt(dateStr.substring(0, 4))
+        );
+        expect(date.getUTCMonth()).toBe(
+          Number.parseInt(dateStr.substring(5, 7)) - 1
+        );
+        expect(date.getUTCDate()).toBe(
+          Number.parseInt(dateStr.substring(8, 10))
+        );
         expect(date.getUTCHours()).toBe(0);
         expect(date.getUTCMinutes()).toBe(0);
         expect(date.getUTCSeconds()).toBe(0);
@@ -146,4 +152,3 @@ describe("dates utilities", () => {
     });
   });
 });
-

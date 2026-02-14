@@ -1,5 +1,6 @@
-import { experiences, getDb } from "@/db";
-import { requireAdmin } from "@/modules/auth/auth";
+import { getDb } from "@/db";
+import { experiences } from "@/db/schema";
+import { requireAuth } from "@/modules/auth/auth";
 import { genUniqueId } from "@/modules/utils/id";
 import type { ExperienceWithDetails } from "@/schemas/experience";
 import { createExperienceSchema } from "@/schemas/experience";
@@ -8,7 +9,7 @@ import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    await requireAdmin();
+    requireAuth(locals);
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {

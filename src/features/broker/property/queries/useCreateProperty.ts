@@ -1,7 +1,7 @@
-import { propertyApi } from "@/features/broker/property/api/client-server";
+import { propertyApi } from "@/features/broker/property/api/client-server/propertyApi";
 import type {
-  CreatePropertyRequest,
-  PropertyResponse,
+  CreatePropertyInput,
+  PropertyWithDetails,
 } from "@/features/broker/property/api/types";
 import { propertyQueryKeys } from "@/features/broker/property/constants/queryKeys";
 import { showSuccess } from "@/modules/ui/react/stores/notificationStore";
@@ -10,16 +10,16 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export function useCreateProperty(
   options?: UseMutationOptions<
-    PropertyResponse,
+    PropertyWithDetails,
     Error,
-    CreatePropertyRequest,
+    CreatePropertyInput,
     unknown
   >
 ) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: CreatePropertyRequest) => propertyApi.create(data),
+    mutationFn: (data: CreatePropertyInput) => propertyApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: propertyQueryKeys.lists() });
       showSuccess("Property created successfully!");

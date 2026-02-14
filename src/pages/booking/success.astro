@@ -1,0 +1,112 @@
+---
+import { getDb } from "@/db";
+import { assets, bookings } from "@/db/schema";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Header from "@/modules/ui/astro/Header.astro";
+import { eq } from "drizzle-orm";
+
+export const prerender = false;
+
+const sessionId = Astro.url.searchParams.get("session_id");
+
+let booking = null;
+let propertyTitle = "";
+
+if (sessionId) {
+  const D1Database = Astro.locals.runtime?.env?.DB;
+  if (D1Database) {
+    const db = getDb(D1Database);
+    const [found] = await db
+      .select()
+      .from(bookings)
+      .where(eq(bookings.stripeSessionId, sessionId))
+      .limit(1);
+
+    if (found) {
+      booking = found;
+      const [asset] = await db
+        .select({ title: assets.title })
+        .from(assets)
+        .where(eq(assets.id, found.assetId))
+        .limit(1);
+      propertyTitle = asset?.title ?? "Your Property";
+    }
+  }
+}
+---
+
+<BaseLayout title="Booking Confirmed">
+  <Header />
+  <main class="min-h-content-fit flex items-center justify-center px-6 py-16">
+    <div class="w-full max-w-md">
+      {booking ? (
+        <div class="p-8 rounded-2xl bg-card border border-border text-center space-y-6">
+          <div class="w-16 h-16 mx-auto rounded-full bg-green-500/10 flex items-center justify-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-green-400">
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
+          </div>
+
+          <div>
+            <h1 class="text-2xl font-bold text-foreground mb-2">Booking Confirmed</h1>
+            <p class="text-muted-foreground">Your reservation has been secured.</p>
+          </div>
+
+          <div class="space-y-3 text-left p-4 rounded-xl bg-background border border-border">
+            <div class="flex justify-between text-sm">
+              <span class="text-muted-foreground">Property</span>
+              <span class="text-foreground font-medium">{propertyTitle}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted-foreground">Check-in</span>
+              <span class="text-foreground font-medium">{booking.checkIn}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted-foreground">Check-out</span>
+              <span class="text-foreground font-medium">{booking.checkOut}</span>
+            </div>
+            <div class="flex justify-between text-sm">
+              <span class="text-muted-foreground">Nights</span>
+              <span class="text-foreground font-medium">{booking.nights}</span>
+            </div>
+            <div class="border-t border-border my-2" />
+            <div class="flex justify-between text-sm">
+              <span class="text-muted-foreground">Total</span>
+              <span class="text-foreground font-bold">
+                {(booking.totalPrice / 100).toFixed(2)} {booking.currency.toUpperCase()}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-3">
+            <a
+              href="/bookings"
+              class="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors text-center"
+            >
+              View My Bookings
+            </a>
+            <a
+              href="/"
+              class="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Back to Home
+            </a>
+          </div>
+        </div>
+      ) : (
+        <div class="p-8 rounded-2xl bg-card border border-border text-center space-y-4">
+          <h1 class="text-xl font-bold text-foreground">Booking Not Found</h1>
+          <p class="text-muted-foreground text-sm">
+            We couldn't find a booking for this session. If you just completed payment, it may take a moment to process.
+          </p>
+          <a
+            href="/"
+            class="inline-block py-2 px-6 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+          >
+            Go Home
+          </a>
+        </div>
+      )}
+    </div>
+  </main>
+</BaseLayout>

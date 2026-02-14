@@ -3,7 +3,12 @@
  */
 
 import { cn } from "@/modules/utils/cn";
-import { type Control, Controller, type FieldValues, type Path } from "react-hook-form";
+import {
+  type Control,
+  Controller,
+  type FieldValues,
+  type Path,
+} from "react-hook-form";
 
 interface NumberInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -70,4 +75,3 @@ export function NumberInput<T extends FieldValues>({
     />
   );
 }
-

@@ -3,7 +3,10 @@
  * Validates body with smoobu schema then delegates to shared operation.
  */
 
-import type { TPostIntegrationsRequest, TPostIntegrationsResponse } from "@/features/broker/pms/api/types";
+import type {
+  TPostIntegrationsRequest,
+  TPostIntegrationsResponse,
+} from "@/features/broker/pms/api/types";
 import { insertIntegrationSQL } from "@/features/broker/pms/operations/insertIntegrationSQL";
 import type { D1Database } from "@cloudflare/workers-types";
 import { smoobuCreateBodySchema } from "./createBodySchema";

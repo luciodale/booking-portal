@@ -8,8 +8,14 @@ export function usePropertyRates(params: {
   enabled?: boolean;
 }) {
   return useQuery({
-    queryKey: ["property-rates", params.propertyId, params.startDate, params.endDate],
-    queryFn: () => fetchPropertyRates(params.propertyId, params.startDate, params.endDate),
+    queryKey: [
+      "property-rates",
+      params.propertyId,
+      params.startDate,
+      params.endDate,
+    ],
+    queryFn: () =>
+      fetchPropertyRates(params.propertyId, params.startDate, params.endDate),
     enabled: (params.enabled ?? true) && !!params.startDate && !!params.endDate,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });

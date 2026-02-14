@@ -9,18 +9,18 @@ import {
   syncFeatureFields,
 } from "@/features/broker/property/domain/sync-features";
 import { getFacilityOptions } from "@/modules/constants";
+import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
 import {
-  FormSection,
   ImagesInput,
   type NewImage,
-  NumberInput,
-  SelectInput,
-  TagsInput,
-  TextInput,
-  TextareaInput,
-} from "@/modules/ui/react/form-inputs";
-import type { CreatePropertyInput } from "@/schemas";
-import { createPropertySchema } from "@/schemas";
+} from "@/modules/ui/react/form-inputs/ImagesInput";
+import { NumberInput } from "@/modules/ui/react/form-inputs/NumberInput";
+import { SelectInput } from "@/modules/ui/react/form-inputs/SelectInput";
+import { TagsInput } from "@/modules/ui/react/form-inputs/TagsInput";
+import { TextInput } from "@/modules/ui/react/form-inputs/TextInput";
+import { TextareaInput } from "@/modules/ui/react/form-inputs/TextareaInput";
+import type { CreatePropertyInput } from "@/schemas/property";
+import { createPropertySchema } from "@/schemas/property";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link2 } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -121,7 +121,11 @@ export function CreatePropertyForm({
   /** Show link button only if Smoobu has data for this field */
   function renderLink(field: keyof CreatePropertyInput) {
     if (!smoobuData || smoobuData[field] === undefined) return null;
-    return <SmoobuLinkButton onClick={() => linkField(field as keyof CreatePropertyFormData)} />;
+    return (
+      <SmoobuLinkButton
+        onClick={() => linkField(field as keyof CreatePropertyFormData)}
+      />
+    );
   }
 
   // Synced change handler for amenities/highlights/views
@@ -426,11 +430,7 @@ export function CreatePropertyForm({
 
       {/* Submit */}
       <div className="flex justify-end gap-4">
-        <button
-          type="button"
-          className="btn-secondary"
-          onClick={() => reset()}
-        >
+        <button type="button" className="btn-secondary" onClick={() => reset()}>
           Reset
         </button>
 

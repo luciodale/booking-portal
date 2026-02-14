@@ -2,9 +2,9 @@
  * Fetch list of apartments from Smoobu API (server-side, uses broker apiKey).
  */
 
-import { SMOOBU_BASE_URL } from "@/constants";
 import type { SmoobuApartmentsResponse } from "@/schemas/smoobu";
 import { smoobuApartmentsResponseSchema } from "@/schemas/smoobu";
+import { SMOOBU_BASE_URL } from "../constants";
 
 export async function fetchListApartments(
   apiKey: string

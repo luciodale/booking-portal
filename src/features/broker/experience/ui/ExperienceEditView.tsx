@@ -2,12 +2,10 @@
  * ExperienceEditView - Per-field edit interface for experiences
  */
 
-import { experienceCategoryLabels } from "@/data/helpers";
-import {
-  experienceQueryKeys,
-  useExperience,
-  useUpdateExperience,
-} from "@/features/broker/experience/queries";
+import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
+import { experienceQueryKeys } from "@/features/broker/experience/constants/queryKeys";
+import { useExperience } from "@/features/broker/experience/queries/useExperience";
+import { useUpdateExperience } from "@/features/broker/experience/queries/useUpdateExperience";
 import {
   EditableSelectField,
   EditableTextField,

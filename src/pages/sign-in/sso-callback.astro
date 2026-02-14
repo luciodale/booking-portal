@@ -1,0 +1,12 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { SSOCallback } from "@/modules/auth/ui/SSOCallback";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Signing in...">
+  <main class="min-h-screen flex items-center justify-center">
+    <SSOCallback client:load />
+  </main>
+</BaseLayout>

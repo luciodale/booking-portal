@@ -1,13 +1,14 @@
-import { assets, getDb, images } from "@/db";
-import { requireAdmin } from "@/modules/auth/auth";
-import type { PropertyResponse } from "@/schemas";
+import { getDb } from "@/db";
+import { assets, images } from "@/db/schema";
+import { requireAuth } from "@/modules/auth/auth";
+import type { PropertyWithDetails } from "@/schemas/property";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ params, locals }) => {
   try {
-    await requireAdmin();
+    requireAuth(locals);
 
     const { id } = params;
     if (!id) {
@@ -36,7 +37,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .from(images)
       .where(eq(images.assetId, id));
 
-    const response: PropertyResponse = {
+    const response: PropertyWithDetails = {
       ...property,
       images: propertyImages,
     };

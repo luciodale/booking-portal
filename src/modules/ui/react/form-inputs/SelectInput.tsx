@@ -3,7 +3,12 @@
  */
 
 import { Select } from "@/modules/ui/Select";
-import { type Control, Controller, type FieldValues, type Path } from "react-hook-form";
+import {
+  type Control,
+  Controller,
+  type FieldValues,
+  type Path,
+} from "react-hook-form";
 
 interface SelectInputProps<T extends FieldValues> {
   name: Path<T>;
@@ -49,4 +54,3 @@ export function SelectInput<T extends FieldValues>({
     />
   );
 }
-

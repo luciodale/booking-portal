@@ -3,11 +3,12 @@
  * Validation is done by each integration (e.g. smoobu createBodySchema) before calling this.
  */
 
-import { getDb, pmsIntegrations, type NewPmsIntegration } from "@/db";
-import { eq } from "drizzle-orm";
+import { getDb } from "@/db";
+import { type NewPmsIntegration, pmsIntegrations } from "@/db/schema";
 import type { TPostIntegrationsResponse } from "@/features/broker/pms/api/types";
 import { genUniqueId } from "@/modules/utils/id";
 import type { D1Database } from "@cloudflare/workers-types";
+import { eq } from "drizzle-orm";
 
 type TPmsIntegrationCreateInput = Pick<
   NewPmsIntegration,

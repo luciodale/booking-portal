@@ -3,9 +3,9 @@
  * Per-field inline editing with individual save buttons
  */
 
-import { useProperty } from "@/features/broker/property/queries";
+import { useProperty } from "@/features/broker/property/queries/useProperty";
 import { rootRoute } from "@/features/broker/property/routes/BackofficeRoot";
-import { PropertyEditView } from "@/features/broker/property/ui";
+import { PropertyEditView } from "@/features/broker/property/ui/PropertyEditView";
 import { createRoute, useParams } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 

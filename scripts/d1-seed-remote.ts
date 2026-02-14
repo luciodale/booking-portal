@@ -33,4 +33,3 @@ main().catch((error) => {
   console.error("\n❌ D1 remote seeding failed:", error);
   process.exit(1);
 });
-

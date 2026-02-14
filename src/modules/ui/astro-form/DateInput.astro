@@ -1,24 +1,24 @@
 ---
 interface Props {
-    name: string;
-    label?: string;
-    value?: string;
-    min?: string;
-    max?: string;
-    required?: boolean;
-    disabled?: boolean;
-    class?: string;
+  name: string;
+  label?: string;
+  value?: string;
+  min?: string;
+  max?: string;
+  required?: boolean;
+  disabled?: boolean;
+  class?: string;
 }
 
 const {
-    name,
-    label,
-    value,
-    min,
-    max,
-    required = false,
-    disabled = false,
-    class: className,
+  name,
+  label,
+  value,
+  min,
+  max,
+  required = false,
+  disabled = false,
+  class: className,
 } = Astro.props;
 ---
 

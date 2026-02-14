@@ -1,18 +1,23 @@
-import type { TPostIntegrationsRequest, TPostIntegrationsResponse } from "@/features/broker/pms/api/types";
+import { getDb } from "@/db";
+import { resolveBrokerId } from "@/features/broker/auth/resolveBrokerId";
+import type {
+  TPostIntegrationsRequest,
+  TPostIntegrationsResponse,
+} from "@/features/broker/pms/api/types";
 import { availablePms } from "@/features/broker/pms/constants/integrations";
 import { insertIntegration } from "@/features/broker/pms/integrations/smoobu/insertIntegration";
-import { requireAdmin } from "@/modules/auth/auth";
 import type { APIRoute } from "astro";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    await requireAdmin();
-
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
       return jsonError("Database not available", 503);
     }
+
+    const db = getDb(D1Database);
+    const brokerId = await resolveBrokerId(locals, db);
 
     const body = (await request.json()) as { provider?: string };
     const provider = body?.provider;
@@ -23,8 +28,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    const brokerId = "broker-001"; // TODO: from auth context
-
     switch (provider) {
       case "smoobu": {
         const integration = await insertIntegration(
@@ -32,7 +35,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
           brokerId,
           body as TPostIntegrationsRequest
         );
-        return jsonSuccess(integration satisfies TPostIntegrationsResponse, 201);
+        return jsonSuccess(
+          integration satisfies TPostIntegrationsResponse,
+          201
+        );
       }
       default: {
         return jsonError(`Unhandled provider: ${provider}`, 400);

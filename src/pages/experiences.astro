@@ -1,6 +1,7 @@
 ---
-import { experienceCategoryLabels } from "@/data/helpers";
-import { experienceImages, experiences, getDb } from "@/db";
+import { getDb } from "@/db";
+import { experienceImages, experiences } from "@/db/schema";
+import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import Button from "@/modules/ui/astro/Button.astro";
@@ -33,7 +34,7 @@ const experiencesWithImages = await Promise.all(
 
     const imageUrl = primaryImg
       ? generateImageUrl(primaryImg.r2Key)
-      : exp.imageUrl ?? "";
+      : (exp.imageUrl ?? "");
 
     return {
       id: exp.id,
@@ -41,7 +42,9 @@ const experiencesWithImages = await Promise.all(
       location: exp.city ?? exp.location,
       imageUrl,
       duration: exp.duration ?? "",
-      category: exp.category ? experienceCategoryLabels[exp.category] ?? exp.category : "Other",
+      category: exp.category
+        ? (experienceCategoryLabels[exp.category] ?? exp.category)
+        : "Other",
     };
   })
 );

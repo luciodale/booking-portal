@@ -1,9 +1,16 @@
 ---
-import { experienceCategoryLabels } from "@/data/helpers";
-import { assetExperiences, assets, experiences, experienceImages, getDb, images } from "@/db";
+import { getDb } from "@/db";
+import {
+  assetExperiences,
+  assets,
+  experienceImages,
+  experiences,
+  images,
+} from "@/db/schema";
+import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
+import { kebabToDisplay } from "@/features/broker/property/domain/sync-features";
 import { BookingWidget } from "@/features/public/booking/ui/BookingWidget";
 import PageLayout from "@/layouts/PageLayout.astro";
-import { kebabToDisplay } from "@/features/broker/property/domain/sync-features";
 import { getFacilityIconName } from "@/modules/constants";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import Badge from "@/modules/ui/astro/Badge.astro";
@@ -83,7 +90,7 @@ const linkedExperiences = await Promise.all(
 
     const imageUrl = primaryImg
       ? generateImageUrl(primaryImg.r2Key)
-      : exp.imageUrl ?? "";
+      : (exp.imageUrl ?? "");
 
     return {
       id: exp.id,
@@ -91,7 +98,9 @@ const linkedExperiences = await Promise.all(
       location: exp.city ?? exp.location,
       imageUrl,
       duration: exp.duration ?? "",
-      category: exp.category ? experienceCategoryLabels[exp.category] ?? exp.category : "Other",
+      category: exp.category
+        ? (experienceCategoryLabels[exp.category] ?? exp.category)
+        : "Other",
       discountPercent: link.discountPercent ?? 0,
     };
   })
@@ -263,7 +272,6 @@ const linkedExperiencesFiltered = linkedExperiences.filter(
               propertyId={property.id}
               smoobuPropertyId={asset.smoobuPropertyId ?? null}
               maxGuests={property.maxGuests}
-              currency="EUR"
             />
           </div>
         </div>

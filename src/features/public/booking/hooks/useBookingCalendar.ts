@@ -4,11 +4,11 @@ import {
   startOfToday,
   subMonths,
 } from "@/features/public/booking/domain/dateUtils";
-import { usePropertyRates } from "@/features/public/booking/hooks/usePropertyRates";
 import { usePropertyAvailability } from "@/features/public/booking/hooks/usePropertyAvailability";
+import { usePropertyRates } from "@/features/public/booking/hooks/usePropertyRates";
 import type { SmoobuRateDay } from "@/schemas/smoobu";
-import { useCallback, useMemo, useState } from "react";
 import { endOfMonth, startOfMonth } from "date-fns";
+import { useCallback, useMemo, useState } from "react";
 
 export function useBookingCalendar(
   propertyId: string,
@@ -31,10 +31,13 @@ export function useBookingCalendar(
 
   const availabilityMutation = usePropertyAvailability(propertyId);
 
+  // Currency from Smoobu apartment details (returned alongside rates)
+  const currency = ratesQuery.data?.currency ?? "EUR";
+
   // Extract rate map for the smoobu property
   const rateMap = useMemo((): Record<string, SmoobuRateDay> => {
-    if (!ratesQuery.data?.data || !smoobuPropertyId) return {};
-    return ratesQuery.data.data[String(smoobuPropertyId)] ?? {};
+    if (!ratesQuery.data?.rates.data || !smoobuPropertyId) return {};
+    return ratesQuery.data.rates.data[String(smoobuPropertyId)] ?? {};
   }, [ratesQuery.data, smoobuPropertyId]);
 
   const goNextMonth = useCallback(() => {
@@ -59,6 +62,7 @@ export function useBookingCalendar(
         availabilityMutation.mutate({
           arrivalDate: formatDate(checkIn),
           departureDate: formatDate(date),
+          currency,
         });
       } else {
         // Clicked before check-in — restart
@@ -80,6 +84,7 @@ export function useBookingCalendar(
     checkIn,
     checkOut,
     rateMap,
+    currency,
     ratesLoading: ratesQuery.isLoading,
     availabilityResult: availabilityMutation.data ?? null,
     availabilityLoading: availabilityMutation.isPending,

@@ -2,7 +2,16 @@
  * Error utilities for formatting and displaying errors
  */
 
-import type { ApiError } from "@/modules/ui-api/client";
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public status: number,
+    public details?: unknown
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
 import type { ZodIssue } from "zod";
 
 /**

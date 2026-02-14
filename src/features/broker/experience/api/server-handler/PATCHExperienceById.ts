@@ -1,5 +1,6 @@
-import { experiences, experienceImages, getDb } from "@/db";
-import { requireAdmin } from "@/modules/auth/auth";
+import { getDb } from "@/db";
+import { experienceImages, experiences } from "@/db/schema";
+import { requireAuth } from "@/modules/auth/auth";
 import type { ExperienceWithDetails } from "@/schemas/experience";
 import { updateExperienceSchema } from "@/schemas/experience";
 import type { APIRoute } from "astro";
@@ -8,7 +9,7 @@ import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   try {
-    await requireAdmin();
+    requireAuth(locals);
 
     const { id } = params;
     if (!id) {

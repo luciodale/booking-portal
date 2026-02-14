@@ -36,7 +36,16 @@ function safeParseJson(raw: string): unknown {
 
 function listObjects(): string[] {
   const result = Bun.spawnSync(
-    ["bunx", "wrangler", "r2", "object", "list", BUCKET_NAME, "--remote", "--json"],
+    [
+      "bunx",
+      "wrangler",
+      "r2",
+      "object",
+      "list",
+      BUCKET_NAME,
+      "--remote",
+      "--json",
+    ],
     { stdout: "pipe", stderr: "pipe", stdin: "inherit" }
   );
 
@@ -57,7 +66,15 @@ function deleteObjects(keys: string[]): void {
 
   for (const key of keys) {
     const result = Bun.spawnSync(
-      ["bunx", "wrangler", "r2", "object", "delete", `${BUCKET_NAME}/${key}`, "--remote"],
+      [
+        "bunx",
+        "wrangler",
+        "r2",
+        "object",
+        "delete",
+        `${BUCKET_NAME}/${key}`,
+        "--remote",
+      ],
       { stdout: "pipe", stderr: "pipe", stdin: "inherit" }
     );
 

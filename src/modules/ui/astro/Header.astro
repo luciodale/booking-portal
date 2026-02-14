@@ -1,4 +1,6 @@
 ---
+import { HeaderAuthSection } from "@/modules/auth/ui/HeaderAuthSection";
+
 const currentPath = Astro.url.pathname;
 
 const navLinks = [
@@ -53,16 +55,7 @@ const navLinks = [
       </div>
 
       <!-- Auth Buttons -->
-      <div class="flex items-center gap-4">
-        <button
-          class="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors duration-200"
-        >
-          Sign In
-        </button>
-        <a href="/signup" class="btn-primary text-sm !px-4 !py-2">
-          Get Started
-        </a>
-      </div>
+      <HeaderAuthSection client:load />
     </div>
   </nav>
 </header>
