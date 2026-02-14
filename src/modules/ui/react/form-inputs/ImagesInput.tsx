@@ -2,8 +2,9 @@
  * ImagesInput - Image upload with primary selection and preview
  */
 
+import { processImage } from "@/modules/images/processImage";
 import { genUniqueId } from "@/modules/utils/id";
-import { ImagePlus, Star, Trash2, Upload } from "lucide-react";
+import { ImagePlus, Loader2, Star, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
 // =============================================================================
@@ -37,6 +38,7 @@ interface ImagesInputProps {
 
 export function ImagesInput({ images, onChange, error }: ImagesInputProps) {
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [processing, setProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const primaryImage = images.find((img) => img.isPrimary);
@@ -52,7 +54,10 @@ export function ImagesInput({ images, onChange, error }: ImagesInputProps) {
     return null;
   };
 
-  const handleFileSelect = (files: FileList | null, isPrimary: boolean) => {
+  const handleFileSelect = async (
+    files: FileList | null,
+    isPrimary: boolean,
+  ) => {
     if (!files || files.length === 0) return;
 
     const file = files[0];
@@ -63,23 +68,30 @@ export function ImagesInput({ images, onChange, error }: ImagesInputProps) {
     }
 
     setValidationError(null);
-    const previewUrl = URL.createObjectURL(file);
-    const newImage: NewImage = {
-      id: genUniqueId("img"),
-      file,
-      previewUrl,
-      isPrimary,
-    };
+    setProcessing(true);
 
-    // If setting as primary, remove isPrimary from others
-    const updated = isPrimary
-      ? images.map((img) => ({ ...img, isPrimary: false }))
-      : images;
+    try {
+      const processed = await processImage(file);
+      const previewUrl = URL.createObjectURL(processed);
+      const newImage: NewImage = {
+        id: genUniqueId("img"),
+        file: processed,
+        previewUrl,
+        isPrimary,
+      };
 
-    onChange([...updated, newImage]);
+      const updated = isPrimary
+        ? images.map((img) => ({ ...img, isPrimary: false }))
+        : images;
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      onChange([...updated, newImage]);
+    } catch {
+      setValidationError("Failed to process image. Please try another file.");
+    } finally {
+      setProcessing(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -168,17 +180,25 @@ export function ImagesInput({ images, onChange, error }: ImagesInputProps) {
               type="file"
               accept={ACCEPTED_TYPES.join(",")}
               className="sr-only"
+              disabled={processing}
               onChange={(e) => handleFileSelect(e.target.files, true)}
             />
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-              <ImagePlus className="w-8 h-8 text-primary" />
-            </div>
-            <span className="text-foreground font-medium mb-1">
-              Upload Main Image
-            </span>
-            <span className="text-sm text-muted-foreground">
-              JPG, PNG or WebP up to {Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB
-            </span>
+            {processing ? (
+              <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+            ) : (
+              <>
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <ImagePlus className="w-8 h-8 text-primary" />
+                </div>
+                <span className="text-foreground font-medium mb-1">
+                  Upload Main Image
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  JPG, PNG or WebP up to{" "}
+                  {Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB
+                </span>
+              </>
+            )}
           </label>
         )}
       </div>
@@ -234,12 +254,21 @@ export function ImagesInput({ images, onChange, error }: ImagesInputProps) {
               type="file"
               accept={ACCEPTED_TYPES.join(",")}
               className="sr-only"
+              disabled={processing}
               onChange={(e) => handleFileSelect(e.target.files, false)}
             />
-            <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center mb-2">
-              <ImagePlus className="w-5 h-5 text-muted-foreground" />
-            </div>
-            <span className="text-xs text-muted-foreground">Add Image</span>
+            {processing ? (
+              <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+            ) : (
+              <>
+                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center mb-2">
+                  <ImagePlus className="w-5 h-5 text-muted-foreground" />
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  Add Image
+                </span>
+              </>
+            )}
           </label>
         </div>
       </div>

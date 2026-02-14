@@ -4,6 +4,7 @@
  */
 
 import type { Image } from "@/db/schema";
+import { processImage } from "@/modules/images/processImage";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import { cn } from "@/modules/utils/cn";
 import { ImagePlus, Loader2, Star, Trash2, Upload } from "lucide-react";
@@ -58,9 +59,11 @@ export function ImagesManager({
     setUploading(true);
 
     try {
+      const processed = await processImage(file);
+
       const formData = new FormData();
       formData.append("assetId", propertyId);
-      formData.append("images", file);
+      formData.append("images", processed);
       if (isPrimary) {
         formData.append("isPrimary", "0");
       }

@@ -3,7 +3,6 @@ import { assets, images } from "@/db/schema";
 import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import {
-  convertToWebP,
   validateImageSize,
   validateImageType,
 } from "@/modules/r2/image-processor";
@@ -67,29 +66,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       const arrayBuffer = await file.arrayBuffer();
 
-      const isValidType = await validateImageType(arrayBuffer);
-      if (!isValidType) {
-        return jsonError(`Invalid image type for file: ${file.name}`, 400);
-      }
-
-      const isValidSize = validateImageSize(arrayBuffer);
-      if (!isValidSize) {
+      if (!validateImageType(arrayBuffer)) {
         return jsonError(
-          `File too large: ${file.name}. Maximum size is 10MB`,
+          `Invalid image type for file: ${file.name}. Expected WebP.`,
           400
         );
       }
 
-      const webpBuffer = await convertToWebP(arrayBuffer, {
-        quality: 85,
-        maxWidth: 2400,
-        maxHeight: 1800,
-      });
+      if (!validateImageSize(arrayBuffer)) {
+        return jsonError(
+          `File too large: ${file.name}. Maximum size is 2MB`,
+          400
+        );
+      }
 
       const filename = file.name.replace(/\.[^.]+$/, ".webp");
       const r2Key = generateImageKey(assetId, filename, isPrimary);
 
-      await uploadImageToR2(R2Bucket, r2Key, webpBuffer.buffer as ArrayBuffer, {
+      await uploadImageToR2(R2Bucket, r2Key, arrayBuffer, {
         contentType: "image/webp",
         alt,
         assetId,
