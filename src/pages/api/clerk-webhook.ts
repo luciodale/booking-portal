@@ -1,17 +1,9 @@
-import { USE_TEST_MODE } from "@/config";
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import { genUniqueId } from "@/modules/utils/id";
 import type { APIRoute } from "astro";
 import { Webhook } from "svix";
-
-function getClerkWebhookSecret(env: Env): string | undefined {
-  if (USE_TEST_MODE) {
-    return env.TEST_CLERK_WEBHOOK_SECRET;
-  }
-  return env.PROD_CLERK_WEBHOOK_SECRET;
-}
 
 interface ClerkEmailAddress {
   email_address: string;
@@ -33,9 +25,7 @@ interface ClerkWebhookEvent {
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const D1Database = locals.runtime?.env?.DB;
-  const webhookSecret = getClerkWebhookSecret(
-    (locals.runtime?.env ?? {}) as Env
-  );
+  const webhookSecret = locals.runtime?.env?.CLERK_WEBHOOK_SECRET;
 
   if (!webhookSecret || !D1Database) {
     return new Response("Server misconfigured", { status: 503 });

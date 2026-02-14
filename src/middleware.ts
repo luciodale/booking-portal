@@ -1,6 +1,5 @@
-import { CLERK_PUBLISHABLE_KEY, USE_TEST_MODE } from "@/config";
+import { CLERK_PUBLISHABLE_KEY } from "@/config";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/astro/server";
-import { defineMiddleware, sequence } from "astro:middleware";
 
 const isProtectedRoute = createRouteMatcher([
   "/backoffice(.*)",
@@ -15,22 +14,12 @@ const isWebhookRoute = createRouteMatcher([
   "/api/clerk-webhook",
 ]);
 
-const envSwap = defineMiddleware((context, next) => {
+export const onRequest = clerkMiddleware((auth, context, next) => {
   if (context.locals.runtime?.env) {
-    const env = context.locals.runtime.env;
-    env.PUBLIC_CLERK_PUBLISHABLE_KEY = CLERK_PUBLISHABLE_KEY;
-    if (USE_TEST_MODE) {
-      env.CLERK_SECRET_KEY = env.TEST_CLERK_SECRET_KEY;
-      env.CLERK_JWT_KEY = env.TEST_CLERK_JWT_KEY;
-    } else {
-      env.CLERK_SECRET_KEY = env.PROD_CLERK_SECRET_KEY;
-      env.CLERK_JWT_KEY = env.PROD_CLERK_JWT_KEY;
-    }
+    context.locals.runtime.env.PUBLIC_CLERK_PUBLISHABLE_KEY =
+      CLERK_PUBLISHABLE_KEY;
   }
-  return next();
-});
 
-const clerk = clerkMiddleware((auth, context, next) => {
   if (isWebhookRoute(context.request)) {
     return next();
   }
@@ -45,5 +34,3 @@ const clerk = clerkMiddleware((auth, context, next) => {
 
   return next();
 });
-
-export const onRequest = sequence(envSwap, clerk);

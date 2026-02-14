@@ -1,7 +1,6 @@
 import { getDb } from "@/db";
 import { assets, bookings, brokerLogs, pmsIntegrations, users } from "@/db/schema";
 import { createSmoobuBooking } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCreateBooking";
-import { getStripeKeys } from "@/features/public/booking/stripe-config";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
@@ -12,7 +11,8 @@ const SMOOBU_CHANNEL_ID = 70;
 
 export const POST: APIRoute = async ({ request, locals }) => {
   const D1Database = locals.runtime?.env?.DB;
-  const { secretKey: stripeKey, webhookSecret } = getStripeKeys(locals.runtime?.env ?? {} as Env);
+  const stripeKey = locals.runtime?.env?.STRIPE_SECRET_KEY;
+  const webhookSecret = locals.runtime?.env?.STRIPE_WEBHOOK_SECRET;
 
   if (!stripeKey || !webhookSecret || !D1Database) {
     return new Response("Server misconfigured", { status: 503 });

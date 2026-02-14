@@ -3,7 +3,6 @@ import { assets, pmsIntegrations } from "@/db/schema";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
 import { computeStayPrice } from "@/features/public/booking/domain/computeStayPrice";
-import { getStripeKeys } from "@/features/public/booking/stripe-config";
 import { requireAuth } from "@/modules/auth/auth";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
@@ -44,9 +43,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!D1Database)
       return jsonResponse({ error: "Database not available" }, 503);
 
-    const { secretKey: stripeKey } = getStripeKeys(
-      locals.runtime?.env ?? ({} as Env)
-    );
+    const stripeKey = locals.runtime?.env?.STRIPE_SECRET_KEY;
     if (!stripeKey)
       return jsonResponse({ error: "Stripe not configured" }, 503);
 
