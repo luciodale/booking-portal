@@ -1,6 +1,7 @@
 ---
 import { experienceCategoryLabels } from "@/data/helpers";
 import { assetExperiences, assets, experiences, experienceImages, getDb, images } from "@/db";
+import { BookingWidget } from "@/features/public/booking/ui/BookingWidget";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { kebabToDisplay } from "@/features/broker/property/domain/sync-features";
 import { getFacilityIconName } from "@/modules/constants";
@@ -257,19 +258,13 @@ const linkedExperiencesFiltered = linkedExperiences.filter(
 
         <div class="lg:col-span-1">
           <div class="sticky top-40">
-            <div class="p-8 rounded-2xl bg-card border border-border card-elite marble-border">
-              <div class="mb-8 text-center">
-                <div class="text-sm text-primary uppercase tracking-widest mb-2">Reserve</div>
-                <p class="text-sm text-muted-foreground mt-3">Contact us for availability and pricing</p>
-              </div>
-              <Button>Reserve Now</Button>
-            </div>
-            <div class="mt-5 p-5 rounded-xl bg-card border border-border">
-              <button class="w-full flex items-center justify-center gap-3 py-2 text-foreground hover:text-primary transition-colors font-medium">
-                <i data-lucide="message-circle" class="w-5 h-5"></i>
-                Contact Elite Concierge
-              </button>
-            </div>
+            <BookingWidget
+              client:visible
+              propertyId={property.id}
+              smoobuPropertyId={asset.smoobuPropertyId ?? null}
+              maxGuests={property.maxGuests}
+              currency="EUR"
+            />
           </div>
         </div>
       </div>

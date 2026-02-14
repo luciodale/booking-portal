@@ -18,8 +18,6 @@ async function main() {
 
   const manifest = await loadManifest(ROOT_DIR);
 
-  console.log("[DEBUG] Starting seedImages...");
-
   try {
     await seedImages(manifest, "remote", ROOT_DIR);
     console.log("\n✅ R2 remote seeding complete");

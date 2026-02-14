@@ -3,12 +3,37 @@
  * Shared logic for executing SQL against D1 database
  */
 
-import { $ } from "bun";
 import { join } from "node:path";
+import { unlinkSync } from "node:fs";
 
 const DB_NAME = "booking-portal-db";
 
 export type Mode = "local" | "remote";
+
+function runWrangler(args: string[], cwd: string): { ok: boolean; stdout: string } {
+  const result = Bun.spawnSync(["bunx", "wrangler", ...args], {
+    cwd,
+    stdout: "pipe",
+    stderr: "pipe",
+    stdin: "inherit",
+  });
+  return {
+    ok: result.exitCode === 0,
+    stdout: result.stdout.toString(),
+  };
+}
+
+function runWranglerInherit(args: string[], cwd: string): void {
+  const result = Bun.spawnSync(["bunx", "wrangler", ...args], {
+    cwd,
+    stdout: "inherit",
+    stderr: "inherit",
+    stdin: "inherit",
+  });
+  if (result.exitCode !== 0) {
+    throw new Error(`wrangler ${args.join(" ")} failed with exit code ${result.exitCode}`);
+  }
+}
 
 export async function executeSql(sqlPath: string, mode: Mode): Promise<void> {
   console.log(`\n📤 Executing SQL against D1 (${mode})...`);
@@ -20,43 +45,71 @@ export async function executeSql(sqlPath: string, mode: Mode): Promise<void> {
     throw new Error(`SQL file not found: ${sqlPath}`);
   }
 
+  const cwd = join(import.meta.dir, "../..");
+  const modeFlag = mode === "local" ? "--local" : "--remote";
+
+  runWranglerInherit(["d1", "execute", DB_NAME, `--file=${sqlPath}`, modeFlag], cwd);
+  console.log("✅ SQL executed successfully");
+}
+
+/**
+ * Safely parse JSON from wrangler CLI stdout.
+ * Wrangler may prepend warnings/banners before the actual JSON payload.
+ */
+function safeParseWranglerJson(raw: string): unknown {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
   try {
-    if (mode === "local") {
-      await $`bunx wrangler d1 execute ${DB_NAME} --file=${sqlPath} --local`;
-    } else {
-      await $`bunx wrangler d1 execute ${DB_NAME} --file=${sqlPath} --remote`;
+    return JSON.parse(trimmed);
+  } catch {
+    // Find first `[` or `{`
+    const arrayStart = trimmed.indexOf("[");
+    const objectStart = trimmed.indexOf("{");
+    let start = -1;
+
+    if (arrayStart === -1 && objectStart === -1) return null;
+    if (arrayStart === -1) start = objectStart;
+    else if (objectStart === -1) start = arrayStart;
+    else start = Math.min(arrayStart, objectStart);
+
+    try {
+      return JSON.parse(trimmed.slice(start));
+    } catch {
+      return null;
     }
-    console.log("✅ SQL executed successfully");
-  } catch (error) {
-    console.error(
-      "❌ SQL execution failed:",
-      error instanceof Error ? error.message : error
-    );
-    throw error;
   }
 }
 
 export async function checkExistingData(mode: Mode): Promise<boolean> {
+  const tempFile = join(import.meta.dir, "..", ".check-data.sql");
+
   try {
-    const checkSql = "SELECT COUNT(*) as count FROM brokers;";
-    const tempFile = join(import.meta.dir, "../.check-data.sql");
-    await Bun.write(tempFile, checkSql);
+    await Bun.write(tempFile, "SELECT COUNT(*) as count FROM brokers;");
 
-    const result =
-      mode === "local"
-        ? await $`bunx wrangler d1 execute ${DB_NAME} --file=${tempFile} --local --json`.quiet()
-        : await $`bunx wrangler d1 execute ${DB_NAME} --file=${tempFile} --remote --json`.quiet();
+    const cwd = join(import.meta.dir, "../..");
+    const modeFlag = mode === "local" ? "--local" : "--remote";
+    const { ok, stdout } = runWrangler(
+      ["d1", "execute", DB_NAME, `--file=${tempFile}`, modeFlag, "--json"],
+      cwd
+    );
 
-    await $`rm -f ${tempFile}`.quiet();
+    if (!ok) return false;
 
-    const stdoutText = result.stdout.toString();
-    const data = JSON.parse(stdoutText);
-    const count = data?.[0]?.results?.[0]?.count || 0;
+    const data = safeParseWranglerJson(stdout);
+    if (!Array.isArray(data)) return false;
 
-    return count > 0;
+    const count = (data as Array<{ results?: Array<{ count?: number }> }>)[0]
+      ?.results?.[0]?.count;
+    return typeof count === "number" && count > 0;
   } catch {
-    // Table might not exist yet, that's fine
     return false;
+  } finally {
+    try {
+      unlinkSync(tempFile);
+    } catch {
+      // ignore
+    }
   }
 }
 
@@ -67,6 +120,20 @@ export async function generateSql(rootDir: string): Promise<void> {
 
   if (!exists) {
     console.log("\n⚠️  No SQL file found, running generate-sql first...");
-    await $`bun run ${join(rootDir, "scripts/generate-sql.ts")}`;
+    const result = Bun.spawnSync(["bun", "run", join(rootDir, "scripts/generate-sql.ts")], {
+      cwd: rootDir,
+      stdout: "inherit",
+      stderr: "inherit",
+      stdin: "inherit",
+    });
+
+    if (result.exitCode !== 0) {
+      throw new Error("generate-sql failed");
+    }
+
+    const afterGenerate = await Bun.file(sqlPath).exists();
+    if (!afterGenerate) {
+      throw new Error("generate-sql did not produce .seed.sql");
+    }
   }
 }

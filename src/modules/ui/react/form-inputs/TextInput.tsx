@@ -19,6 +19,7 @@ interface TextInputProps<T extends FieldValues> {
   placeholder?: string;
   maxLength?: number;
   disabled?: boolean;
+  labelSuffix?: React.ReactNode;
 }
 
 export function TextInput<T extends FieldValues>({
@@ -30,6 +31,7 @@ export function TextInput<T extends FieldValues>({
   placeholder,
   maxLength,
   disabled,
+  labelSuffix,
 }: TextInputProps<T>) {
   return (
     <Controller
@@ -43,6 +45,7 @@ export function TextInput<T extends FieldValues>({
           >
             {label}
             {required && <span className="text-error ml-1">*</span>}
+            {labelSuffix}
           </label>
           {description && (
             <p className="text-sm text-muted-foreground mb-2">{description}</p>

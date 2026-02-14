@@ -21,14 +21,14 @@ export function PropertySection() {
       </Link>
 
       <Link
-        to="/broken/properties/new"
+        to="/create/properties/new"
         className="group bg-card border border-border rounded-xl p-6 transition-all duration-200 hover:bg-card-hover"
       >
         <h2 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
           Create Property
         </h2>
         <p className="text-sm text-muted-foreground">
-          Add a new property (create + images). WIP.
+          Add a new property from your PMS integration.
         </p>
       </Link>
     </div>

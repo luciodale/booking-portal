@@ -14,6 +14,7 @@ interface NumberInputProps<T extends FieldValues> {
   placeholder?: string;
   min?: number;
   max?: number;
+  labelSuffix?: React.ReactNode;
 }
 
 export function NumberInput<T extends FieldValues>({
@@ -25,6 +26,7 @@ export function NumberInput<T extends FieldValues>({
   placeholder,
   min,
   max,
+  labelSuffix,
 }: NumberInputProps<T>) {
   return (
     <Controller
@@ -38,6 +40,7 @@ export function NumberInput<T extends FieldValues>({
           >
             {label}
             {required && <span className="text-error ml-1">*</span>}
+            {labelSuffix}
           </label>
           {description && (
             <p className="text-sm text-muted-foreground mb-2">{description}</p>

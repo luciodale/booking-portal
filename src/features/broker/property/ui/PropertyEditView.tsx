@@ -4,10 +4,10 @@
  */
 
 import {
-  queryKeys,
+  propertyQueryKeys,
   useProperty,
   useUpdateProperty,
-} from "@/features/broker/property/hooks/queries";
+} from "@/features/broker/property/queries";
 import { getFacilityOptions } from "@/modules/constants";
 import type { UpdatePropertyRequest } from "@/schemas";
 import { useQueryClient } from "@tanstack/react-query";
@@ -31,7 +31,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
 
   const refreshProperty = () => {
     queryClient.invalidateQueries({
-      queryKey: queryKeys.properties.detail(propertyId),
+      queryKey: propertyQueryKeys.detail(propertyId),
     });
   };
 

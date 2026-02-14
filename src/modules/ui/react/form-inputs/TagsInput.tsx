@@ -19,6 +19,7 @@ interface TagsInputProps<T extends FieldValues> {
   formatDisplay?: (value: string) => string;
   /** Convert display format to kebab-case */
   formatValue?: (value: string) => string;
+  labelSuffix?: React.ReactNode;
 }
 
 /** Default kebab-to-display conversion */
@@ -46,6 +47,7 @@ export function TagsInput<T extends FieldValues>({
   onChangeOverride,
   formatDisplay = defaultFormatDisplay,
   formatValue = defaultFormatValue,
+  labelSuffix,
 }: TagsInputProps<T>) {
   const [customInput, setCustomInput] = useState("");
   const optionValues = new Set(options.map((o) => o.value));
@@ -85,6 +87,7 @@ export function TagsInput<T extends FieldValues>({
             <span className="block text-sm font-medium text-foreground mb-1">
               {label}
               {required && <span className="text-error ml-1">*</span>}
+              {labelSuffix}
             </span>
             {description && (
               <p className="text-sm text-muted-foreground mb-2">

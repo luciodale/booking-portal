@@ -1,12 +1,10 @@
-import {
-  deleteProperty,
-  getProperty,
-  updateProperty,
-} from "@/features/broker/property/api/handlers";
+import { DELETE } from "@/features/broker/property/api/server-handler/DELETEPropertyById";
+import { GET } from "@/features/broker/property/api/server-handler/GETPropertyById";
+import { PATCH } from "@/features/broker/property/api/server-handler/PATCHPropertyById";
 
 export const prerender = false;
 
-export const GET = getProperty;
-export const PUT = updateProperty;
-export const PATCH = updateProperty; // Support both PUT and PATCH for updates
-export const DELETE = deleteProperty;
+export { GET };
+export { PATCH };
+export { PATCH as PUT };
+export { DELETE };

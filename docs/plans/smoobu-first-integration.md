@@ -311,7 +311,9 @@ flowchart TB
 2. **Smoobu Channel ID:** What `channelId` to use when creating bookings? (Need to check Smoobu settings for "direct" channel)
 ChannelMarkups, channels, pricingRules tables can be destroyed 
 3. **Currency Handling:** Smoobu returns currency per property - handle EUR/USD/GBP conversion or assume single currency? 
-- No do not any any conversion always show the price as is. in fact, you can kill preferred currency from the schema.
+- No do not any any conversion always show the price as is. in fact, you can kill preferred currency from the schema. Only allow the currencies available from smoobu api data.
 4. **Rate Limiting:** Smoobu has rate limits - cache calendar data in KV or fetch real-time?
 Let's fetch real time for now, but add a note so I don't forget
+
+
 

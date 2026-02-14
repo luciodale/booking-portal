@@ -4,6 +4,7 @@
  */
 
 import { getDb, pmsIntegrations, type NewPmsIntegration } from "@/db";
+import { eq } from "drizzle-orm";
 import type { TPostIntegrationsResponse } from "@/features/broker/pms/api/types";
 import { genUniqueId } from "@/modules/utils/id";
 import type { D1Database } from "@cloudflare/workers-types";
@@ -21,11 +22,11 @@ export async function insertIntegrationSQL(
   const db = getDb(d1);
   const { provider, apiKey, pmsUserId, pmsEmail } = data;
   const now = new Date().toISOString();
+  const id = genUniqueId("pms");
 
-  const [row] = await db
-    .insert(pmsIntegrations)
-    .values({
-      id: genUniqueId("pms"),
+  try {
+    await db.insert(pmsIntegrations).values({
+      id,
       brokerId,
       provider,
       apiKey,
@@ -33,9 +34,17 @@ export async function insertIntegrationSQL(
       pmsEmail: pmsEmail ?? null,
       createdAt: now,
       updatedAt: now,
-    })
-    .returning();
-  if (!row) throw new Error("Insert failed");
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`PMS integration insert failed: ${message}`);
+  }
+
+  const [row] = await db
+    .select()
+    .from(pmsIntegrations)
+    .where(eq(pmsIntegrations.id, id));
+  if (!row) throw new Error("Insert succeeded but row not found");
   return {
     id: row.id,
     provider: row.provider,

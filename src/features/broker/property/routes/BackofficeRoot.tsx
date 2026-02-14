@@ -40,10 +40,16 @@ export const rootRoute = createRootRoute({
                 Properties
               </Link>
               <Link
-                to="/broken/properties/new"
+                to="/experiences"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
-                Create Property (broken)
+                Experiences
+              </Link>
+              <Link
+                to="/create/properties/new"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Create Property
               </Link>
             </div>
           </nav>

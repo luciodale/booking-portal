@@ -4,65 +4,90 @@
  * Clears all objects from remote R2 bucket
  */
 
-import { $ } from "bun";
-
 const BUCKET_NAME = "booking-portal-images";
 
-async function listObjects(): Promise<string[]> {
+/**
+ * Safely parse JSON from wrangler CLI stdout.
+ * Wrangler may prepend warnings/banners before the actual JSON payload.
+ */
+function safeParseJson(raw: string): unknown {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
+
   try {
-    const result =
-      await $`bunx wrangler r2 object list ${BUCKET_NAME} --remote --json`.quiet();
-    const data = JSON.parse(result.stdout.toString());
-    return data.objects?.map((obj: { key: string }) => obj.key) || [];
-  } catch (error) {
-    // Bucket might be empty or not exist
-    return [];
+    return JSON.parse(trimmed);
+  } catch {
+    const arrayStart = trimmed.indexOf("[");
+    const objectStart = trimmed.indexOf("{");
+    let start = -1;
+
+    if (arrayStart === -1 && objectStart === -1) return null;
+    if (arrayStart === -1) start = objectStart;
+    else if (objectStart === -1) start = arrayStart;
+    else start = Math.min(arrayStart, objectStart);
+
+    try {
+      return JSON.parse(trimmed.slice(start));
+    } catch {
+      return null;
+    }
   }
 }
 
-async function deleteObjects(keys: string[]): Promise<void> {
+function listObjects(): string[] {
+  const result = Bun.spawnSync(
+    ["bunx", "wrangler", "r2", "object", "list", BUCKET_NAME, "--remote", "--json"],
+    { stdout: "pipe", stderr: "pipe", stdin: "inherit" }
+  );
+
+  if (result.exitCode !== 0) return [];
+
+  const data = safeParseJson(result.stdout.toString());
+  if (!data || typeof data !== "object") return [];
+
+  const objects = (data as { objects?: Array<{ key: string }> }).objects;
+  return objects?.map((obj) => obj.key) ?? [];
+}
+
+function deleteObjects(keys: string[]): void {
   if (keys.length === 0) {
     console.log("  No objects to delete");
     return;
   }
 
-  // Delete in parallel batches of 10
-  const batchSize = 10;
-  for (let i = 0; i < keys.length; i += batchSize) {
-    const batch = keys.slice(i, i + batchSize);
-    await Promise.all(
-      batch.map(async (key) => {
-        try {
-          await $`bunx wrangler r2 object delete ${BUCKET_NAME}/${key} --remote`.quiet();
-          console.log(`  🗑️  Deleted: ${key}`);
-        } catch (error) {
-          console.warn(`  ⚠️  Failed to delete: ${key}`);
-        }
-      })
+  for (const key of keys) {
+    const result = Bun.spawnSync(
+      ["bunx", "wrangler", "r2", "object", "delete", `${BUCKET_NAME}/${key}`, "--remote"],
+      { stdout: "pipe", stderr: "pipe", stdin: "inherit" }
     );
+
+    if (result.exitCode === 0) {
+      console.log(`  🗑️  Deleted: ${key}`);
+    } else {
+      console.warn(`  ⚠️  Failed to delete: ${key}`);
+    }
   }
 }
 
-async function teardown(): Promise<void> {
+function main() {
+  console.log("🔥 R2 Teardown Remote");
+  console.log(`   Bucket: ${BUCKET_NAME}`);
   console.log("\n🧹 Tearing down remote R2 bucket...");
 
-  const objects = await listObjects();
+  const objects = listObjects();
   console.log(`  Found ${objects.length} objects`);
 
   if (objects.length > 0) {
-    await deleteObjects(objects);
+    deleteObjects(objects);
     console.log(`  ✅ Deleted ${objects.length} objects`);
   }
-}
-
-async function main() {
-  console.log("🔥 R2 Teardown Remote");
-  console.log(`   Bucket: ${BUCKET_NAME}`);
-
-  await teardown();
 
   console.log("\n✅ Teardown complete");
 }
 
-main().catch(console.error);
-
+try {
+  main();
+} catch (error) {
+  console.error("\n❌ Teardown failed:", error);
+  process.exit(1);
+}

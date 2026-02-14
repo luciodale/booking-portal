@@ -1,7 +1,6 @@
 /**
- * CreatePropertyForm - Create property with Smoobu integration
- * Step 1: Select Smoobu property
- * Step 2+: Fill additional details (pre-populated from Smoobu)
+ * CreatePropertyForm - Create property from integration
+ * Accepts Smoobu data and shows per-field "link" buttons to fill individual fields.
  */
 
 import {
@@ -23,6 +22,7 @@ import {
 import type { CreatePropertyInput } from "@/schemas";
 import { createPropertySchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Link2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -51,24 +51,49 @@ const formSchema = createPropertySchema.extend({
 });
 
 // =============================================================================
+// SmoobuLinkButton — small icon button to fill a single field from Smoobu data
+// =============================================================================
+
+function SmoobuLinkButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title="Fill from Smoobu"
+      className="inline-flex items-center justify-center w-6 h-6 rounded-md text-primary hover:bg-primary/10 transition-colors ml-1.5 align-middle"
+    >
+      <Link2 className="w-3.5 h-3.5" />
+    </button>
+  );
+}
+
+// =============================================================================
 // Component
 // =============================================================================
 
 interface CreatePropertyFormProps {
   onSubmit: (data: CreatePropertyFormData) => Promise<void>;
   isLoading?: boolean;
+  integrationPropertyId: number;
+  tier: "elite" | "standard";
+  /** Smoobu field data available for per-field linking */
+  smoobuData?: Partial<CreatePropertyInput> | null;
 }
 
 export function CreatePropertyForm({
   onSubmit,
   isLoading = false,
+  integrationPropertyId,
+  tier,
+  smoobuData,
 }: CreatePropertyFormProps) {
   const { control, handleSubmit, formState, setValue, watch, reset } =
     useForm<CreatePropertyFormData>({
       resolver: zodResolver(formSchema),
       defaultValues: {
-        brokerId: "broker-001", // TODO: Get from auth context
-        tier: "elite",
+        brokerId: "broker-001",
+        smoobuPropertyId: integrationPropertyId,
+        tier,
         status: "draft",
         amenities: [],
         highlights: [],
@@ -78,18 +103,29 @@ export function CreatePropertyForm({
     });
 
   const images = watch("images");
-  const tier = watch("tier");
   const amenities = watch("amenities") ?? [];
   const highlights = watch("highlights") ?? [];
   const views = watch("views") ?? [];
 
   const isElite = tier === "elite";
 
+  /** Fill a single field from Smoobu data */
+  function linkField<K extends keyof CreatePropertyFormData>(field: K) {
+    if (!smoobuData) return;
+    const value = smoobuData[field as keyof CreatePropertyInput];
+    if (value !== undefined) {
+      setValue(field, value as never, { shouldDirty: true });
+    }
+  }
+
+  /** Show link button only if Smoobu has data for this field */
+  function renderLink(field: keyof CreatePropertyInput) {
+    if (!smoobuData || smoobuData[field] === undefined) return null;
+    return <SmoobuLinkButton onClick={() => linkField(field as keyof CreatePropertyFormData)} />;
+  }
+
   // Synced change handler for amenities/highlights/views
-  const handleSyncedChange = (
-    fieldName: FeatureFieldName,
-    newValue: string[]
-  ) => {
+  function handleSyncedChange(fieldName: FeatureFieldName, newValue: string[]) {
     const synced = syncFeatureFields(
       { amenities, highlights, views },
       fieldName,
@@ -105,30 +141,13 @@ export function CreatePropertyForm({
     if (synced.views !== views) {
       setValue("views", synced.views);
     }
-  };
+  }
 
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="max-w-4xl mx-auto space-y-8"
     >
-      {/* Property Tier */}
-      <FormSection title="Property Type">
-        <SelectInput
-          name="tier"
-          control={control}
-          label="Property Tier"
-          required
-          options={[
-            {
-              value: "elite",
-              label: "Elite - Luxury properties with premium features",
-            },
-            { value: "standard", label: "Standard - Regular vacation rentals" },
-          ]}
-        />
-      </FormSection>
-
       {/* Basic Information */}
       <FormSection title="Basic Information">
         <TextInput
@@ -138,6 +157,7 @@ export function CreatePropertyForm({
           required
           placeholder="Stunning Oceanfront Villa"
           maxLength={200}
+          labelSuffix={renderLink("title")}
         />
 
         <TextareaInput
@@ -160,7 +180,7 @@ export function CreatePropertyForm({
         />
       </FormSection>
 
-      {/* Location (pre-filled from Smoobu) */}
+      {/* Location */}
       <FormSection title="Location">
         <TextInput
           name="location"
@@ -168,6 +188,7 @@ export function CreatePropertyForm({
           label="Location"
           required
           placeholder="Amalfi Coast, Italy"
+          labelSuffix={renderLink("location")}
         />
 
         <div className="grid grid-cols-2 gap-4">
@@ -176,12 +197,14 @@ export function CreatePropertyForm({
             control={control}
             label="City"
             placeholder="Amalfi"
+            labelSuffix={renderLink("city")}
           />
           <TextInput
             name="country"
             control={control}
             label="Country"
             placeholder="Italy"
+            labelSuffix={renderLink("country")}
           />
         </div>
 
@@ -190,6 +213,7 @@ export function CreatePropertyForm({
           control={control}
           label="Street Address"
           placeholder="Via Cristoforo Colombo 12"
+          labelSuffix={renderLink("street")}
         />
 
         <div className="grid grid-cols-2 gap-4">
@@ -198,12 +222,14 @@ export function CreatePropertyForm({
             control={control}
             label="ZIP Code"
             placeholder="84011"
+            labelSuffix={renderLink("zip")}
           />
           <TextInput
             name="latitude"
             control={control}
             label="Latitude"
             placeholder="40.6331"
+            labelSuffix={renderLink("latitude")}
           />
         </div>
 
@@ -212,10 +238,11 @@ export function CreatePropertyForm({
           control={control}
           label="Longitude"
           placeholder="14.6028"
+          labelSuffix={renderLink("longitude")}
         />
       </FormSection>
 
-      {/* Property Details (pre-filled from Smoobu) */}
+      {/* Property Details */}
       <FormSection title="Property Details">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           <NumberInput
@@ -224,6 +251,7 @@ export function CreatePropertyForm({
             label="Max Occupancy"
             min={1}
             max={50}
+            labelSuffix={renderLink("maxOccupancy")}
           />
           <NumberInput
             name="bedrooms"
@@ -231,6 +259,7 @@ export function CreatePropertyForm({
             label="Bedrooms"
             min={0}
             max={20}
+            labelSuffix={renderLink("bedrooms")}
           />
           <NumberInput
             name="bathrooms"
@@ -238,6 +267,7 @@ export function CreatePropertyForm({
             label="Bathrooms"
             min={0}
             max={20}
+            labelSuffix={renderLink("bathrooms")}
           />
         </div>
 
@@ -247,24 +277,28 @@ export function CreatePropertyForm({
             control={control}
             label="Double Beds"
             min={0}
+            labelSuffix={renderLink("doubleBeds")}
           />
           <NumberInput
             name="singleBeds"
             control={control}
             label="Single Beds"
             min={0}
+            labelSuffix={renderLink("singleBeds")}
           />
           <NumberInput
             name="queenSizeBeds"
             control={control}
             label="Queen Beds"
             min={0}
+            labelSuffix={renderLink("queenSizeBeds")}
           />
           <NumberInput
             name="kingSizeBeds"
             control={control}
             label="King Beds"
             min={0}
+            labelSuffix={renderLink("kingSizeBeds")}
           />
         </div>
 
@@ -274,41 +308,39 @@ export function CreatePropertyForm({
             control={control}
             label="Sofa Beds"
             min={0}
+            labelSuffix={renderLink("sofaBeds")}
           />
           <NumberInput
             name="couches"
             control={control}
             label="Couches"
             min={0}
+            labelSuffix={renderLink("couches")}
           />
           <NumberInput
             name="childBeds"
             control={control}
             label="Child Beds"
             min={0}
+            labelSuffix={renderLink("childBeds")}
           />
         </div>
 
         <NumberInput
           name="sqMeters"
           control={control}
-          label="Size (m²)"
+          label="Size (m\u00B2)"
           min={10}
         />
       </FormSection>
 
-      {/* Features & Amenities (amenities pre-filled from Smoobu) */}
+      {/* Features & Amenities */}
       <FormSection title="Features & Amenities">
-        <p className="text-sm text-muted-foreground mb-4">
-          Amenities pre-filled from Smoobu. Items are unique across all
-          categories.
-        </p>
-
         <TagsInput
           name="amenities"
           control={control}
           label="Property Amenities"
-          description="Pre-filled from Smoobu - you can add more"
+          description="Add amenities — items are unique across all categories"
           options={getFacilityOptions("amenity")}
           onChangeOverride={(newValue) =>
             handleSyncedChange("amenities", newValue)
@@ -320,6 +352,7 @@ export function CreatePropertyForm({
               .join(" ")
           }
           formatValue={displayToKebab}
+          labelSuffix={renderLink("amenities")}
         />
 
         <TagsInput

@@ -1,5 +1,5 @@
-import { uploadImages } from "@/features/broker/property/api/image-handlers";
+import { POST } from "@/features/broker/property/api/server-handler/POSTUploadImages";
 
 export const prerender = false;
 
-export const POST = uploadImages;
+export { POST };

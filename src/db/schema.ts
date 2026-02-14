@@ -154,25 +154,6 @@ export const brokerLogs = sqliteTable("broker_logs", {
 });
 
 // ============================================================================
-// Availabilities - DEPRECATED: Now managed by Smoobu for hotels
-// Only used for experiences if needed
-// ============================================================================
-export const availabilities = sqliteTable("availabilities", {
-  id: text("id").primaryKey(),
-  assetId: text("asset_id")
-    .notNull()
-    .references(() => assets.id, { onDelete: "cascade" }),
-  date: text("date").notNull(), // YYYY-MM-DD
-  status: text("status")
-    .$type<"available" | "blocked" | "booked">()
-    .notNull()
-    .default("available"),
-  source: text("source").$type<"manual" | "ical" | "booking">(), // Where the block came from
-  note: text("note"),
-  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-});
-
-// ============================================================================
 // Bookings table
 // ============================================================================
 export const bookings = sqliteTable("bookings", {
@@ -384,16 +365,6 @@ export const brokerLogsAcknowledgedIdx = index(
   "idx_broker_logs_acknowledged"
 ).on(brokerLogs.acknowledged);
 
-export const availabilitiesAssetIdx = index("idx_availabilities_asset").on(
-  availabilities.assetId
-);
-export const availabilitiesDateIdx = index("idx_availabilities_date").on(
-  availabilities.date
-);
-export const availabilitiesAssetDateIdx = index(
-  "idx_availabilities_asset_date"
-).on(availabilities.assetId, availabilities.date);
-
 export const bookingsAssetIdx = index("idx_bookings_asset").on(
   bookings.assetId
 );
@@ -458,8 +429,6 @@ export type Asset = typeof assets.$inferSelect;
 export type NewAsset = typeof assets.$inferInsert;
 export type Image = typeof images.$inferSelect;
 export type NewImage = typeof images.$inferInsert;
-export type Availability = typeof availabilities.$inferSelect;
-export type NewAvailability = typeof availabilities.$inferInsert;
 export type Booking = typeof bookings.$inferSelect;
 export type NewBooking = typeof bookings.$inferInsert;
 export type Review = typeof reviews.$inferSelect;

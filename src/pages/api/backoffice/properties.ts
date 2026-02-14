@@ -1,9 +1,6 @@
-import {
-  createProperty,
-  listProperties,
-} from "@/features/broker/property/api/handlers";
+import { GET } from "@/features/broker/property/api/server-handler/GETProperties";
+import { POST } from "@/features/broker/property/api/server-handler/POSTProperty";
 
 export const prerender = false;
 
-export const GET = listProperties;
-export const POST = createProperty;
+export { GET, POST };

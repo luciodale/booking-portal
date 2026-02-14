@@ -3,7 +3,7 @@
  * Per-field inline editing with individual save buttons
  */
 
-import { useProperty } from "@/features/broker/property/hooks/queries";
+import { useProperty } from "@/features/broker/property/queries";
 import { rootRoute } from "@/features/broker/property/routes/BackofficeRoot";
 import { PropertyEditView } from "@/features/broker/property/ui";
 import { createRoute, useParams } from "@tanstack/react-router";

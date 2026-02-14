@@ -6,7 +6,7 @@
 import {
   useDeleteProperty,
   useProperties,
-} from "@/features/broker/property/hooks/queries";
+} from "@/features/broker/property/queries";
 import { Select } from "@/modules/ui/Select";
 import { cn } from "@/modules/utils/cn";
 import { Link } from "@tanstack/react-router";
@@ -32,7 +32,7 @@ export function PropertyList() {
         <h1 className="text-3xl font-bold text-foreground">Properties</h1>
 
         <Link
-          to="/broken/properties/new"
+          to="/create/properties/new"
           className="btn-primary"
         >
           Create New Property

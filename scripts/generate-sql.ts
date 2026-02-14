@@ -52,7 +52,8 @@ VALUES (${escapeString(exp.id)}, ${escapeString(exp.brokerId)}, ${escapeString(e
 }
 
 function generateDeleteStatements(): string {
-  // Delete in reverse order of dependencies
+  // Only delete from tables we seed (children first)
+  // Other tables (reviews, favorites, bookings, etc.) are not seeded
   return `-- Clean existing data
 DELETE FROM images;
 DELETE FROM experiences;

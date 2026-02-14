@@ -1,14 +1,11 @@
 import { Outlet, createRoute } from "@tanstack/react-router";
 import { rootRoute } from "./BackofficeRoot";
 
-export const brokenRoute = createRoute({
+export const createSectionRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/broken",
+  path: "/create",
   component: () => (
     <div className="p-8">
-      <p className="text-sm text-muted-foreground mb-6">
-        (WIP — this flow is under active development)
-      </p>
       <Outlet />
     </div>
   ),

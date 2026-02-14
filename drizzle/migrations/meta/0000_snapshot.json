@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "f81d0d9e-b1ff-4015-8aa6-69232d8083a9",
+  "id": "4cc6c3dd-1b25-441a-be06-b39b0d241840",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "asset_experiences": {
@@ -104,6 +104,13 @@
           "notNull": true,
           "autoincrement": false
         },
+        "smoobu_property_id": {
+          "name": "smoobu_property_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "broker_id": {
           "name": "broker_id",
           "type": "text",
@@ -155,8 +162,15 @@
           "notNull": true,
           "autoincrement": false
         },
-        "address": {
-          "name": "address",
+        "street": {
+          "name": "street",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "zip": {
+          "name": "zip",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -190,13 +204,12 @@
           "notNull": false,
           "autoincrement": false
         },
-        "max_guests": {
-          "name": "max_guests",
+        "max_occupancy": {
+          "name": "max_occupancy",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false,
-          "default": 2
+          "autoincrement": false
         },
         "bedrooms": {
           "name": "bedrooms",
@@ -207,6 +220,55 @@
         },
         "bathrooms": {
           "name": "bathrooms",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "double_beds": {
+          "name": "double_beds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "single_beds": {
+          "name": "single_beds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "sofa_beds": {
+          "name": "sofa_beds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "couches": {
+          "name": "couches",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "child_beds": {
+          "name": "child_beds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "queen_size_beds": {
+          "name": "queen_size_beds",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "king_size_beds": {
+          "name": "king_size_beds",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -254,29 +316,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "base_price": {
-          "name": "base_price",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "currency": {
-          "name": "currency",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'eur'"
-        },
-        "cleaning_fee": {
-          "name": "cleaning_fee",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 0
-        },
         "instant_book": {
           "name": "instant_book",
           "type": "integer",
@@ -284,22 +323,6 @@
           "notNull": true,
           "autoincrement": false,
           "default": false
-        },
-        "min_nights": {
-          "name": "min_nights",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 1
-        },
-        "max_nights": {
-          "name": "max_nights",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 30
         },
         "featured": {
           "name": "featured",
@@ -334,7 +357,15 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "assets_smoobu_property_id_unique": {
+          "name": "assets_smoobu_property_id_unique",
+          "columns": [
+            "smoobu_property_id"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "assets_broker_id_brokers_id_fk": {
           "name": "assets_broker_id_brokers_id_fk",
@@ -347,81 +378,6 @@
             "id"
           ],
           "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "availabilities": {
-      "name": "availabilities",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "asset_id": {
-          "name": "asset_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "date": {
-          "name": "date",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "status": {
-          "name": "status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'available'"
-        },
-        "source": {
-          "name": "source",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "note": {
-          "name": "note",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "availabilities_asset_id_assets_id_fk": {
-          "name": "availabilities_asset_id_assets_id_fk",
-          "tableFrom": "availabilities",
-          "tableTo": "assets",
-          "columnsFrom": [
-            "asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -549,6 +505,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "smoobu_reservation_id": {
+          "name": "smoobu_reservation_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "guest_note": {
           "name": "guest_note",
           "type": "text",
@@ -594,6 +557,88 @@
           "tableTo": "users",
           "columnsFrom": [
             "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "broker_logs": {
+      "name": "broker_logs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "broker_id": {
+          "name": "broker_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_type": {
+          "name": "event_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "related_entity_id": {
+          "name": "related_entity_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "acknowledged": {
+          "name": "acknowledged",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "broker_logs_broker_id_brokers_id_fk": {
+          "name": "broker_logs_broker_id_brokers_id_fk",
+          "tableFrom": "broker_logs",
+          "tableTo": "brokers",
+          "columnsFrom": [
+            "broker_id"
           ],
           "columnsTo": [
             "id"
@@ -688,143 +733,6 @@
           "name": "brokers_clerk_user_id_unique",
           "columns": [
             "clerk_user_id"
-          ],
-          "isUnique": true
-        }
-      },
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "channel_markups": {
-      "name": "channel_markups",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "asset_id": {
-          "name": "asset_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "channel_id": {
-          "name": "channel_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "markup_percent": {
-          "name": "markup_percent",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "active": {
-          "name": "active",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "channel_markups_asset_id_assets_id_fk": {
-          "name": "channel_markups_asset_id_assets_id_fk",
-          "tableFrom": "channel_markups",
-          "tableTo": "assets",
-          "columnsFrom": [
-            "asset_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "channel_markups_channel_id_channels_id_fk": {
-          "name": "channel_markups_channel_id_channels_id_fk",
-          "tableFrom": "channel_markups",
-          "tableTo": "channels",
-          "columnsFrom": [
-            "channel_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "channels": {
-      "name": "channels",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "code": {
-          "name": "code",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "active": {
-          "name": "active",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
-        }
-      },
-      "indexes": {
-        "channels_code_unique": {
-          "name": "channels_code_unique",
-          "columns": [
-            "code"
           ],
           "isUnique": true
         }
@@ -1207,8 +1115,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "pricing_rules": {
-      "name": "pricing_rules",
+    "pms_integrations": {
+      "name": "pms_integrations",
       "columns": {
         "id": {
           "name": "id",
@@ -1217,67 +1125,51 @@
           "notNull": true,
           "autoincrement": false
         },
-        "asset_id": {
-          "name": "asset_id",
+        "broker_id": {
+          "name": "broker_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "name": {
-          "name": "name",
+        "provider": {
+          "name": "provider",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "start_date": {
-          "name": "start_date",
+        "api_key": {
+          "name": "api_key",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "end_date": {
-          "name": "end_date",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "multiplier": {
-          "name": "multiplier",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 100
-        },
-        "min_nights": {
-          "name": "min_nights",
+        "pms_user_id": {
+          "name": "pms_user_id",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "priority": {
-          "name": "priority",
-          "type": "integer",
+        "pms_email": {
+          "name": "pms_email",
+          "type": "text",
           "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
-        },
-        "active": {
-          "name": "active",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": true
+          "notNull": false,
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -1287,17 +1179,17 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "pricing_rules_asset_id_assets_id_fk": {
-          "name": "pricing_rules_asset_id_assets_id_fk",
-          "tableFrom": "pricing_rules",
-          "tableTo": "assets",
+        "pms_integrations_broker_id_brokers_id_fk": {
+          "name": "pms_integrations_broker_id_brokers_id_fk",
+          "tableFrom": "pms_integrations",
+          "tableTo": "brokers",
           "columnsFrom": [
-            "asset_id"
+            "broker_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
+          "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
@@ -1478,14 +1370,6 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "preferred_currency": {
-          "name": "preferred_currency",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "'eur'"
         },
         "preferred_language": {
           "name": "preferred_language",

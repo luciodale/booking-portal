@@ -1,8 +1,3 @@
-/**
- * Image Upload Handler
- * Extracted from pages/api/backoffice/upload-images.ts
- */
-
 import { getDb, images } from "@/db";
 import { requireAdmin } from "@/modules/auth/auth";
 import {
@@ -18,36 +13,9 @@ import {
 import { genUniqueId } from "@/modules/utils/id";
 import type { UploadImagesResponse } from "@/schemas";
 import type { APIRoute } from "astro";
+import { jsonError, jsonSuccess } from "./responseHelpers";
 
-// ============================================================================
-// Shared Response Helpers
-// ============================================================================
-
-function jsonSuccess<T>(data: T, status = 200): Response {
-  return new Response(JSON.stringify({ success: true, data }), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
-
-function jsonError(message: string, status = 500, details?: unknown): Response {
-  return new Response(
-    JSON.stringify({
-      success: false,
-      error: { message, details },
-    }),
-    {
-      status,
-      headers: { "Content-Type": "application/json" },
-    }
-  );
-}
-
-// ============================================================================
-// POST - Upload Images
-// ============================================================================
-
-export const uploadImages: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
   try {
     await requireAdmin();
 
