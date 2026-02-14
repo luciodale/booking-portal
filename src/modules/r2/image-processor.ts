@@ -1,4 +1,4 @@
-const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+const MAX_SIZE_BYTES = 2 * 1024 * 1024; // 2MB
 
 /**
  * Validates that the buffer contains a WebP image via RIFF/WebP magic bytes.
@@ -25,7 +25,7 @@ export function validateImageType(buffer: ArrayBuffer): boolean {
 
 export function validateImageSize(
   buffer: ArrayBuffer,
-  maxSizeBytes: number = MAX_SIZE_BYTES,
+  maxSizeBytes: number = MAX_SIZE_BYTES
 ): boolean {
   return buffer.byteLength <= maxSizeBytes;
 }
