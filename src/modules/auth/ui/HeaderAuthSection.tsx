@@ -12,7 +12,7 @@ export function HeaderAuthSection() {
         >
           Sign In
         </a>
-        <a href="/sign-up" className="btn-primary text-sm !px-4 !py-2">
+        <a href="/sign-up" className="btn-primary text-sm px-4 py-2">
           Get Started
         </a>
       </SignedOut>
