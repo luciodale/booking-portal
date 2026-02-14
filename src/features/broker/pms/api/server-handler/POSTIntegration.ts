@@ -1,11 +1,12 @@
 import { getDb } from "@/db";
-import { resolveBrokerId } from "@/features/broker/auth/resolveBrokerId";
+import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type {
   TPostIntegrationsRequest,
   TPostIntegrationsResponse,
 } from "@/features/broker/pms/api/types";
 import { availablePms } from "@/features/broker/pms/constants/integrations";
 import { insertIntegration } from "@/features/broker/pms/integrations/smoobu/insertIntegration";
+import { mapErrorToStatus } from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIRoute } from "astro";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
@@ -17,7 +18,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const db = getDb(D1Database);
-    const brokerId = await resolveBrokerId(locals, db);
+    const ctx = await resolveBrokerContext(locals, db);
+
+    if (!ctx.userId) {
+      return jsonError("Forbidden: No broker account", 403);
+    }
 
     const body = (await request.json()) as { provider?: string };
     const provider = body?.provider;
@@ -32,7 +37,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       case "smoobu": {
         const integration = await insertIntegration(
           D1Database,
-          brokerId,
+          ctx.userId,
           body as TPostIntegrationsRequest
         );
         return jsonSuccess(
@@ -47,7 +52,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error creating integration:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to create integration"
+      error instanceof Error ? error.message : "Failed to create integration",
+      mapErrorToStatus(error)
     );
   }
 };

@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 export function useIntegrationListingDetails(id: number | null) {
   return useQuery({
     queryKey: integrationListingDetailKey(id ?? 0),
-    queryFn: () => getIntegrationListingById(id!),
+    queryFn: () => getIntegrationListingById(id as number),
     enabled: id != null && Number.isInteger(id) && id > 0,
   });
 }

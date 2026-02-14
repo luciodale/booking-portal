@@ -34,7 +34,7 @@ export function mapSmoobuListingToCreatePropertyPartial(
     childBeds: rooms.childBeds ?? undefined,
     queenSizeBeds: rooms.queenSizeBeds ?? undefined,
     kingSizeBeds: rooms.kingSizeBeds ?? undefined,
-    amenities: equipments.map((e) => displayToKebab(e)),
+    amenities: equipments?.map((e) => displayToKebab(e)),
   };
   return partial;
 }

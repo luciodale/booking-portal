@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4cc6c3dd-1b25-441a-be06-b39b0d241840",
+  "id": "aa1be07b-ba3d-4e14-b05c-8b6faf358838",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "asset_experiences": {
@@ -61,7 +61,30 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_asset_experiences_asset": {
+          "name": "idx_asset_experiences_asset",
+          "columns": [
+            "asset_id"
+          ],
+          "isUnique": false
+        },
+        "idx_asset_experiences_exp": {
+          "name": "idx_asset_experiences_exp",
+          "columns": [
+            "experience_id"
+          ],
+          "isUnique": false
+        },
+        "idx_asset_experiences_asset_exp": {
+          "name": "idx_asset_experiences_asset_exp",
+          "columns": [
+            "asset_id",
+            "experience_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "asset_experiences_asset_id_assets_id_fk": {
           "name": "asset_experiences_asset_id_assets_id_fk",
@@ -111,8 +134,8 @@
           "notNull": false,
           "autoincrement": false
         },
-        "broker_id": {
-          "name": "broker_id",
+        "user_id": {
+          "name": "user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -364,15 +387,50 @@
             "smoobu_property_id"
           ],
           "isUnique": true
+        },
+        "idx_assets_user": {
+          "name": "idx_assets_user",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "idx_assets_tier": {
+          "name": "idx_assets_tier",
+          "columns": [
+            "tier"
+          ],
+          "isUnique": false
+        },
+        "idx_assets_status": {
+          "name": "idx_assets_status",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        },
+        "idx_assets_featured": {
+          "name": "idx_assets_featured",
+          "columns": [
+            "featured"
+          ],
+          "isUnique": false
+        },
+        "idx_assets_city": {
+          "name": "idx_assets_city",
+          "columns": [
+            "city"
+          ],
+          "isUnique": false
         }
       },
       "foreignKeys": {
-        "assets_broker_id_brokers_id_fk": {
-          "name": "assets_broker_id_brokers_id_fk",
+        "assets_user_id_users_id_fk": {
+          "name": "assets_user_id_users_id_fk",
           "tableFrom": "assets",
-          "tableTo": "brokers",
+          "tableTo": "users",
           "columnsFrom": [
-            "broker_id"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -536,7 +594,37 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_bookings_asset": {
+          "name": "idx_bookings_asset",
+          "columns": [
+            "asset_id"
+          ],
+          "isUnique": false
+        },
+        "idx_bookings_user": {
+          "name": "idx_bookings_user",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "idx_bookings_status": {
+          "name": "idx_bookings_status",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        },
+        "idx_bookings_dates": {
+          "name": "idx_bookings_dates",
+          "columns": [
+            "check_in",
+            "check_out"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "bookings_asset_id_assets_id_fk": {
           "name": "bookings_asset_id_assets_id_fk",
@@ -579,8 +667,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "broker_id": {
-          "name": "broker_id",
+        "user_id": {
+          "name": "user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -631,14 +719,29 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_broker_logs_user": {
+          "name": "idx_broker_logs_user",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "idx_broker_logs_acknowledged": {
+          "name": "idx_broker_logs_acknowledged",
+          "columns": [
+            "acknowledged"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
-        "broker_logs_broker_id_brokers_id_fk": {
-          "name": "broker_logs_broker_id_brokers_id_fk",
+        "broker_logs_user_id_users_id_fk": {
+          "name": "broker_logs_user_id_users_id_fk",
           "tableFrom": "broker_logs",
-          "tableTo": "brokers",
+          "tableTo": "users",
           "columnsFrom": [
-            "broker_id"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -651,8 +754,8 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
-    "brokers": {
-      "name": "brokers",
+    "event_logs": {
+      "name": "event_logs",
       "columns": {
         "id": {
           "name": "id",
@@ -661,55 +764,33 @@
           "notNull": true,
           "autoincrement": false
         },
-        "clerk_user_id": {
-          "name": "clerk_user_id",
+        "level": {
+          "name": "level",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "name": {
-          "name": "name",
+        "source": {
+          "name": "source",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "email": {
-          "name": "email",
+        "message": {
+          "name": "message",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "whatsapp_number": {
-          "name": "whatsapp_number",
+        "metadata": {
+          "name": "metadata",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "bio": {
-          "name": "bio",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "avatar_url": {
-          "name": "avatar_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "verified": {
-          "name": "verified",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
         },
         "created_at": {
           "name": "created_at",
@@ -718,23 +799,29 @@
           "notNull": false,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
         }
       },
       "indexes": {
-        "brokers_clerk_user_id_unique": {
-          "name": "brokers_clerk_user_id_unique",
+        "idx_event_logs_level": {
+          "name": "idx_event_logs_level",
           "columns": [
-            "clerk_user_id"
+            "level"
           ],
-          "isUnique": true
+          "isUnique": false
+        },
+        "idx_event_logs_source": {
+          "name": "idx_event_logs_source",
+          "columns": [
+            "source"
+          ],
+          "isUnique": false
+        },
+        "idx_event_logs_created_at": {
+          "name": "idx_event_logs_created_at",
+          "columns": [
+            "created_at"
+          ],
+          "isUnique": false
         }
       },
       "foreignKeys": {},
@@ -798,7 +885,15 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_experience_images_exp": {
+          "name": "idx_experience_images_exp",
+          "columns": [
+            "experience_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "experience_images_experience_id_experiences_id_fk": {
           "name": "experience_images_experience_id_experiences_id_fk",
@@ -828,8 +923,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "broker_id": {
-          "name": "broker_id",
+        "user_id": {
+          "name": "user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -953,14 +1048,36 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_experiences_user": {
+          "name": "idx_experiences_user",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "idx_experiences_category": {
+          "name": "idx_experiences_category",
+          "columns": [
+            "category"
+          ],
+          "isUnique": false
+        },
+        "idx_experiences_status": {
+          "name": "idx_experiences_status",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
-        "experiences_broker_id_brokers_id_fk": {
-          "name": "experiences_broker_id_brokers_id_fk",
+        "experiences_user_id_users_id_fk": {
+          "name": "experiences_user_id_users_id_fk",
           "tableFrom": "experiences",
-          "tableTo": "brokers",
+          "tableTo": "users",
           "columnsFrom": [
-            "broker_id"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -1006,7 +1123,30 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_favorites_user": {
+          "name": "idx_favorites_user",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "idx_favorites_asset": {
+          "name": "idx_favorites_asset",
+          "columns": [
+            "asset_id"
+          ],
+          "isUnique": false
+        },
+        "idx_favorites_user_asset": {
+          "name": "idx_favorites_user_asset",
+          "columns": [
+            "user_id",
+            "asset_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "favorites_user_id_users_id_fk": {
           "name": "favorites_user_id_users_id_fk",
@@ -1095,7 +1235,15 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_images_asset": {
+          "name": "idx_images_asset",
+          "columns": [
+            "asset_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "images_asset_id_assets_id_fk": {
           "name": "images_asset_id_assets_id_fk",
@@ -1125,8 +1273,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "broker_id": {
-          "name": "broker_id",
+        "user_id": {
+          "name": "user_id",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
@@ -1177,14 +1325,22 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_pms_integrations_user": {
+          "name": "idx_pms_integrations_user",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
-        "pms_integrations_broker_id_brokers_id_fk": {
-          "name": "pms_integrations_broker_id_brokers_id_fk",
+        "pms_integrations_user_id_users_id_fk": {
+          "name": "pms_integrations_user_id_users_id_fk",
           "tableFrom": "pms_integrations",
-          "tableTo": "brokers",
+          "tableTo": "users",
           "columnsFrom": [
-            "broker_id"
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -1249,15 +1405,15 @@
           "notNull": false,
           "autoincrement": false
         },
-        "broker_response": {
-          "name": "broker_response",
+        "owner_response": {
+          "name": "owner_response",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
         },
-        "broker_responded_at": {
-          "name": "broker_responded_at",
+        "owner_responded_at": {
+          "name": "owner_responded_at",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -1280,7 +1436,29 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "idx_reviews_asset": {
+          "name": "idx_reviews_asset",
+          "columns": [
+            "asset_id"
+          ],
+          "isUnique": false
+        },
+        "idx_reviews_user": {
+          "name": "idx_reviews_user",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        },
+        "idx_reviews_status": {
+          "name": "idx_reviews_status",
+          "columns": [
+            "status"
+          ],
+          "isUnique": false
+        }
+      },
       "foreignKeys": {
         "reviews_booking_id_bookings_id_fk": {
           "name": "reviews_booking_id_bookings_id_fk",
@@ -1379,6 +1557,28 @@
           "autoincrement": false,
           "default": "'en'"
         },
+        "whatsapp_number": {
+          "name": "whatsapp_number",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "bio": {
+          "name": "bio",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "verified": {
+          "name": "verified",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "text",
@@ -1403,6 +1603,13 @@
             "clerk_user_id"
           ],
           "isUnique": true
+        },
+        "idx_users_clerk": {
+          "name": "idx_users_clerk",
+          "columns": [
+            "clerk_user_id"
+          ],
+          "isUnique": false
         }
       },
       "foreignKeys": {},

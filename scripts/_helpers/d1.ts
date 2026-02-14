@@ -93,7 +93,7 @@ export async function checkExistingData(mode: Mode): Promise<boolean> {
   const tempFile = join(import.meta.dir, "..", ".check-data.sql");
 
   try {
-    await Bun.write(tempFile, "SELECT COUNT(*) as count FROM brokers;");
+    await Bun.write(tempFile, "SELECT COUNT(*) as count FROM users;");
 
     const cwd = join(import.meta.dir, "../..");
     const modeFlag = mode === "local" ? "--local" : "--remote";

@@ -18,7 +18,7 @@ type CalendarGridProps = {
   checkOut: Date | null;
   rateMap: Record<string, SmoobuRateDay>;
   ratesLoading: boolean;
-  currency: string;
+  currency: string | null;
   onDateClick: (date: Date) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -92,7 +92,7 @@ function MonthGrid({
   checkOut: Date | null;
   rateMap: Record<string, SmoobuRateDay>;
   ratesLoading: boolean;
-  currency: string;
+  currency: string | null;
   onDateClick: (date: Date) => void;
 }) {
   const days = getMonthDays(month);
@@ -113,9 +113,7 @@ function MonthGrid({
           </div>
         ))}
 
-        {Array.from({ length: padding }).map((_, i) => (
-          <div key={`pad-${i}`} />
-        ))}
+        {padding > 0 && <div style={{ gridColumn: `span ${padding}` }} />}
 
         {days.map((day) => {
           const dateStr = formatDate(day);
@@ -147,7 +145,7 @@ function MonthGrid({
               `}
             >
               <span className="font-medium">{day.getDate()}</span>
-              {!ratesLoading && price != null && !past && (
+              {!ratesLoading && price != null && !past && currency && (
                 <span className="text-[9px] text-muted-foreground mt-0.5">
                   {formatPrice(price, currency)}
                 </span>
@@ -163,6 +161,7 @@ function MonthGrid({
 function ChevronLeft() {
   return (
     <svg
+      aria-hidden="true"
       width="16"
       height="16"
       viewBox="0 0 24 24"
@@ -180,6 +179,7 @@ function ChevronLeft() {
 function ChevronRight() {
   return (
     <svg
+      aria-hidden="true"
       width="16"
       height="16"
       viewBox="0 0 24 24"

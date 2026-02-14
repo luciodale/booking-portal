@@ -20,10 +20,9 @@ export type SmoobuApiKeyVerificationRequest = z.infer<
 
 export const smoobuUserSchema = z.object({
   id: z.number(),
+  firstName: z.string(),
+  lastName: z.string(),
   email: z.string().email(),
-  name: z.string().optional(),
-  firstName: z.string().optional(),
-  lastName: z.string().optional(),
 });
 
 export type SmoobuUser = z.infer<typeof smoobuUserSchema>;
@@ -49,14 +48,14 @@ export const smoobuApartmentListItemSchema = z.object({
 
 export const smoobuApartmentDetailsSchema = z.object({
   location: z.object({
-    street: z.string(),
-    zip: z.string(),
-    city: z.string(),
-    country: z.string(),
-    latitude: z.string(),
-    longitude: z.string(),
+    street: z.string().nullable(),
+    zip: z.string().nullable(),
+    city: z.string().nullable(),
+    country: z.string().nullable(),
+    latitude: z.string().nullable(),
+    longitude: z.string().nullable(),
   }),
-  timeZone: z.string(),
+  timeZone: z.string().nullable(),
   rooms: z.object({
     maxOccupancy: z.number(),
     bedrooms: z.number(),
@@ -69,7 +68,7 @@ export const smoobuApartmentDetailsSchema = z.object({
     queenSizeBeds: z.number().nullable(),
     kingSizeBeds: z.number().nullable(),
   }),
-  equipments: z.array(z.string()), // amenities
+  equipments: z.array(z.string()).optional(), // amenities
   currency: z.string(),
   price: z.object({
     minimal: z.string(),
@@ -102,7 +101,7 @@ export type SmoobuApartmentsResponse = z.infer<
 export const smoobuRateDaySchema = z.object({
   price: z.number().nullable(),
   min_length_of_stay: z.number().nullable(),
-  available: z.union([z.literal(0), z.literal(1)]),
+  available: z.number(),
 });
 
 export const smoobuRatesResponseSchema = z.object({
@@ -200,22 +199,32 @@ export const smoobuCreateBookingRequestSchema = z.object({
   departureDate: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
-  channelId: z.number(),
+  channelId: z.number().optional(),
   apartmentId: z.number(),
   arrivalTime: z.string().optional(),
   departureTime: z.string().optional(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
-  email: z.email().optional(),
+  email: z.string().email().optional(),
   phone: z.string().optional(),
   notice: z.string().optional(),
   adults: z.number().optional(),
   children: z.number().optional(),
   price: z.number().optional(),
   priceStatus: z.number().optional(),
+  prepayment: z.number().optional(),
+  prepaymentStatus: z.number().optional(),
   deposit: z.number().optional(),
   depositStatus: z.number().optional(),
   language: z.string().optional(),
+  address: z
+    .object({
+      street: z.string(),
+      postalCode: z.string(),
+      location: z.string(),
+    })
+    .optional(),
+  country: z.string().optional(),
   priceElements: z.array(smoobuPriceElementSchema).optional(),
 });
 

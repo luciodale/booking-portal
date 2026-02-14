@@ -234,7 +234,7 @@ const linkedExperiencesFiltered = linkedExperiences.filter(
         <div class="lg:col-span-1">
           <div class="sticky top-28">
             <BookingWidget
-              client:visible
+              client:only="react"
               propertyId={property.id}
               smoobuPropertyId={asset.smoobuPropertyId ?? null}
               maxGuests={property.maxGuests}

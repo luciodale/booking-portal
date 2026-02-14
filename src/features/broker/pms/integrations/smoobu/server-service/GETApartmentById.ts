@@ -4,6 +4,7 @@
 
 import type { SmoobuApartmentDetails } from "@/schemas/smoobu";
 import { smoobuApartmentDetailsSchema } from "@/schemas/smoobu";
+import z from "zod";
 import { SMOOBU_BASE_URL } from "../constants";
 
 export async function fetchApartmentById(
@@ -24,6 +25,10 @@ export async function fetchApartmentById(
   const json = (await response.json()) as unknown;
   const parsed = smoobuApartmentDetailsSchema.safeParse(json);
   if (!parsed.success) {
+    console.error(
+      "Smoobu apartment parse error:",
+      z.treeifyError(parsed.error)
+    );
     throw new Error("Invalid Smoobu apartment details response");
   }
   return parsed.data;

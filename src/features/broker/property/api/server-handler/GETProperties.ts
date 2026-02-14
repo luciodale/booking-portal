@@ -1,22 +1,21 @@
 import { getDb } from "@/db";
 import { assets, images } from "@/db/schema";
-import { requireAuth } from "@/modules/auth/auth";
+import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import type { PropertyListResponse } from "@/schemas/api";
 import type { APIRoute } from "astro";
 import { and, desc, eq, like, or } from "drizzle-orm";
-import { jsonError, jsonSuccess } from "./responseHelpers";
+import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ locals, url }) => {
   try {
-    requireAuth(locals);
-
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
       return jsonError("Database not available", 503);
     }
 
     const db = getDb(D1Database);
+    const ctx = await resolveBrokerContext(locals, db);
 
     const tier = url.searchParams.get("tier");
     const status = url.searchParams.get("status");
@@ -25,6 +24,11 @@ export const GET: APIRoute = async ({ locals, url }) => {
     let query = db.select().from(assets).$dynamic();
 
     const conditions = [];
+
+    if (!ctx.isAdmin) {
+      conditions.push(eq(assets.userId, ctx.userId!));
+    }
+
     if (tier) {
       conditions.push(eq(assets.tier, tier as "elite" | "standard"));
     }
@@ -76,7 +80,8 @@ export const GET: APIRoute = async ({ locals, url }) => {
   } catch (error) {
     console.error("Error listing properties:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to list properties"
+      error instanceof Error ? error.message : "Failed to list properties",
+      mapErrorToStatus(error)
     );
   }
 };

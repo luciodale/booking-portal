@@ -1,6 +1,7 @@
 import { getDb } from "@/db";
 import { pmsIntegrations } from "@/db/schema";
-import { resolveBrokerId } from "@/features/broker/auth/resolveBrokerId";
+import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
+import { mapErrorToStatus } from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import type { TGetIntegrationsResponse } from "../types";
@@ -14,12 +15,16 @@ export const GET: APIRoute = async ({ locals }) => {
     }
 
     const db = getDb(D1Database);
-    const brokerId = await resolveBrokerId(locals, db);
+    const ctx = await resolveBrokerContext(locals, db);
+
+    if (!ctx.userId) {
+      return jsonError("Forbidden: No broker account", 403);
+    }
 
     const [integration] = await db
       .select()
       .from(pmsIntegrations)
-      .where(eq(pmsIntegrations.brokerId, brokerId))
+      .where(eq(pmsIntegrations.userId, ctx.userId))
       .limit(1);
 
     if (!integration) {
@@ -34,7 +39,8 @@ export const GET: APIRoute = async ({ locals }) => {
   } catch (error) {
     console.error("Error checking integration:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to check integration"
+      error instanceof Error ? error.message : "Failed to check integration",
+      mapErrorToStatus(error)
     );
   }
 };

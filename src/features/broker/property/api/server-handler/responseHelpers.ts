@@ -21,3 +21,11 @@ export function jsonError(
     }
   );
 }
+
+export function mapErrorToStatus(error: unknown): number {
+  if (!(error instanceof Error)) return 500;
+  const msg = error.message;
+  if (msg === "Unauthorized") return 401;
+  if (msg.startsWith("Forbidden")) return 403;
+  return 500;
+}

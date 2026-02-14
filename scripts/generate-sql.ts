@@ -7,13 +7,13 @@
 import { join } from "node:path";
 import {
   type SeedAsset,
-  type SeedBroker,
   type SeedExperience,
   type SeedImage,
+  type SeedUser,
   assets,
-  brokers,
   experiences,
   images,
+  users,
 } from "../seeds/data";
 
 const ROOT_DIR = join(import.meta.dir, "..");
@@ -31,14 +31,14 @@ function jsonArray(arr: string[]): string {
   return escapeString(JSON.stringify(arr));
 }
 
-function generateBrokerInsert(broker: SeedBroker): string {
-  return `INSERT INTO brokers (id, clerk_user_id, name, email, whatsapp_number, bio, avatar_url, verified)
-VALUES (${escapeString(broker.id)}, ${escapeString(broker.clerkUserId)}, ${escapeString(broker.name)}, ${escapeString(broker.email)}, ${escapeString(broker.whatsappNumber)}, ${escapeString(broker.bio)}, ${escapeString(broker.avatarUrl)}, ${boolToInt(broker.verified)});`;
+function generateUserInsert(user: SeedUser): string {
+  return `INSERT INTO users (id, clerk_user_id, name, email, whatsapp_number, bio, avatar_url, verified)
+VALUES (${escapeString(user.id)}, ${escapeString(user.clerkUserId)}, ${escapeString(user.name)}, ${escapeString(user.email)}, ${escapeString(user.whatsappNumber)}, ${escapeString(user.bio)}, ${escapeString(user.avatarUrl)}, ${boolToInt(user.verified)});`;
 }
 
 function generateAssetInsert(asset: SeedAsset): string {
-  return `INSERT INTO assets (id, broker_id, tier, status, title, description, short_description, location, street, zip, city, country, latitude, longitude, max_occupancy, bedrooms, bathrooms, sq_meters, amenities, views, highlights, video_url, pdf_asset_path, instant_book, featured, sort_order)
-VALUES (${escapeString(asset.id)}, ${escapeString(asset.brokerId)}, ${escapeString(asset.tier)}, ${escapeString(asset.status)}, ${escapeString(asset.title)}, ${escapeString(asset.description)}, ${escapeString(asset.shortDescription)}, ${escapeString(asset.location)}, ${escapeString(asset.street)}, ${escapeString(asset.zip)}, ${escapeString(asset.city)}, ${escapeString(asset.country)}, ${escapeString(asset.latitude)}, ${escapeString(asset.longitude)}, ${asset.maxOccupancy}, ${asset.bedrooms}, ${asset.bathrooms}, ${asset.sqMeters}, ${jsonArray(asset.amenities)}, ${jsonArray(asset.views)}, ${jsonArray(asset.highlights)}, ${escapeString(asset.videoUrl)}, ${escapeString(asset.pdfAssetPath)}, ${boolToInt(asset.instantBook)}, ${boolToInt(asset.featured)}, ${asset.sortOrder});`;
+  return `INSERT INTO assets (id, user_id, tier, status, title, description, short_description, location, street, zip, city, country, latitude, longitude, max_occupancy, bedrooms, bathrooms, sq_meters, amenities, views, highlights, video_url, pdf_asset_path, instant_book, featured, sort_order)
+VALUES (${escapeString(asset.id)}, ${escapeString(asset.userId)}, ${escapeString(asset.tier)}, ${escapeString(asset.status)}, ${escapeString(asset.title)}, ${escapeString(asset.description)}, ${escapeString(asset.shortDescription)}, ${escapeString(asset.location)}, ${escapeString(asset.street)}, ${escapeString(asset.zip)}, ${escapeString(asset.city)}, ${escapeString(asset.country)}, ${escapeString(asset.latitude)}, ${escapeString(asset.longitude)}, ${asset.maxOccupancy}, ${asset.bedrooms}, ${asset.bathrooms}, ${asset.sqMeters}, ${jsonArray(asset.amenities)}, ${jsonArray(asset.views)}, ${jsonArray(asset.highlights)}, ${escapeString(asset.videoUrl)}, ${escapeString(asset.pdfAssetPath)}, ${boolToInt(asset.instantBook)}, ${boolToInt(asset.featured)}, ${asset.sortOrder});`;
 }
 
 function generateImageInsert(image: SeedImage): string {
@@ -47,8 +47,8 @@ VALUES (${escapeString(image.id)}, ${escapeString(image.assetId)}, ${escapeStrin
 }
 
 function generateExperienceInsert(exp: SeedExperience): string {
-  return `INSERT INTO experiences (id, broker_id, title, description, short_description, location, city, country, category, duration, max_participants, base_price, currency, image_url, status, featured)
-VALUES (${escapeString(exp.id)}, ${escapeString(exp.brokerId)}, ${escapeString(exp.title)}, ${escapeString(exp.description)}, ${escapeString(exp.shortDescription)}, ${escapeString(exp.location)}, ${escapeString(exp.city)}, ${escapeString(exp.country)}, ${escapeString(exp.category)}, ${escapeString(exp.duration)}, ${exp.maxParticipants}, ${exp.basePrice}, ${escapeString(exp.currency)}, ${escapeString(exp.imageUrl)}, ${escapeString(exp.status)}, ${boolToInt(exp.featured)});`;
+  return `INSERT INTO experiences (id, user_id, title, description, short_description, location, city, country, category, duration, max_participants, base_price, currency, image_url, status, featured)
+VALUES (${escapeString(exp.id)}, ${escapeString(exp.userId)}, ${escapeString(exp.title)}, ${escapeString(exp.description)}, ${escapeString(exp.shortDescription)}, ${escapeString(exp.location)}, ${escapeString(exp.city)}, ${escapeString(exp.country)}, ${escapeString(exp.category)}, ${escapeString(exp.duration)}, ${exp.maxParticipants}, ${exp.basePrice}, ${escapeString(exp.currency)}, ${escapeString(exp.imageUrl)}, ${escapeString(exp.status)}, ${boolToInt(exp.featured)});`;
 }
 
 function generateDeleteStatements(): string {
@@ -58,7 +58,7 @@ function generateDeleteStatements(): string {
 DELETE FROM images;
 DELETE FROM experiences;
 DELETE FROM assets;
-DELETE FROM brokers;
+DELETE FROM users;
 `;
 }
 
@@ -73,10 +73,10 @@ function generateSQL(): string {
   lines.push(generateDeleteStatements());
   lines.push("");
 
-  // Insert brokers
-  lines.push("-- Brokers");
-  for (const broker of brokers) {
-    lines.push(generateBrokerInsert(broker));
+  // Insert users
+  lines.push("-- Users");
+  for (const user of users) {
+    lines.push(generateUserInsert(user));
   }
   lines.push("");
 
@@ -104,19 +104,19 @@ function generateSQL(): string {
 }
 
 async function main() {
-  console.log("🔧 Generating SQL from seed data...\n");
+  console.log("Generating SQL from seed data...\n");
 
   const sql = generateSQL();
   const outputPath = join(ROOT_DIR, ".seed.sql");
 
   await Bun.write(outputPath, sql);
 
-  console.log("📊 Generated:");
-  console.log(`  Brokers: ${brokers.length}`);
+  console.log("Generated:");
+  console.log(`  Users: ${users.length}`);
   console.log(`  Assets: ${assets.length}`);
   console.log(`  Images: ${images.length}`);
   console.log(`  Experiences: ${experiences.length}`);
-  console.log("\n✅ SQL written to .seed.sql");
+  console.log("\nSQL written to .seed.sql");
 
   // Also output to stdout for piping
   if (process.argv.includes("--stdout")) {

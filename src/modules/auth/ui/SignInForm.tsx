@@ -1,11 +1,13 @@
-import { useSignIn } from "@clerk/clerk-react";
+import { $clerkStore, $isLoadedStore, $signInStore } from "@clerk/astro/client";
 import type { OAuthStrategy } from "@clerk/types";
+import { useStore } from "@nanostores/react";
 import { useState } from "react";
-import { ClerkProviderWrapper } from "./ClerkProviderWrapper";
 import { OAuthButtons } from "./OAuthButtons";
 
 function useHandleSignIn() {
-  const { signIn, setActive, isLoaded } = useSignIn();
+  const signIn = useStore($signInStore);
+  const clerk = useStore($clerkStore);
+  const isLoaded = useStore($isLoadedStore);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -24,8 +26,8 @@ function useHandleSignIn() {
         password,
       });
 
-      if (result.status === "complete" && setActive) {
-        await setActive({ session: result.createdSessionId });
+      if (result.status === "complete" && clerk) {
+        await clerk.setActive({ session: result.createdSessionId });
         window.location.href = "/";
       }
     } catch (err) {
@@ -173,9 +175,5 @@ function SignInFormInner() {
 }
 
 export function SignInForm() {
-  return (
-    <ClerkProviderWrapper>
-      <SignInFormInner />
-    </ClerkProviderWrapper>
-  );
+  return <SignInFormInner />;
 }

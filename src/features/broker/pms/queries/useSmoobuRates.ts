@@ -16,7 +16,7 @@ export function useSmoobuRates(params: {
     ],
     queryFn: () =>
       fetchSmoobuRates({
-        smoobuPropertyId: params.smoobuPropertyId!,
+        smoobuPropertyId: params.smoobuPropertyId as number,
         startDate: params.startDate,
         endDate: params.endDate,
       }),

@@ -30,7 +30,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const db = getDb(D1Database);
 
-    // Find the asset by smoobuPropertyId to get the brokerId
+    // Find the asset by smoobuPropertyId to get the userId
     const [asset] = await db
       .select()
       .from(assets)
@@ -44,7 +44,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const [integration] = await db
       .select()
       .from(pmsIntegrations)
-      .where(eq(pmsIntegrations.brokerId, asset.brokerId))
+      .where(eq(pmsIntegrations.userId, asset.userId))
       .limit(1);
 
     if (!integration || integration.provider !== "smoobu") {

@@ -33,6 +33,7 @@ export const imageSelectSchema = createSelectSchema(images);
 const propertyFieldsSchema = baseAssetInsertSchema
   .omit({
     id: true,
+    userId: true,
     createdAt: true,
     updatedAt: true,
     sortOrder: true,

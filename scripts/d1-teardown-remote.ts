@@ -24,7 +24,6 @@ const TABLES_IN_DELETE_ORDER = [
   "assets",
   "experiences",
   "pms_integrations",
-  "brokers",
   "users",
 ];
 

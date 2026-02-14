@@ -108,6 +108,7 @@ export function BackofficeUserMenu() {
           </a>
 
           <button
+            type="button"
             onClick={handleSignOut}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-error rounded-lg hover:bg-secondary transition-colors text-left"
           >

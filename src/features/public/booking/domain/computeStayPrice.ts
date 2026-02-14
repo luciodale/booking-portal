@@ -61,8 +61,8 @@ export function computeStayPrice(
 /** Returns array of YYYY-MM-DD strings from start (inclusive) to end (exclusive). */
 function getDateRange(start: string, end: string): string[] {
   const dates: string[] = [];
-  const current = new Date(start + "T00:00:00");
-  const endDate = new Date(end + "T00:00:00");
+  const current = new Date(`${start}T00:00:00`);
+  const endDate = new Date(`${end}T00:00:00`);
 
   while (current < endDate) {
     const year = current.getFullYear();

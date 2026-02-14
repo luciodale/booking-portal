@@ -26,7 +26,6 @@ export function CreateExperienceForm({
     useForm<CreateExperienceInput>({
       resolver: zodResolver(createExperienceSchema),
       defaultValues: {
-        brokerId: "broker-001",
         status: "draft",
         currency: "eur",
         featured: false,

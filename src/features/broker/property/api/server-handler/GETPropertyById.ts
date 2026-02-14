@@ -1,15 +1,14 @@
 import { getDb } from "@/db";
 import { assets, images } from "@/db/schema";
-import { requireAuth } from "@/modules/auth/auth";
+import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
+import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type { PropertyWithDetails } from "@/schemas/property";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { jsonError, jsonSuccess } from "./responseHelpers";
+import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ params, locals }) => {
   try {
-    requireAuth(locals);
-
     const { id } = params;
     if (!id) {
       return jsonError("Property ID required", 400);
@@ -21,6 +20,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     }
 
     const db = getDb(D1Database);
+    const ctx = await resolveBrokerContext(locals, db);
 
     const [property] = await db
       .select()
@@ -31,6 +31,8 @@ export const GET: APIRoute = async ({ params, locals }) => {
     if (!property) {
       return jsonError("Property not found", 404);
     }
+
+    assertBrokerOwnership(property, ctx);
 
     const propertyImages = await db
       .select()
@@ -46,7 +48,8 @@ export const GET: APIRoute = async ({ params, locals }) => {
   } catch (error) {
     console.error("Error fetching property:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to fetch property"
+      error instanceof Error ? error.message : "Failed to fetch property",
+      mapErrorToStatus(error)
     );
   }
 };

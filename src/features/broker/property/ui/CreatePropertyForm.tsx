@@ -91,7 +91,6 @@ export function CreatePropertyForm({
     useForm<CreatePropertyFormData>({
       resolver: zodResolver(formSchema),
       defaultValues: {
-        brokerId: "broker-001",
         smoobuPropertyId: integrationPropertyId,
         tier,
         status: "draft",

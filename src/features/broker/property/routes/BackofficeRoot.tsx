@@ -1,5 +1,5 @@
 import { BackofficeUserMenu } from "@/features/broker/ui/BackofficeUserMenu";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useUser } from "@clerk/clerk-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
 
@@ -16,6 +16,9 @@ const queryClient = new QueryClient({
 
 function BackofficeLayout() {
   const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
+  const isAdmin =
+    (user?.publicMetadata as { role?: string } | undefined)?.role === "admin";
 
   if (!isLoaded) {
     return (
@@ -70,6 +73,14 @@ function BackofficeLayout() {
               >
                 Create Property
               </Link>
+              {isAdmin && (
+                <Link
+                  to="/admin/events"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Events
+                </Link>
+              )}
               <BackofficeUserMenu />
             </div>
           </nav>

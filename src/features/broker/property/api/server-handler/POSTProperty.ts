@@ -1,24 +1,26 @@
 import { getDb } from "@/db";
 import { assets } from "@/db/schema";
+import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import { displayToKebab } from "@/features/broker/property/domain/sync-features";
-import { requireAuth } from "@/modules/auth/auth";
 import { genUniqueId } from "@/modules/utils/id";
 import type { PropertyWithDetails } from "@/schemas/property";
 import { createPropertySchema } from "@/schemas/property";
 import type { APIRoute } from "astro";
-import { eq } from "drizzle-orm";
-import { jsonError, jsonSuccess } from "./responseHelpers";
+import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    requireAuth(locals);
-
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
       return jsonError("Database not available", 503);
     }
 
     const db = getDb(D1Database);
+    const ctx = await resolveBrokerContext(locals, db);
+
+    if (!ctx.userId) {
+      return jsonError("Forbidden: No broker account", 403);
+    }
 
     const body = await request.json();
     const validationResult = createPropertySchema.safeParse(body);
@@ -42,7 +44,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .values({
         ...normalizedData,
         id: propertyId,
-        brokerId: normalizedData.brokerId as string,
+        userId: ctx.userId,
         tier: (normalizedData.tier || "elite") as "elite" | "standard",
         status: (normalizedData.status || "draft") as
           | "draft"
@@ -62,7 +64,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error creating property:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to create property"
+      error instanceof Error ? error.message : "Failed to create property",
+      mapErrorToStatus(error)
     );
   }
 };

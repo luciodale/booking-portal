@@ -14,7 +14,7 @@ async function main() {
   console.log("========================================");
   console.log("🚀 D1 Seed Remote - Starting");
   console.log("========================================");
-  console.log(`   Database: booking-portal-db (remote)`);
+  console.log("   Database: booking-portal-db (remote)");
   console.log(`   Root: ${ROOT_DIR}`);
 
   // Generate SQL if needed

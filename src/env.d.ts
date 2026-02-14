@@ -4,11 +4,18 @@
 interface Env {
   DB?: D1Database;
   R2_IMAGES_BUCKET?: R2Bucket;
-  PUBLIC_CLERK_PUBLISHABLE_KEY?: string;
   CLERK_SECRET_KEY?: string;
   CLERK_JWT_KEY?: string;
-  STRIPE_SECRET_KEY?: string;
-  STRIPE_WEBHOOK_SECRET?: string;
+  TEST_CLERK_SECRET_KEY?: string;
+  TEST_CLERK_JWT_KEY?: string;
+  PROD_CLERK_SECRET_KEY?: string;
+  PROD_CLERK_JWT_KEY?: string;
+  TEST_CLERK_WEBHOOK_SECRET?: string;
+  PROD_CLERK_WEBHOOK_SECRET?: string;
+  TEST_STRIPE_SECRET_KEY?: string;
+  TEST_STRIPE_WEBHOOK_SECRET?: string;
+  PROD_STRIPE_SECRET_KEY?: string;
+  PROD_STRIPE_WEBHOOK_SECRET?: string;
 }
 
 type Runtime = import("@astrojs/cloudflare").Runtime<Env>;

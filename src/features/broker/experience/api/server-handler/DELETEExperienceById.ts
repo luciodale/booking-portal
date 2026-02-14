@@ -1,14 +1,13 @@
 import { getDb } from "@/db";
 import { experiences } from "@/db/schema";
-import { requireAuth } from "@/modules/auth/auth";
+import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
+import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { jsonError, jsonSuccess } from "./responseHelpers";
+import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
 
 export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
-    requireAuth(locals);
-
     const { id } = params;
     if (!id) {
       return jsonError("Experience ID required", 400);
@@ -20,6 +19,11 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     }
 
     const db = getDb(D1Database);
+    const ctx = await resolveBrokerContext(locals, db);
+
+    if (!ctx.userId) {
+      return jsonError("Forbidden: No broker account", 403);
+    }
 
     const [existing] = await db
       .select()
@@ -30,6 +34,8 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     if (!existing) {
       return jsonError("Experience not found", 404);
     }
+
+    assertBrokerOwnership(existing, ctx);
 
     await db
       .update(experiences)
@@ -43,7 +49,8 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
   } catch (error) {
     console.error("Error deleting experience:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to archive experience"
+      error instanceof Error ? error.message : "Failed to archive experience",
+      mapErrorToStatus(error)
     );
   }
 };

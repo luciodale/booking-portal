@@ -4,8 +4,10 @@
  */
 
 import { getDb } from "@/db";
-import { images } from "@/db/schema";
-import { requireAuth } from "@/modules/auth/auth";
+import { assets, images } from "@/db/schema";
+import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
+import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
+import { mapErrorToStatus } from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 
@@ -13,8 +15,6 @@ export const prerender = false;
 
 export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
-    requireAuth(locals);
-
     const { id } = params;
     if (!id) {
       return new Response(JSON.stringify({ error: "Image ID required" }), {
@@ -34,6 +34,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     }
 
     const db = getDb(D1Database);
+    const ctx = await resolveBrokerContext(locals, db);
 
     // Get the image to find its R2 key
     const [image] = await db
@@ -47,6 +48,17 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
         status: 404,
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // Look up parent asset for ownership check
+    const [asset] = await db
+      .select()
+      .from(assets)
+      .where(eq(assets.id, image.assetId))
+      .limit(1);
+
+    if (asset) {
+      assertBrokerOwnership(asset, ctx);
     }
 
     // Delete from R2 if bucket available
@@ -90,7 +102,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
           error instanceof Error ? error.message : "Failed to delete image",
       }),
       {
-        status: 500,
+        status: mapErrorToStatus(error),
         headers: { "Content-Type": "application/json" },
       }
     );

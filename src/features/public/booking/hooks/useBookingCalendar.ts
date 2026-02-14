@@ -4,21 +4,41 @@ import {
   startOfToday,
   subMonths,
 } from "@/features/public/booking/domain/dateUtils";
+import { useBookingDatesFromUrl } from "@/features/public/booking/hooks/useBookingDatesFromUrl";
 import { usePropertyAvailability } from "@/features/public/booking/hooks/usePropertyAvailability";
 import { usePropertyRates } from "@/features/public/booking/hooks/usePropertyRates";
 import type { SmoobuRateDay } from "@/schemas/smoobu";
 import { endOfMonth, startOfMonth } from "date-fns";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function useBookingCalendar(
   propertyId: string,
   smoobuPropertyId: number | null
 ) {
-  const [currentMonth, setCurrentMonth] = useState(startOfToday());
-  const [checkIn, setCheckIn] = useState<Date | null>(null);
-  const [checkOut, setCheckOut] = useState<Date | null>(null);
+  const {
+    checkIn,
+    setCheckIn,
+    checkOut,
+    setCheckOut,
+    clearDates: clearUrlDates,
+    hadDatesFromUrl,
+  } = useBookingDatesFromUrl();
 
-  // Fetch rates for current month + next month
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    if (checkIn) return startOfMonth(checkIn);
+    return startOfToday();
+  });
+
+  const [isCalendarOpen, setCalendarOpen] = useState(false);
+  const [hasCalendarBeenOpened, setHasCalendarBeenOpened] = useState(false);
+
+  useEffect(() => {
+    if (isCalendarOpen && !hasCalendarBeenOpened) {
+      setHasCalendarBeenOpened(true);
+    }
+  }, [isCalendarOpen, hasCalendarBeenOpened]);
+
+  // Fetch rates only after calendar has been opened at least once
   const rangeStart = formatDate(startOfMonth(currentMonth));
   const rangeEnd = formatDate(endOfMonth(addMonths(currentMonth, 1)));
 
@@ -26,19 +46,29 @@ export function useBookingCalendar(
     propertyId,
     startDate: rangeStart,
     endDate: rangeEnd,
-    enabled: !!smoobuPropertyId,
+    enabled: hasCalendarBeenOpened && !!smoobuPropertyId,
   });
 
   const availabilityMutation = usePropertyAvailability(propertyId);
 
-  // Currency from Smoobu apartment details (returned alongside rates)
-  const currency = ratesQuery.data?.currency ?? "EUR";
+  const currency = ratesQuery.data?.currency ?? null;
 
-  // Extract rate map for the smoobu property
   const rateMap = useMemo((): Record<string, SmoobuRateDay> => {
     if (!ratesQuery.data?.rates.data || !smoobuPropertyId) return {};
     return ratesQuery.data.rates.data[String(smoobuPropertyId)] ?? {};
   }, [ratesQuery.data, smoobuPropertyId]);
+
+  // Auto-trigger availability check when dates come from URL
+  const hasTriggeredUrlAvailability = useRef(false);
+  useEffect(() => {
+    if (hasTriggeredUrlAvailability.current) return;
+    if (!hadDatesFromUrl || !checkIn || !checkOut) return;
+    hasTriggeredUrlAvailability.current = true;
+    availabilityMutation.mutate({
+      arrivalDate: formatDate(checkIn),
+      departureDate: formatDate(checkOut),
+    });
+  });
 
   const goNextMonth = useCallback(() => {
     setCurrentMonth((m) => addMonths(m, 1));
@@ -50,34 +80,40 @@ export function useBookingCalendar(
 
   function handleDateClick(date: Date) {
     if (!checkIn || (checkIn && checkOut)) {
-      // Start new selection
       setCheckIn(date);
       setCheckOut(null);
       availabilityMutation.reset();
+    } else if (date > checkIn) {
+      setCheckOut(date);
+      setCalendarOpen(false);
+      availabilityMutation.mutate({
+        arrivalDate: formatDate(checkIn),
+        departureDate: formatDate(date),
+        currency: currency ?? undefined,
+      });
     } else {
-      // Set check-out
-      if (date > checkIn) {
-        setCheckOut(date);
-        // Trigger availability check
-        availabilityMutation.mutate({
-          arrivalDate: formatDate(checkIn),
-          departureDate: formatDate(date),
-          currency,
-        });
-      } else {
-        // Clicked before check-in — restart
-        setCheckIn(date);
-        setCheckOut(null);
-        availabilityMutation.reset();
-      }
+      setCheckIn(date);
+      setCheckOut(null);
+      availabilityMutation.reset();
     }
   }
 
   function clearDates() {
-    setCheckIn(null);
-    setCheckOut(null);
+    clearUrlDates();
+    setCalendarOpen(false);
     availabilityMutation.reset();
   }
+
+  const isAvailable =
+    !!availabilityMutation.data &&
+    !!smoobuPropertyId &&
+    availabilityMutation.data.availableApartments.includes(smoobuPropertyId);
+
+  const totalPrice =
+    availabilityMutation.data && smoobuPropertyId
+      ? (availabilityMutation.data.prices[String(smoobuPropertyId)]?.price ??
+          null)
+      : null;
 
   return {
     currentMonth,
@@ -89,6 +125,10 @@ export function useBookingCalendar(
     availabilityResult: availabilityMutation.data ?? null,
     availabilityLoading: availabilityMutation.isPending,
     availabilityError: availabilityMutation.error,
+    isCalendarOpen,
+    setCalendarOpen,
+    isAvailable,
+    totalPrice,
     goNextMonth,
     goPrevMonth,
     handleDateClick,

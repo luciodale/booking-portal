@@ -38,7 +38,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
     const [integration] = await db
       .select()
       .from(pmsIntegrations)
-      .where(eq(pmsIntegrations.brokerId, asset.brokerId))
+      .where(eq(pmsIntegrations.userId, asset.userId))
       .limit(1);
 
     if (!integration || integration.provider !== "smoobu") {

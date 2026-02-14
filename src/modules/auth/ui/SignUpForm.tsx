@@ -1,13 +1,15 @@
-import { useSignUp } from "@clerk/clerk-react";
+import { $clerkStore, $isLoadedStore, $signUpStore } from "@clerk/astro/client";
 import type { OAuthStrategy } from "@clerk/types";
+import { useStore } from "@nanostores/react";
 import { useState } from "react";
-import { ClerkProviderWrapper } from "./ClerkProviderWrapper";
 import { OAuthButtons } from "./OAuthButtons";
 
 type Step = "form" | "verify";
 
 function useHandleSignUp() {
-  const { signUp, setActive, isLoaded } = useSignUp();
+  const signUp = useStore($signUpStore);
+  const clerk = useStore($clerkStore);
+  const isLoaded = useStore($isLoadedStore);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
@@ -47,8 +49,8 @@ function useHandleSignUp() {
     try {
       const result = await signUp.attemptEmailAddressVerification({ code });
 
-      if (result.status === "complete" && setActive) {
-        await setActive({ session: result.createdSessionId });
+      if (result.status === "complete" && clerk) {
+        await clerk.setActive({ session: result.createdSessionId });
         window.location.href = "/";
       }
     } catch (err) {
@@ -205,7 +207,6 @@ function SignUpFormInner() {
                 required
                 className="input text-center tracking-widest"
                 disabled={loading}
-                autoFocus
                 data-testid="signup-code"
               />
             </div>
@@ -238,9 +239,5 @@ function SignUpFormInner() {
 }
 
 export function SignUpForm() {
-  return (
-    <ClerkProviderWrapper>
-      <SignUpFormInner />
-    </ClerkProviderWrapper>
-  );
+  return <SignUpFormInner />;
 }

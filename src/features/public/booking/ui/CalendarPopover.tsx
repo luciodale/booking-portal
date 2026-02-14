@@ -13,15 +13,16 @@ import {
   useFloating,
   useInteractions,
 } from "@floating-ui/react";
-import { useCallback, useState } from "react";
 
 type CalendarPopoverProps = {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
   currentMonth: Date;
   checkIn: Date | null;
   checkOut: Date | null;
   rateMap: Record<string, SmoobuRateDay>;
   ratesLoading: boolean;
-  currency: string;
+  currency: string | null;
   onDateClick: (date: Date) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -29,6 +30,8 @@ type CalendarPopoverProps = {
 };
 
 export function CalendarPopover({
+  isOpen,
+  onOpenChange,
   currentMonth,
   checkIn,
   checkOut,
@@ -40,11 +43,9 @@ export function CalendarPopover({
   onNextMonth,
   onClear,
 }: CalendarPopoverProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
-    onOpenChange: setIsOpen,
+    onOpenChange,
     middleware: [offset(8), flip(), shift({ padding: 16 })],
     placement: "bottom-start",
     strategy: "fixed",
@@ -57,22 +58,6 @@ export function CalendarPopover({
     click,
     dismiss,
   ]);
-
-  const handleDateClick = useCallback(
-    (date: Date) => {
-      onDateClick(date);
-      // Close popover when check-out is selected (both dates chosen)
-      if (checkIn && !checkOut && date > checkIn) {
-        setIsOpen(false);
-      }
-    },
-    [onDateClick, checkIn, checkOut]
-  );
-
-  function handleClear() {
-    onClear();
-    setIsOpen(false);
-  }
 
   return (
     <>
@@ -101,7 +86,7 @@ export function CalendarPopover({
                 rateMap={rateMap}
                 ratesLoading={ratesLoading}
                 currency={currency}
-                onDateClick={handleDateClick}
+                onDateClick={onDateClick}
                 onPrevMonth={onPrevMonth}
                 onNextMonth={onNextMonth}
               />
@@ -110,7 +95,7 @@ export function CalendarPopover({
                 <div className="mt-3 pt-3 border-t border-border flex justify-end">
                   <button
                     type="button"
-                    onClick={handleClear}
+                    onClick={onClear}
                     className="text-xs text-primary hover:text-primary/80 transition-colors"
                   >
                     Clear dates
@@ -135,6 +120,7 @@ function DateTrigger({
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/50 transition-colors cursor-pointer">
       <svg
+        aria-hidden="true"
         width="18"
         height="18"
         viewBox="0 0 24 24"

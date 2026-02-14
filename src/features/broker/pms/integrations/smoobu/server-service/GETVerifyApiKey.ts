@@ -2,8 +2,8 @@
  * Smoobu server handlers (verify API key for integration setup)
  */
 
-import type { SmoobuErrorResponse, SmoobuUser } from "@/schemas/smoobu";
-import { verifyApiKeyRequestSchema } from "@/schemas/smoobu";
+import type { SmoobuErrorResponse } from "@/schemas/smoobu";
+import { verifyApiKeyRequestSchema, smoobuUserSchema } from "@/schemas/smoobu";
 import type { APIRoute } from "astro";
 import {
   jsonError,
@@ -34,8 +34,13 @@ export const GETVerifyApiKey: APIRoute = async ({ request }) => {
       return jsonError(error.detail || "Invalid API key", response.status);
     }
 
-    const userData: SmoobuUser = await response.json();
-    return jsonSuccess(userData);
+    const json = (await response.json()) as unknown;
+    const parsed = smoobuUserSchema.safeParse(json);
+    if (!parsed.success) {
+      console.error("Smoobu user parse error:", parsed.error.flatten());
+      return jsonError("Invalid Smoobu user response", 502);
+    }
+    return jsonSuccess(parsed.data);
   } catch (error) {
     console.error("Error verifying Smoobu API key:", error);
     return jsonError(

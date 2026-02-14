@@ -1,6 +1,8 @@
 import { getDb } from "@/db";
 import { assets, bookings, brokerLogs, pmsIntegrations } from "@/db/schema";
 import { createSmoobuBooking } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCreateBooking";
+import { getStripeKeys } from "@/features/public/booking/stripe-config";
+import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -9,14 +11,14 @@ import Stripe from "stripe";
 const SMOOBU_CHANNEL_ID = 70;
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  const stripeKey = locals.runtime?.env?.STRIPE_SECRET_KEY;
-  const webhookSecret = locals.runtime?.env?.STRIPE_WEBHOOK_SECRET;
   const D1Database = locals.runtime?.env?.DB;
+  const { secretKey: stripeKey, webhookSecret } = getStripeKeys(locals.runtime?.env ?? {} as Env);
 
   if (!stripeKey || !webhookSecret || !D1Database) {
     return new Response("Server misconfigured", { status: 503 });
   }
 
+  const log = createEventLogger(D1Database);
   const stripe = new Stripe(stripeKey);
   const body = await request.text();
   const sig = request.headers.get("stripe-signature");
@@ -30,6 +32,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     event = await stripe.webhooks.constructEventAsync(body, sig, webhookSecret);
   } catch (err) {
     console.error("Webhook signature verification failed:", err);
+    log.error({
+      source: "stripe-webhook",
+      message: "Webhook signature verification failed",
+      metadata: { error: err instanceof Error ? err.message : String(err) },
+    });
     return new Response("Invalid signature", { status: 400 });
   }
 
@@ -53,6 +60,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (!booking) {
       console.error(`No booking found for stripe session: ${session.id}`);
+      log.error({
+        source: "stripe-webhook",
+        message: `No booking found for stripe session: ${session.id}`,
+        metadata: { stripeSessionId: session.id },
+      });
       return new Response("OK", { status: 200 });
     }
 
@@ -83,17 +95,27 @@ export const POST: APIRoute = async ({ request, locals }) => {
       console.error(
         `Asset ${booking.assetId} not found or missing smoobuPropertyId`
       );
+      log.error({
+        source: "stripe-webhook",
+        message: `Asset ${booking.assetId} not found or missing smoobuPropertyId`,
+        metadata: { bookingId: booking.id, assetId: booking.assetId },
+      });
       return new Response("OK", { status: 200 });
     }
 
     const [integration] = await db
       .select()
       .from(pmsIntegrations)
-      .where(eq(pmsIntegrations.brokerId, asset.brokerId))
+      .where(eq(pmsIntegrations.userId, asset.userId))
       .limit(1);
 
     if (!integration || integration.provider !== "smoobu") {
-      console.error(`No Smoobu integration for broker ${asset.brokerId}`);
+      console.error(`No Smoobu integration for user ${asset.userId}`);
+      log.error({
+        source: "stripe-webhook",
+        message: `No Smoobu integration for user ${asset.userId}`,
+        metadata: { bookingId: booking.id, userId: asset.userId },
+      });
       return new Response("OK", { status: 200 });
     }
 
@@ -125,10 +147,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
         })
         .where(eq(bookings.id, booking.id));
 
+      log.info({
+        source: "stripe-webhook",
+        message: `Booking ${booking.id} confirmed, Smoobu reservation ${smoobuResult.id} created`,
+        metadata: {
+          bookingId: booking.id,
+          smoobuReservationId: smoobuResult.id,
+          stripeSessionId: session.id,
+        },
+      });
+
       // Log success
       await db.insert(brokerLogs).values({
         id: nanoid(),
-        brokerId: asset.brokerId,
+        userId: asset.userId,
         eventType: "smoobu_booking_success",
         relatedEntityId: booking.id,
         message: `Smoobu reservation ${smoobuResult.id} created for booking ${booking.id}`,
@@ -139,11 +171,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     } catch (smoobuError) {
       console.error("Smoobu booking creation failed:", smoobuError);
+      log.error({
+        source: "stripe-webhook",
+        message: `Smoobu booking creation failed for booking ${booking.id}: ${smoobuError instanceof Error ? smoobuError.message : "Unknown error"}`,
+        metadata: { bookingId: booking.id, stripeSessionId: session.id },
+      });
 
       // Log failure
       await db.insert(brokerLogs).values({
         id: nanoid(),
-        brokerId: asset.brokerId,
+        userId: asset.userId,
         eventType: "smoobu_booking_failure",
         relatedEntityId: booking.id,
         message: `Failed to create Smoobu reservation for booking ${booking.id}: ${smoobuError instanceof Error ? smoobuError.message : "Unknown error"}`,

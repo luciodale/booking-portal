@@ -13,7 +13,7 @@ import { smoobuCreateBodySchema } from "./createBodySchema";
 
 export async function insertIntegration(
   d1: D1Database,
-  brokerId: string,
+  userId: string,
   body: TPostIntegrationsRequest
 ): Promise<TPostIntegrationsResponse> {
   const validation = smoobuCreateBodySchema.safeParse(body);
@@ -23,7 +23,7 @@ export async function insertIntegration(
     );
   }
   const { provider, apiKey, pmsUserId, pmsEmail } = validation.data;
-  return insertIntegrationSQL(d1, brokerId, {
+  return insertIntegrationSQL(d1, userId, {
     provider,
     apiKey,
     pmsUserId,

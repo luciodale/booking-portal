@@ -150,9 +150,7 @@ export function SmoobuSetupCard({
                 <strong>Name:</strong>{" "}
                 {[verifiedUser.firstName, verifiedUser.lastName]
                   .filter(Boolean)
-                  .join(" ") ||
-                  verifiedUser.name ||
-                  "—"}
+                  .join(" ") || "—"}
               </p>
               <p>
                 <strong>Email:</strong> {verifiedUser.email}

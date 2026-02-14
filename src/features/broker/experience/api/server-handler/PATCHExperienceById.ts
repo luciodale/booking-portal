@@ -1,16 +1,15 @@
 import { getDb } from "@/db";
 import { experienceImages, experiences } from "@/db/schema";
-import { requireAuth } from "@/modules/auth/auth";
+import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
+import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type { ExperienceWithDetails } from "@/schemas/experience";
 import { updateExperienceSchema } from "@/schemas/experience";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { jsonError, jsonSuccess } from "./responseHelpers";
+import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
 
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   try {
-    requireAuth(locals);
-
     const { id } = params;
     if (!id) {
       return jsonError("Experience ID required", 400);
@@ -22,6 +21,11 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     }
 
     const db = getDb(D1Database);
+    const ctx = await resolveBrokerContext(locals, db);
+
+    if (!ctx.userId) {
+      return jsonError("Forbidden: No broker account", 403);
+    }
 
     const [existing] = await db
       .select()
@@ -32,6 +36,8 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     if (!existing) {
       return jsonError("Experience not found", 404);
     }
+
+    assertBrokerOwnership(existing, ctx);
 
     const body = await request.json();
     const validationResult = updateExperienceSchema.safeParse(body);
@@ -66,7 +72,8 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   } catch (error) {
     console.error("Error updating experience:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to update experience"
+      error instanceof Error ? error.message : "Failed to update experience",
+      mapErrorToStatus(error)
     );
   }
 };

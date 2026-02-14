@@ -1,22 +1,21 @@
 import { getDb } from "@/db";
 import { experienceImages, experiences } from "@/db/schema";
-import { requireAuth } from "@/modules/auth/auth";
+import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import type { ExperienceListResponse } from "@/schemas/api";
 import type { APIRoute } from "astro";
 import { and, desc, eq, like, or } from "drizzle-orm";
-import { jsonError, jsonSuccess } from "./responseHelpers";
+import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ locals, url }) => {
   try {
-    requireAuth(locals);
-
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
       return jsonError("Database not available", 503);
     }
 
     const db = getDb(D1Database);
+    const ctx = await resolveBrokerContext(locals, db);
 
     const category = url.searchParams.get("category");
     const status = url.searchParams.get("status");
@@ -25,6 +24,11 @@ export const GET: APIRoute = async ({ locals, url }) => {
     let query = db.select().from(experiences).$dynamic();
 
     const conditions = [];
+
+    if (!ctx.isAdmin) {
+      conditions.push(eq(experiences.userId, ctx.userId!));
+    }
+
     if (category) {
       conditions.push(eq(experiences.category, category));
     }
@@ -79,7 +83,8 @@ export const GET: APIRoute = async ({ locals, url }) => {
   } catch (error) {
     console.error("Error listing experiences:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to list experiences"
+      error instanceof Error ? error.message : "Failed to list experiences",
+      mapErrorToStatus(error)
     );
   }
 };

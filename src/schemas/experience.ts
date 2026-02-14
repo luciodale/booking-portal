@@ -30,6 +30,7 @@ export const experienceImageSelectSchema = createSelectSchema(experienceImages);
 const experienceFieldsSchema = baseExperienceInsertSchema
   .omit({
     id: true,
+    userId: true,
     createdAt: true,
     updatedAt: true,
     imageUrl: true, // Replaced by multi-image upload

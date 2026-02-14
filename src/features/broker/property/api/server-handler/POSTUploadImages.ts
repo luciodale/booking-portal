@@ -1,6 +1,7 @@
 import { getDb } from "@/db";
-import { images } from "@/db/schema";
-import { requireAuth } from "@/modules/auth/auth";
+import { assets, images } from "@/db/schema";
+import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
+import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import {
   convertToWebP,
   validateImageSize,
@@ -14,12 +15,11 @@ import {
 import { genUniqueId } from "@/modules/utils/id";
 import type { UploadImagesResponse } from "@/schemas/api";
 import type { APIRoute } from "astro";
-import { jsonError, jsonSuccess } from "./responseHelpers";
+import { eq } from "drizzle-orm";
+import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
-    requireAuth(locals);
-
     const D1Database = locals.runtime?.env?.DB;
     const R2Bucket = locals.runtime?.env?.R2_IMAGES_BUCKET;
 
@@ -28,6 +28,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const db = getDb(D1Database);
+    const ctx = await resolveBrokerContext(locals, db);
 
     const formData = await request.formData();
     const assetId = formData.get("assetId") as string;
@@ -35,6 +36,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (!assetId) {
       return jsonError("Asset ID required", 400);
     }
+
+    const [asset] = await db
+      .select()
+      .from(assets)
+      .where(eq(assets.id, assetId))
+      .limit(1);
+
+    if (!asset) {
+      return jsonError("Asset not found", 404);
+    }
+
+    assertBrokerOwnership(asset, ctx);
 
     const uploadedImages = [];
     const files = formData.getAll("images") as File[];
@@ -111,7 +124,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error uploading images:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to upload images"
+      error instanceof Error ? error.message : "Failed to upload images",
+      mapErrorToStatus(error)
     );
   }
 };

@@ -17,7 +17,7 @@ type TPmsIntegrationCreateInput = Pick<
 
 export async function insertIntegrationSQL(
   d1: D1Database,
-  brokerId: string,
+  userId: string,
   data: TPmsIntegrationCreateInput
 ): Promise<TPostIntegrationsResponse> {
   const db = getDb(d1);
@@ -28,7 +28,7 @@ export async function insertIntegrationSQL(
   try {
     await db.insert(pmsIntegrations).values({
       id,
-      brokerId,
+      userId,
       provider,
       apiKey,
       pmsUserId: pmsUserId ?? null,

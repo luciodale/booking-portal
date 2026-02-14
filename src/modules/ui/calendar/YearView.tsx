@@ -25,7 +25,15 @@ const MONTH_NAMES = [
   "December",
 ];
 
-const DAY_INITIALS = ["M", "T", "W", "T", "F", "S", "S"];
+const DAY_INITIALS = [
+  { key: "mon", label: "M" },
+  { key: "tue", label: "T" },
+  { key: "wed", label: "W" },
+  { key: "thu", label: "T" },
+  { key: "fri", label: "F" },
+  { key: "sat", label: "S" },
+  { key: "sun", label: "S" },
+] as const;
 
 interface MiniMonthProps {
   year: number;
@@ -55,12 +63,12 @@ function MiniMonth({
 
       {/* Day Initials */}
       <div className="grid grid-cols-7 gap-px mb-1">
-        {DAY_INITIALS.map((initial, i) => (
+        {DAY_INITIALS.map((day) => (
           <div
-            key={`${initial}-${i}`}
+            key={day.key}
             className="text-[10px] text-muted-foreground text-center py-0.5"
           >
-            {initial}
+            {day.label}
           </div>
         ))}
       </div>
@@ -155,7 +163,7 @@ export function YearView({
       <div className="grid grid-cols-4 gap-3 lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2">
         {Array.from({ length: 12 }, (_, month) => (
           <MiniMonth
-            key={month}
+            key={MONTH_NAMES[month]}
             year={year}
             month={month}
             onDayClick={handleDayClick}

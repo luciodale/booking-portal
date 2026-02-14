@@ -3,7 +3,9 @@ import { assets, bookings, pmsIntegrations } from "@/db/schema";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
 import { computeStayPrice } from "@/features/public/booking/domain/computeStayPrice";
+import { getStripeKeys } from "@/features/public/booking/stripe-config";
 import { requireAuth } from "@/modules/auth/auth";
+import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -40,11 +42,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const authContext = requireAuth(locals);
 
     const D1Database = locals.runtime?.env?.DB;
-    const stripeKey = locals.runtime?.env?.STRIPE_SECRET_KEY;
     if (!D1Database)
       return jsonResponse({ error: "Database not available" }, 503);
+
+    const { secretKey: stripeKey } = getStripeKeys(locals.runtime?.env ?? {} as Env);
     if (!stripeKey)
       return jsonResponse({ error: "Stripe not configured" }, 503);
+
+    const log = createEventLogger(D1Database);
 
     const body = checkoutBodySchema.safeParse(await request.json());
     if (!body.success) {
@@ -82,7 +87,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const [integration] = await db
       .select()
       .from(pmsIntegrations)
-      .where(eq(pmsIntegrations.brokerId, asset.brokerId))
+      .where(eq(pmsIntegrations.userId, asset.userId))
       .limit(1);
 
     if (
@@ -103,6 +108,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
 
     if (!availability.availableApartments.includes(asset.smoobuPropertyId)) {
+      log.error({
+        source: "checkout",
+        message: `Availability conflict for property ${propertyId} (${checkIn} - ${checkOut})`,
+        metadata: { propertyId, checkIn, checkOut, guests },
+      });
       return jsonResponse(
         { error: "Property is no longer available for these dates" },
         409
@@ -136,6 +146,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Reject if client-submitted price diverges more than 1% from server price
     if (Math.abs(serverPrice - totalPrice) / serverPrice > 0.01) {
+      log.error({
+        source: "checkout",
+        message: `Price mismatch for property ${propertyId}: client=${totalPrice}, server=${serverPrice}`,
+        metadata: { propertyId, clientPrice: totalPrice, serverPrice },
+      });
       return jsonResponse(
         { error: "Price has changed. Please refresh and try again." },
         409
@@ -143,8 +158,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     // Compute nights
-    const checkInDate = new Date(checkIn + "T00:00:00");
-    const checkOutDate = new Date(checkOut + "T00:00:00");
+    const checkInDate = new Date(`${checkIn}T00:00:00`);
+    const checkOutDate = new Date(`${checkOut}T00:00:00`);
     const nights = Math.round(
       (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
     );
@@ -211,11 +226,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .set({ stripeSessionId: session.id })
       .where(eq(bookings.id, bookingId));
 
+    log.info({
+      source: "checkout",
+      message: `Checkout session created for booking ${bookingId}`,
+      metadata: { bookingId, propertyId, stripeSessionId: session.id },
+    });
+
     return jsonResponse({ url: session.url });
   } catch (error) {
     console.error("Checkout error:", error);
     if (error instanceof Error && error.message === "Unauthorized") {
       return jsonResponse({ error: "Sign in required" }, 401);
+    }
+    const D1 = locals.runtime?.env?.DB;
+    if (D1) {
+      createEventLogger(D1).error({
+        source: "checkout",
+        message: `Checkout failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        metadata: { error: error instanceof Error ? error.message : String(error) },
+      });
     }
     return jsonResponse(
       { error: error instanceof Error ? error.message : "Checkout failed" },

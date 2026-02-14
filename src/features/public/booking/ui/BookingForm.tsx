@@ -40,10 +40,11 @@ export function BookingForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-muted-foreground mb-1">
+          <label htmlFor="booking-firstname" className="block text-xs text-muted-foreground mb-1">
             First Name
           </label>
           <input
+            id="booking-firstname"
             data-testid="booking-firstname"
             {...register("firstName")}
             className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
@@ -55,10 +56,11 @@ export function BookingForm({
           )}
         </div>
         <div>
-          <label className="block text-xs text-muted-foreground mb-1">
+          <label htmlFor="booking-lastname" className="block text-xs text-muted-foreground mb-1">
             Last Name
           </label>
           <input
+            id="booking-lastname"
             data-testid="booking-lastname"
             {...register("lastName")}
             className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
@@ -72,10 +74,11 @@ export function BookingForm({
       </div>
 
       <div>
-        <label className="block text-xs text-muted-foreground mb-1">
+        <label htmlFor="booking-email" className="block text-xs text-muted-foreground mb-1">
           Email
         </label>
         <input
+          id="booking-email"
           data-testid="booking-email"
           type="email"
           {...register("email")}
@@ -87,10 +90,11 @@ export function BookingForm({
       </div>
 
       <div>
-        <label className="block text-xs text-muted-foreground mb-1">
+        <label htmlFor="booking-phone" className="block text-xs text-muted-foreground mb-1">
           Phone (optional)
         </label>
         <input
+          id="booking-phone"
           data-testid="booking-phone"
           type="tel"
           {...register("phone")}
@@ -100,10 +104,11 @@ export function BookingForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs text-muted-foreground mb-1">
+          <label htmlFor="booking-adults" className="block text-xs text-muted-foreground mb-1">
             Adults
           </label>
           <input
+            id="booking-adults"
             data-testid="booking-adults"
             type="number"
             min={1}
@@ -116,10 +121,11 @@ export function BookingForm({
           )}
         </div>
         <div>
-          <label className="block text-xs text-muted-foreground mb-1">
+          <label htmlFor="booking-children" className="block text-xs text-muted-foreground mb-1">
             Children
           </label>
           <input
+            id="booking-children"
             data-testid="booking-children"
             type="number"
             min={0}
@@ -131,10 +137,11 @@ export function BookingForm({
       </div>
 
       <div>
-        <label className="block text-xs text-muted-foreground mb-1">
+        <label htmlFor="booking-guestnote" className="block text-xs text-muted-foreground mb-1">
           Special requests (optional)
         </label>
         <textarea
+          id="booking-guestnote"
           rows={3}
           {...register("guestNote")}
           className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-none"
