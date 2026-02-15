@@ -40,7 +40,10 @@ export function BookingForm({
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="booking-firstname" className="block text-xs text-muted-foreground mb-1">
+          <label
+            htmlFor="booking-firstname"
+            className="block text-xs text-muted-foreground mb-1"
+          >
             First Name
           </label>
           <input
@@ -56,7 +59,10 @@ export function BookingForm({
           )}
         </div>
         <div>
-          <label htmlFor="booking-lastname" className="block text-xs text-muted-foreground mb-1">
+          <label
+            htmlFor="booking-lastname"
+            className="block text-xs text-muted-foreground mb-1"
+          >
             Last Name
           </label>
           <input
@@ -74,7 +80,10 @@ export function BookingForm({
       </div>
 
       <div>
-        <label htmlFor="booking-email" className="block text-xs text-muted-foreground mb-1">
+        <label
+          htmlFor="booking-email"
+          className="block text-xs text-muted-foreground mb-1"
+        >
           Email
         </label>
         <input
@@ -90,7 +99,10 @@ export function BookingForm({
       </div>
 
       <div>
-        <label htmlFor="booking-phone" className="block text-xs text-muted-foreground mb-1">
+        <label
+          htmlFor="booking-phone"
+          className="block text-xs text-muted-foreground mb-1"
+        >
           Phone (optional)
         </label>
         <input
@@ -104,7 +116,10 @@ export function BookingForm({
 
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label htmlFor="booking-adults" className="block text-xs text-muted-foreground mb-1">
+          <label
+            htmlFor="booking-adults"
+            className="block text-xs text-muted-foreground mb-1"
+          >
             Adults
           </label>
           <input
@@ -121,7 +136,10 @@ export function BookingForm({
           )}
         </div>
         <div>
-          <label htmlFor="booking-children" className="block text-xs text-muted-foreground mb-1">
+          <label
+            htmlFor="booking-children"
+            className="block text-xs text-muted-foreground mb-1"
+          >
             Children
           </label>
           <input
@@ -137,7 +155,10 @@ export function BookingForm({
       </div>
 
       <div>
-        <label htmlFor="booking-guestnote" className="block text-xs text-muted-foreground mb-1">
+        <label
+          htmlFor="booking-guestnote"
+          className="block text-xs text-muted-foreground mb-1"
+        >
           Special requests (optional)
         </label>
         <textarea

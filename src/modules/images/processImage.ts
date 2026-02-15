@@ -10,7 +10,7 @@ function computeDimensions(
   srcWidth: number,
   srcHeight: number,
   maxW: number,
-  maxH: number,
+  maxH: number
 ): { width: number; height: number } {
   if (srcWidth <= maxW && srcHeight <= maxH) {
     return { width: srcWidth, height: srcHeight };
@@ -24,12 +24,11 @@ function computeDimensions(
 
 function canvasToFile(
   canvas: OffscreenCanvas,
-  fileName: string,
+  fileName: string
 ): Promise<File> {
-  return canvas.convertToBlob({ type: "image/webp", quality: WEBP_QUALITY }).then(
-    (blob) =>
-      new File([blob], fileName, { type: "image/webp" }),
-  );
+  return canvas
+    .convertToBlob({ type: "image/webp", quality: WEBP_QUALITY })
+    .then((blob) => new File([blob], fileName, { type: "image/webp" }));
 }
 
 export async function processImage(file: File): Promise<File> {
@@ -38,7 +37,7 @@ export async function processImage(file: File): Promise<File> {
     bitmap.width,
     bitmap.height,
     MAX_WIDTH,
-    MAX_HEIGHT,
+    MAX_HEIGHT
   );
 
   const canvas = new OffscreenCanvas(width, height);

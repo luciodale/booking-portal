@@ -4,24 +4,19 @@ import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 // ============================================================================
 // Users table - unified profiles (guests + property managers, links to Clerk)
 // ============================================================================
-export const users = sqliteTable(
-  "users",
-  {
-    id: text("id").primaryKey(),
-    email: text("email").notNull(),
-    name: text("name"),
-    phone: text("phone"),
-    avatarUrl: text("avatar_url"),
-    preferredLanguage: text("preferred_language").default("en"),
-    whatsappNumber: text("whatsapp_number"),
-    bio: text("bio"),
-    verified: integer("verified", { mode: "boolean" })
-      .notNull()
-      .default(false),
-    createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-    updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
-  }
-);
+export const users = sqliteTable("users", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  name: text("name"),
+  phone: text("phone"),
+  avatarUrl: text("avatar_url"),
+  preferredLanguage: text("preferred_language").default("en"),
+  whatsappNumber: text("whatsapp_number"),
+  bio: text("bio"),
+  verified: integer("verified", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
 
 // ============================================================================
 // PMS Integrations table - Property Management System integrations (Smoobu)
@@ -404,9 +399,7 @@ export const assetExperiences = sqliteTable(
 
     // Package options
     discountPercent: integer("discount_percent").default(0), // Bundle discount
-    featured: integer("featured", { mode: "boolean" })
-      .notNull()
-      .default(false), // Show prominently on property page
+    featured: integer("featured", { mode: "boolean" }).notNull().default(false), // Show prominently on property page
     sortOrder: integer("sort_order").default(0),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   },

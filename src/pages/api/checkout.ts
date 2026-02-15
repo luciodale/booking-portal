@@ -3,7 +3,7 @@ import { assets, pmsIntegrations } from "@/db/schema";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
 import {
-  computeStayPrice,
+  getDateRange,
   toCents,
 } from "@/features/public/booking/domain/computeStayPrice";
 import { requireAuth } from "@/modules/auth/auth";
@@ -19,7 +19,7 @@ const checkoutBodySchema = z.object({
   checkOut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   guests: z.number().int().min(1),
   currency: z.string().min(1),
-  totalPriceCents: z.number().int().positive(),
+  nightPriceCents: z.record(z.string(), z.number().int().nonnegative()),
   guestInfo: z.object({
     firstName: z.string().min(1),
     lastName: z.string().min(1),
@@ -66,7 +66,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       checkOut,
       guests,
       currency,
-      totalPriceCents,
+      nightPriceCents,
       guestInfo,
     } = body.data;
     const db = getDb(D1Database);
@@ -120,49 +120,42 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    // Re-compute price server-side for integrity (all in cents)
+    // Verify price integrity: compare each night's price individually (no floating-point math)
     const propId = String(asset.smoobuPropertyId);
-    let serverPriceCents: number;
+    const ratesResponse = await fetchSmoobuRates(
+      integration.apiKey,
+      asset.smoobuPropertyId,
+      checkIn,
+      checkOut
+    );
+    const rateMap = ratesResponse.data[propId] ?? {};
+    const stayDates = getDateRange(checkIn, checkOut);
 
-    const smoobuPrice = availability.prices[propId];
-    if (smoobuPrice) {
-      serverPriceCents = toCents(smoobuPrice.price);
-    } else {
-      const ratesResponse = await fetchSmoobuRates(
-        integration.apiKey,
-        asset.smoobuPropertyId,
-        checkIn,
-        checkOut
-      );
-      const rateMap = ratesResponse.data[propId] ?? {};
-      const computed = computeStayPrice(checkIn, checkOut, rateMap);
-      if (!computed.hasPricing) {
+    let serverPriceCents = 0;
+    for (const date of stayDates) {
+      const serverRate = rateMap[date];
+      const clientCents = nightPriceCents[date];
+
+      if (serverRate?.price == null || clientCents == null) {
         return jsonResponse(
           { error: "Unable to compute price for this stay" },
           400
         );
       }
-      serverPriceCents = computed.totalCents;
-    }
 
-    // Reject if client-submitted price diverges more than 1% from server price
-    // Both values are integers (cents), so comparison is exact
-    if (
-      Math.abs(serverPriceCents - totalPriceCents) / serverPriceCents > 0.01
-    ) {
-      log.error({
-        source: "checkout",
-        message: `Price mismatch for property ${propertyId}: client=${totalPriceCents}¢, server=${serverPriceCents}¢`,
-        metadata: {
-          propertyId,
-          clientPriceCents: totalPriceCents,
-          serverPriceCents,
-        },
-      });
-      return jsonResponse(
-        { error: "Price has changed. Please refresh and try again." },
-        409
-      );
+      const serverCents = toCents(serverRate.price);
+      if (serverCents !== clientCents) {
+        log.error({
+          source: "checkout",
+          message: `Night price mismatch for ${date}: client=${clientCents}¢, server=${serverCents}¢`,
+          metadata: { propertyId, date, clientCents, serverCents },
+        });
+        return jsonResponse(
+          { error: "Price has changed. Please refresh and try again." },
+          409
+        );
+      }
+      serverPriceCents += serverCents;
     }
 
     // Compute nights

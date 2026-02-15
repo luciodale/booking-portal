@@ -1,4 +1,7 @@
-import { toCents } from "@/features/public/booking/domain/computeStayPrice";
+import {
+  getDateRange,
+  toCents,
+} from "@/features/public/booking/domain/computeStayPrice";
 import {
   addMonths,
   formatDate,
@@ -51,8 +54,7 @@ export function useBookingCalendar(
     propertyId,
     startDate: rangeStart,
     endDate: rangeEnd,
-    enabled:
-      (hasCalendarBeenOpened || hadDatesFromUrl) && !!smoobuPropertyId,
+    enabled: (hasCalendarBeenOpened || hadDatesFromUrl) && !!smoobuPropertyId,
   });
 
   const availabilityMutation = usePropertyAvailability(propertyId);
@@ -73,7 +75,7 @@ export function useBookingCalendar(
       arrivalDate: formatDate(checkIn),
       departureDate: formatDate(checkOut),
     });
-  }, [pendingUrlCheck, checkIn, checkOut]);
+  }, [pendingUrlCheck, checkIn, checkOut, availabilityMutation.mutate]);
 
   const goNextMonth = useCallback(() => {
     setCurrentMonth((m) => addMonths(m, 1));
@@ -94,7 +96,6 @@ export function useBookingCalendar(
       availabilityMutation.mutate({
         arrivalDate: formatDate(checkIn),
         departureDate: formatDate(date),
-        currency: currency ?? undefined,
       });
     } else {
       setCheckIn(date);
@@ -114,14 +115,31 @@ export function useBookingCalendar(
     !!smoobuPropertyId &&
     availabilityMutation.data.availableApartments.includes(smoobuPropertyId);
 
-  const totalPriceCents =
-    availabilityMutation.data && smoobuPropertyId
-      ? (() => {
-          const price =
-            availabilityMutation.data.prices[String(smoobuPropertyId)]?.price;
-          return price != null ? toCents(price) : null;
-        })()
-      : null;
+  const nightPriceCents = useMemo((): Record<string, number> | null => {
+    if (!checkIn || !checkOut || !smoobuPropertyId) return null;
+    if (!availabilityMutation.data) return null;
+    if (
+      !availabilityMutation.data.availableApartments.includes(smoobuPropertyId)
+    )
+      return null;
+
+    const dates = getDateRange(formatDate(checkIn), formatDate(checkOut));
+    const result: Record<string, number> = {};
+    for (const date of dates) {
+      const rate = rateMap[date];
+      if (rate?.price == null) return null;
+      result[date] = toCents(rate.price);
+    }
+    return result;
+  }, [checkIn, checkOut, smoobuPropertyId, rateMap, availabilityMutation.data]);
+
+  const totalPriceCents = useMemo(
+    () =>
+      nightPriceCents
+        ? Object.values(nightPriceCents).reduce((sum, c) => sum + c, 0)
+        : null,
+    [nightPriceCents]
+  );
 
   return {
     currentMonth,
@@ -136,6 +154,7 @@ export function useBookingCalendar(
     isCalendarOpen,
     setCalendarOpen,
     isAvailable,
+    nightPriceCents,
     totalPriceCents,
     goNextMonth,
     goPrevMonth,

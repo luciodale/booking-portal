@@ -1,9 +1,6 @@
 import { getDb } from "@/db";
 import { assets, pmsIntegrations } from "@/db/schema";
-import { fetchApartmentById } from "@/features/broker/pms/integrations/smoobu/server-service/GETApartmentById";
-import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
-import { computeStayPrice } from "@/features/public/booking/domain/computeStayPrice";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 
@@ -21,10 +18,9 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       arrivalDate?: string;
       departureDate?: string;
       guests?: number;
-      currency?: string;
     };
 
-    const { arrivalDate, departureDate, guests, currency } = body;
+    const { arrivalDate, departureDate, guests } = body;
     if (!arrivalDate || !departureDate) {
       return new Response(
         JSON.stringify({
@@ -78,50 +74,13 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       );
     }
 
-    const smoobuPropertyId = asset.smoobuPropertyId;
-    const propId = String(smoobuPropertyId);
-
     const availability = await checkSmoobuAvailability(integration.apiKey, {
       arrivalDate,
       departureDate,
-      apartments: [smoobuPropertyId],
+      apartments: [asset.smoobuPropertyId],
       customerId,
       guests,
     });
-
-    // If apartment is available but Smoobu didn't return a price, compute from per-night rates
-    const isAvailable =
-      availability.availableApartments.includes(smoobuPropertyId);
-    const hasSmoobuPrice = !!availability.prices[propId];
-
-    if (isAvailable && !hasSmoobuPrice) {
-      try {
-        const [ratesResponse, apartment] = await Promise.all([
-          fetchSmoobuRates(
-            integration.apiKey,
-            smoobuPropertyId,
-            arrivalDate,
-            departureDate
-          ),
-          fetchApartmentById(integration.apiKey, smoobuPropertyId),
-        ]);
-        const rateMap = ratesResponse.data[propId] ?? {};
-        const computed = computeStayPrice(arrivalDate, departureDate, rateMap);
-
-        if (computed.hasPricing) {
-          availability.prices[propId] = {
-            price: computed.totalCents / 100,
-            currency: currency ?? apartment.currency,
-          };
-        }
-      } catch (rateError) {
-        console.error(
-          "Failed to fetch rates for price computation:",
-          rateError
-        );
-        // Non-fatal: availability still returned, just without computed price
-      }
-    }
 
     return new Response(JSON.stringify({ data: availability }), {
       status: 200,

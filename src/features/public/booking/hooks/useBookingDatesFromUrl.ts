@@ -33,7 +33,9 @@ export function useBookingDatesFromUrl() {
   const [checkIn, setCheckIn] = useState<Date | null>(initialCheckIn);
   const [checkOut, setCheckOut] = useState<Date | null>(initialCheckOut);
 
-  const hadDatesFromUrl = useRef(initialCheckIn !== null && initialCheckOut !== null);
+  const hadDatesFromUrl = useRef(
+    initialCheckIn !== null && initialCheckOut !== null
+  );
 
   useEffect(() => {
     syncDatesToUrl(checkIn, checkOut);

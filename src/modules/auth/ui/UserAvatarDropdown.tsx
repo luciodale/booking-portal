@@ -1,6 +1,5 @@
 import { $userStore } from "@clerk/astro/client";
 import { useAuth } from "@clerk/astro/react";
-import { useStore } from "@nanostores/react";
 import {
   autoUpdate,
   flip,
@@ -11,6 +10,7 @@ import {
   useFloating,
   useInteractions,
 } from "@floating-ui/react";
+import { useStore } from "@nanostores/react";
 import { User } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
 
@@ -20,7 +20,7 @@ function useHydrated() {
   return useSyncExternalStore(
     emptySubscribe,
     () => true,
-    () => false,
+    () => false
   );
 }
 

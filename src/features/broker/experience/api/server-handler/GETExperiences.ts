@@ -26,7 +26,8 @@ export const GET: APIRoute = async ({ locals, url }) => {
     const conditions = [];
 
     if (!ctx.isAdmin) {
-      conditions.push(eq(experiences.userId, ctx.userId!));
+      if (!ctx.userId) throw new Error("Forbidden");
+      conditions.push(eq(experiences.userId, ctx.userId));
     }
 
     if (category) {

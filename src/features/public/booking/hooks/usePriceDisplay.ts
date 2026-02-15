@@ -1,13 +1,4 @@
-import { formatDate } from "@/features/public/booking/domain/dateUtils";
-import {
-  computeStayPrice,
-  toCents,
-} from "@/features/public/booking/domain/computeStayPrice";
-import type {
-  SmoobuAvailabilityResponse,
-  SmoobuRateDay,
-} from "@/schemas/smoobu";
-import { differenceInDays } from "date-fns";
+import type { SmoobuAvailabilityResponse } from "@/schemas/smoobu";
 import { useMemo } from "react";
 
 const SUPPORTED_CURRENCIES = new Set(["EUR", "GBP", "USD"]);
@@ -28,7 +19,8 @@ type PriceDisplayInput = {
   checkOut: Date | null;
   smoobuPropertyId: number | null;
   currency: string | null;
-  rateMap: Record<string, SmoobuRateDay>;
+  nightPriceCents: Record<string, number> | null;
+  totalPriceCents: number | null;
   availabilityResult: SmoobuAvailabilityResponse | null;
   availabilityLoading: boolean;
   availabilityError: Error | null;
@@ -82,7 +74,8 @@ export function usePriceDisplay({
   checkOut,
   smoobuPropertyId,
   currency,
-  rateMap,
+  nightPriceCents,
+  totalPriceCents,
   availabilityResult,
   availabilityLoading,
   availabilityError,
@@ -92,8 +85,7 @@ export function usePriceDisplay({
     if (availabilityLoading) return { status: "loading" };
     if (availabilityError)
       return { status: "error", message: availabilityError.message };
-    if (!availabilityResult || !smoobuPropertyId)
-      return { status: "waiting" };
+    if (!availabilityResult || !smoobuPropertyId) return { status: "waiting" };
 
     const propId = String(smoobuPropertyId);
     const isAvailable =
@@ -108,43 +100,20 @@ export function usePriceDisplay({
       };
     }
 
-    const smoobuPrice = availabilityResult.prices[propId];
-    const nights = differenceInDays(checkOut, checkIn);
-
-    if (smoobuPrice) {
-      const resolvedCurrency = normalizeIsoCurrency(
-        smoobuPrice.currency || currency || ""
-      );
-      if (!resolvedCurrency) return { status: "available-no-price" };
-      const totalPriceCents = toCents(smoobuPrice.price);
-      return {
-        status: "available",
-        totalPriceCents,
-        perNightCents: Math.round(totalPriceCents / nights),
-        nights,
-        currency: resolvedCurrency,
-      };
-    }
-
-    // Fallback: compute from per-night rates using the shared domain function
-    const rateResult = computeStayPrice(
-      formatDate(checkIn),
-      formatDate(checkOut),
-      rateMap
-    );
-    const resolvedCurrency = currency
-      ? normalizeIsoCurrency(currency)
-      : null;
-
-    if (!rateResult.hasPricing || !resolvedCurrency) {
+    if (!nightPriceCents || totalPriceCents == null || !currency) {
       return { status: "available-no-price" };
     }
 
+    const resolvedCurrency = normalizeIsoCurrency(currency);
+    if (!resolvedCurrency) return { status: "available-no-price" };
+
+    const nights = Object.keys(nightPriceCents).length;
+
     return {
       status: "available",
-      totalPriceCents: rateResult.totalCents,
-      perNightCents: rateResult.perNightCents,
-      nights: rateResult.nights,
+      totalPriceCents,
+      perNightCents: Math.round(totalPriceCents / nights),
+      nights,
       currency: resolvedCurrency,
     };
   }, [
@@ -152,7 +121,8 @@ export function usePriceDisplay({
     checkOut,
     smoobuPropertyId,
     currency,
-    rateMap,
+    nightPriceCents,
+    totalPriceCents,
     availabilityResult,
     availabilityLoading,
     availabilityError,

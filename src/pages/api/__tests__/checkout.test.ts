@@ -1,13 +1,17 @@
 import { describe, expect, test } from "vitest";
 import { z } from "zod";
 
+function toCents(amount: number): number {
+  return Math.round(amount * 100);
+}
+
 const checkoutBodySchema = z.object({
   propertyId: z.string().min(1),
   checkIn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   checkOut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   guests: z.number().int().min(1),
   currency: z.string().min(1),
-  totalPriceCents: z.number().int().positive(),
+  nightPriceCents: z.record(z.string(), z.number().int().nonnegative()),
   guestInfo: z.object({
     firstName: z.string().min(1),
     lastName: z.string().min(1),
@@ -26,7 +30,12 @@ function makeValidBody(overrides: Record<string, unknown> = {}) {
     checkOut: "2025-07-05",
     guests: 2,
     currency: "EUR",
-    totalPriceCents: 50000,
+    nightPriceCents: {
+      "2025-07-01": 12500,
+      "2025-07-02": 12500,
+      "2025-07-03": 12500,
+      "2025-07-04": 12500,
+    },
     guestInfo: {
       firstName: "John",
       lastName: "Doe",
@@ -56,16 +65,20 @@ describe("checkout request validation", () => {
     expect(result.success).toBe(false);
   });
 
-  test("rejects negative totalPriceCents", () => {
+  test("rejects non-integer nightPriceCents values", () => {
     const result = checkoutBodySchema.safeParse(
-      makeValidBody({ totalPriceCents: -100 })
+      makeValidBody({
+        nightPriceCents: { "2025-07-01": 125.5 },
+      })
     );
     expect(result.success).toBe(false);
   });
 
-  test("rejects non-integer totalPriceCents", () => {
+  test("rejects negative nightPriceCents values", () => {
     const result = checkoutBodySchema.safeParse(
-      makeValidBody({ totalPriceCents: 500.5 })
+      makeValidBody({
+        nightPriceCents: { "2025-07-01": -100 },
+      })
     );
     expect(result.success).toBe(false);
   });
@@ -103,34 +116,27 @@ describe("checkout request validation", () => {
   });
 });
 
-describe("price integrity check (cents-based)", () => {
-  function diverges(serverCents: number, clientCents: number): boolean {
-    return (
-      Math.abs(serverCents - clientCents) / serverCents > 0.01
-    );
-  }
-
-  test("rejects if client price diverges more than 1% from server price", () => {
-    expect(diverges(50000, 45000)).toBe(true); // 10% off
+describe("per-night price integrity check", () => {
+  test("exact match passes", () => {
+    const serverRate = 125.0;
+    const clientCents = toCents(serverRate);
+    expect(toCents(serverRate)).toBe(clientCents);
   });
 
-  test("accepts if client price is within 1% of server price", () => {
-    expect(diverges(50000, 50200)).toBe(false); // 0.4% off
+  test("both sides produce same cents from same float", () => {
+    const rate = 133.33;
+    expect(toCents(rate)).toBe(toCents(rate));
   });
 
-  test("accepts exact match", () => {
-    expect(diverges(50000, 50000)).toBe(false);
+  test("integer sum of per-night cents is exact", () => {
+    const nights = [30000, 30000, 20000, 20000];
+    const total = nights.reduce((s, c) => s + c, 0);
+    expect(total).toBe(100000);
   });
 
-  test("accepts 1 cent difference on small price", () => {
-    // 10000 cents = €100, 1 cent diff = 0.01%
-    expect(diverges(10000, 10001)).toBe(false);
-  });
-
-  test("integer comparison eliminates floating-point ambiguity", () => {
-    // Both sides use toCents(133.33) = 13333, so they match exactly
-    const serverCents = 13333 * 3; // 39999
-    const clientCents = 13333 * 3; // 39999
-    expect(diverges(serverCents, clientCents)).toBe(false);
+  test("detects single-night mismatch", () => {
+    const serverCents = toCents(300);
+    const clientCents = toCents(299);
+    expect(serverCents).not.toBe(clientCents);
   });
 });

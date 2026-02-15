@@ -3,7 +3,7 @@
  */
 
 import type { SmoobuErrorResponse } from "@/schemas/smoobu";
-import { verifyApiKeyRequestSchema, smoobuUserSchema } from "@/schemas/smoobu";
+import { smoobuUserSchema, verifyApiKeyRequestSchema } from "@/schemas/smoobu";
 import type { APIRoute } from "astro";
 import {
   jsonError,

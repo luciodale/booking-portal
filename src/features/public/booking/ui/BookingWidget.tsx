@@ -36,7 +36,7 @@ function BookingWidgetInner({
     propertyId,
     checkIn: calendar.checkIn,
     checkOut: calendar.checkOut,
-    totalPriceCents: calendar.totalPriceCents,
+    nightPriceCents: calendar.nightPriceCents,
     currency: calendar.currency,
     isSignedIn,
   });
@@ -74,7 +74,8 @@ function BookingWidgetInner({
           checkOut={calendar.checkOut}
           smoobuPropertyId={smoobuPropertyId}
           currency={calendar.currency}
-          rateMap={calendar.rateMap}
+          nightPriceCents={calendar.nightPriceCents}
+          totalPriceCents={calendar.totalPriceCents}
           availabilityResult={calendar.availabilityResult}
           availabilityLoading={calendar.availabilityLoading}
           availabilityError={calendar.availabilityError}

@@ -1,16 +1,14 @@
 import { formatPrice } from "@/features/public/booking/domain/dateUtils";
 import { usePriceDisplay } from "@/features/public/booking/hooks/usePriceDisplay";
-import type {
-  SmoobuAvailabilityResponse,
-  SmoobuRateDay,
-} from "@/schemas/smoobu";
+import type { SmoobuAvailabilityResponse } from "@/schemas/smoobu";
 
 type PriceDisplayProps = {
   checkIn: Date | null;
   checkOut: Date | null;
   smoobuPropertyId: number | null;
   currency: string | null;
-  rateMap: Record<string, SmoobuRateDay>;
+  nightPriceCents: Record<string, number> | null;
+  totalPriceCents: number | null;
   availabilityResult: SmoobuAvailabilityResponse | null;
   availabilityLoading: boolean;
   availabilityError: Error | null;
@@ -64,9 +62,7 @@ export function PriceDisplay(props: PriceDisplayProps) {
       );
 
     case "error":
-      return (
-        <div className="text-sm text-red-400">{state.message}</div>
-      );
+      return <div className="text-sm text-red-400">{state.message}</div>;
 
     case "unavailable":
       return (

@@ -56,7 +56,7 @@ export function ImagesInput({ images, onChange, error }: ImagesInputProps) {
 
   const handleFileSelect = async (
     files: FileList | null,
-    isPrimary: boolean,
+    isPrimary: boolean
   ) => {
     if (!files || files.length === 0) return;
 
@@ -264,9 +264,7 @@ export function ImagesInput({ images, onChange, error }: ImagesInputProps) {
                 <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center mb-2">
                   <ImagePlus className="w-5 h-5 text-muted-foreground" />
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  Add Image
-                </span>
+                <span className="text-xs text-muted-foreground">Add Image</span>
               </>
             )}
           </label>
