@@ -110,7 +110,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
         if (computed.hasPricing) {
           availability.prices[propId] = {
-            price: computed.total,
+            price: computed.totalCents / 100,
             currency: currency ?? apartment.currency,
           };
         }

@@ -16,7 +16,7 @@ export function useBookingCheckout(params: {
   propertyId: string;
   checkIn: Date | null;
   checkOut: Date | null;
-  totalPrice: number | null;
+  totalPriceCents: number | null;
   currency: string | null;
   isSignedIn: boolean | undefined;
 }) {
@@ -28,7 +28,7 @@ export function useBookingCheckout(params: {
       return;
     }
 
-    if (!params.checkIn || !params.checkOut || params.totalPrice == null || !params.currency) {
+    if (!params.checkIn || !params.checkOut || params.totalPriceCents == null || !params.currency) {
       toast.error("Please select dates and verify availability first.");
       return;
     }
@@ -41,7 +41,7 @@ export function useBookingCheckout(params: {
         checkOut: params.checkOut.toISOString().split("T")[0],
         guests: data.adults + data.children,
         currency: params.currency,
-        totalPrice: params.totalPrice,
+        totalPriceCents: params.totalPriceCents,
         guestInfo: {
           firstName: data.firstName,
           lastName: data.lastName,

@@ -1,21 +1,28 @@
 /**
  * Server-safe stay price computation from Smoobu per-night rates.
+ * All arithmetic in cents (integers) to avoid floating-point errors.
  * No Date objects — works with YYYY-MM-DD strings for Cloudflare Workers compatibility.
  */
 
 import type { SmoobuRateDay } from "@/schemas/smoobu";
 
 type StayPriceResult = {
-  total: number;
-  perNight: number;
+  totalCents: number;
+  perNightCents: number;
   nights: number;
   hasPricing: boolean;
 };
+
+/** Convert a euro/dollar amount to cents, rounding to nearest integer. */
+export function toCents(amount: number): number {
+  return Math.round(amount * 100);
+}
 
 /**
  * Computes total stay price from a Smoobu rate map.
  * Sums per-night rates for each night of the stay (check-in day up to but not including check-out day).
  * If some nights lack rates, extrapolates from the average of priced nights.
+ * All values returned in cents (integers).
  */
 export function computeStayPrice(
   arrivalDate: string,
@@ -26,33 +33,33 @@ export function computeStayPrice(
   const nights = stayDates.length;
 
   if (nights === 0) {
-    return { total: 0, perNight: 0, nights: 0, hasPricing: false };
+    return { totalCents: 0, perNightCents: 0, nights: 0, hasPricing: false };
   }
 
-  let total = 0;
+  let totalCents = 0;
   let pricedNights = 0;
 
   for (const dateStr of stayDates) {
     const rate = rateMap[dateStr];
     if (rate?.price != null) {
-      total += rate.price;
+      totalCents += toCents(rate.price);
       pricedNights++;
     }
   }
 
   if (pricedNights === 0) {
-    return { total: 0, perNight: 0, nights, hasPricing: false };
+    return { totalCents: 0, perNightCents: 0, nights, hasPricing: false };
   }
 
   // Extrapolate missing nights from the average of priced nights
   if (pricedNights < nights) {
-    const avgPerNight = total / pricedNights;
-    total = Math.round(avgPerNight * nights);
+    const avgPerNightCents = totalCents / pricedNights;
+    totalCents = Math.round(avgPerNightCents * nights);
   }
 
   return {
-    total: Math.round(total),
-    perNight: Math.round(total / nights),
+    totalCents,
+    perNightCents: Math.round(totalCents / nights),
     nights,
     hasPricing: true,
   };

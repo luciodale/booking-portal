@@ -36,7 +36,7 @@ function BookingWidgetInner({
     propertyId,
     checkIn: calendar.checkIn,
     checkOut: calendar.checkOut,
-    totalPrice: calendar.totalPrice,
+    totalPriceCents: calendar.totalPriceCents,
     currency: calendar.currency,
     isSignedIn,
   });

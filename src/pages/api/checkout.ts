@@ -2,7 +2,10 @@ import { getDb } from "@/db";
 import { assets, pmsIntegrations } from "@/db/schema";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
-import { computeStayPrice } from "@/features/public/booking/domain/computeStayPrice";
+import {
+  computeStayPrice,
+  toCents,
+} from "@/features/public/booking/domain/computeStayPrice";
 import { requireAuth } from "@/modules/auth/auth";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
@@ -16,7 +19,7 @@ const checkoutBodySchema = z.object({
   checkOut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   guests: z.number().int().min(1),
   currency: z.string().min(1),
-  totalPrice: z.number().positive(),
+  totalPriceCents: z.number().int().positive(),
   guestInfo: z.object({
     firstName: z.string().min(1),
     lastName: z.string().min(1),
@@ -63,7 +66,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       checkOut,
       guests,
       currency,
-      totalPrice,
+      totalPriceCents,
       guestInfo,
     } = body.data;
     const db = getDb(D1Database);
@@ -117,13 +120,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    // Re-compute price server-side for integrity
+    // Re-compute price server-side for integrity (all in cents)
     const propId = String(asset.smoobuPropertyId);
-    let serverPrice: number;
+    let serverPriceCents: number;
 
     const smoobuPrice = availability.prices[propId];
     if (smoobuPrice) {
-      serverPrice = smoobuPrice.price;
+      serverPriceCents = toCents(smoobuPrice.price);
     } else {
       const ratesResponse = await fetchSmoobuRates(
         integration.apiKey,
@@ -139,15 +142,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
           400
         );
       }
-      serverPrice = computed.total;
+      serverPriceCents = computed.totalCents;
     }
 
     // Reject if client-submitted price diverges more than 1% from server price
-    if (Math.abs(serverPrice - totalPrice) / serverPrice > 0.01) {
+    // Both values are integers (cents), so comparison is exact
+    if (
+      Math.abs(serverPriceCents - totalPriceCents) / serverPriceCents > 0.01
+    ) {
       log.error({
         source: "checkout",
-        message: `Price mismatch for property ${propertyId}: client=${totalPrice}, server=${serverPrice}`,
-        metadata: { propertyId, clientPrice: totalPrice, serverPrice },
+        message: `Price mismatch for property ${propertyId}: client=${totalPriceCents}¢, server=${serverPriceCents}¢`,
+        metadata: {
+          propertyId,
+          clientPriceCents: totalPriceCents,
+          serverPriceCents,
+        },
       });
       return jsonResponse(
         { error: "Price has changed. Please refresh and try again." },
@@ -162,8 +172,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    const priceInCents = Math.round(serverPrice * 100);
-
     // Create Stripe Checkout Session (booking is created by webhook after payment)
     const stripe = new Stripe(stripeKey);
 
@@ -175,7 +183,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         {
           price_data: {
             currency: currency.toLowerCase(),
-            unit_amount: priceInCents,
+            unit_amount: serverPriceCents,
             product_data: {
               name: asset.title,
               description: `${nights} night${nights !== 1 ? "s" : ""} · ${checkIn} to ${checkOut}`,
@@ -193,7 +201,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         nights: String(nights),
         guests: String(guests),
         currency: currency.toLowerCase(),
-        totalPriceCents: String(priceInCents),
+        totalPriceCents: String(serverPriceCents),
         guestNote: guestInfo.guestNote ?? "",
         guestFirstName: guestInfo.firstName,
         guestLastName: guestInfo.lastName,

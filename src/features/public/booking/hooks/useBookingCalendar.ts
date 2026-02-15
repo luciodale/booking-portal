@@ -1,3 +1,4 @@
+import { toCents } from "@/features/public/booking/domain/computeStayPrice";
 import {
   addMonths,
   formatDate,
@@ -9,7 +10,7 @@ import { usePropertyAvailability } from "@/features/public/booking/hooks/useProp
 import { usePropertyRates } from "@/features/public/booking/hooks/usePropertyRates";
 import type { SmoobuRateDay } from "@/schemas/smoobu";
 import { endOfMonth, startOfMonth } from "date-fns";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 export function useBookingCalendar(
   propertyId: string,
@@ -32,13 +33,17 @@ export function useBookingCalendar(
   const [isCalendarOpen, setCalendarOpen] = useState(false);
   const [hasCalendarBeenOpened, setHasCalendarBeenOpened] = useState(false);
 
+  // Track whether we're about to fire the URL-based availability check.
+  // This lets PriceDisplay show "loading" instead of "select dates" on first render.
+  const [pendingUrlCheck, setPendingUrlCheck] = useState(hadDatesFromUrl);
+
   useEffect(() => {
     if (isCalendarOpen && !hasCalendarBeenOpened) {
       setHasCalendarBeenOpened(true);
     }
   }, [isCalendarOpen, hasCalendarBeenOpened]);
 
-  // Fetch rates only after calendar has been opened at least once
+  // Fetch rates after calendar opened OR when dates come from URL
   const rangeStart = formatDate(startOfMonth(currentMonth));
   const rangeEnd = formatDate(endOfMonth(addMonths(currentMonth, 1)));
 
@@ -46,7 +51,8 @@ export function useBookingCalendar(
     propertyId,
     startDate: rangeStart,
     endDate: rangeEnd,
-    enabled: hasCalendarBeenOpened && !!smoobuPropertyId,
+    enabled:
+      (hasCalendarBeenOpened || hadDatesFromUrl) && !!smoobuPropertyId,
   });
 
   const availabilityMutation = usePropertyAvailability(propertyId);
@@ -59,16 +65,15 @@ export function useBookingCalendar(
   }, [ratesQuery.data, smoobuPropertyId]);
 
   // Auto-trigger availability check when dates come from URL
-  const hasTriggeredUrlAvailability = useRef(false);
   useEffect(() => {
-    if (hasTriggeredUrlAvailability.current) return;
-    if (!hadDatesFromUrl || !checkIn || !checkOut) return;
-    hasTriggeredUrlAvailability.current = true;
+    if (!pendingUrlCheck) return;
+    if (!checkIn || !checkOut) return;
+    setPendingUrlCheck(false);
     availabilityMutation.mutate({
       arrivalDate: formatDate(checkIn),
       departureDate: formatDate(checkOut),
     });
-  });
+  }, [pendingUrlCheck, checkIn, checkOut]);
 
   const goNextMonth = useCallback(() => {
     setCurrentMonth((m) => addMonths(m, 1));
@@ -109,10 +114,13 @@ export function useBookingCalendar(
     !!smoobuPropertyId &&
     availabilityMutation.data.availableApartments.includes(smoobuPropertyId);
 
-  const totalPrice =
+  const totalPriceCents =
     availabilityMutation.data && smoobuPropertyId
-      ? (availabilityMutation.data.prices[String(smoobuPropertyId)]?.price ??
-          null)
+      ? (() => {
+          const price =
+            availabilityMutation.data.prices[String(smoobuPropertyId)]?.price;
+          return price != null ? toCents(price) : null;
+        })()
       : null;
 
   return {
@@ -123,12 +131,12 @@ export function useBookingCalendar(
     currency,
     ratesLoading: ratesQuery.isLoading,
     availabilityResult: availabilityMutation.data ?? null,
-    availabilityLoading: availabilityMutation.isPending,
+    availabilityLoading: availabilityMutation.isPending || pendingUrlCheck,
     availabilityError: availabilityMutation.error,
     isCalendarOpen,
     setCalendarOpen,
     isAvailable,
-    totalPrice,
+    totalPriceCents,
     goNextMonth,
     goPrevMonth,
     handleDateClick,

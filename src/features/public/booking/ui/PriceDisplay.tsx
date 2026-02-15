@@ -95,12 +95,12 @@ export function PriceDisplay(props: PriceDisplayProps) {
         <div className="space-y-3">
           <div data-testid="price-total" className="flex items-baseline gap-1">
             <span className="text-2xl font-bold text-foreground">
-              {formatPrice(state.totalPrice, state.currency)}
+              {formatPrice(state.totalPriceCents / 100, state.currency)}
             </span>
             <span className="text-sm text-muted-foreground">total</span>
           </div>
           <div className="text-sm text-muted-foreground">
-            {formatPrice(state.perNight, state.currency)}/night x{" "}
+            {formatPrice(state.perNightCents / 100, state.currency)}/night x{" "}
             {state.nights} night
             {state.nights !== 1 ? "s" : ""}
           </div>

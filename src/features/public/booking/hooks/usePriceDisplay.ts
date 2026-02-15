@@ -1,7 +1,8 @@
+import { formatDate } from "@/features/public/booking/domain/dateUtils";
 import {
-  formatDate,
-  getDaysInRange,
-} from "@/features/public/booking/domain/dateUtils";
+  computeStayPrice,
+  toCents,
+} from "@/features/public/booking/domain/computeStayPrice";
 import type {
   SmoobuAvailabilityResponse,
   SmoobuRateDay,
@@ -51,46 +52,11 @@ type PriceDisplayState =
   | { status: "available-no-price" }
   | {
       status: "available";
-      totalPrice: number;
-      perNight: number;
+      totalPriceCents: number;
+      perNightCents: number;
       nights: number;
       currency: string;
     };
-
-function computePriceFromRates(
-  checkIn: Date,
-  checkOut: Date,
-  rateMap: Record<string, SmoobuRateDay>
-): { total: number; perNight: number; nights: number; hasPricing: boolean } {
-  const stayDays = getDaysInRange(checkIn, checkOut);
-  const nights = stayDays.length;
-
-  let total = 0;
-  let pricedNights = 0;
-  for (const day of stayDays) {
-    const rate = rateMap[formatDate(day)];
-    if (rate?.price != null) {
-      total += rate.price;
-      pricedNights++;
-    }
-  }
-
-  if (pricedNights === 0) {
-    return { total: 0, perNight: 0, nights, hasPricing: false };
-  }
-
-  if (pricedNights < nights) {
-    const avgPerNight = total / pricedNights;
-    total = Math.round(avgPerNight * nights);
-  }
-
-  return {
-    total: Math.round(total),
-    perNight: Math.round(total / nights),
-    nights,
-    hasPricing: true,
-  };
-}
 
 function getUnavailableMessage(errorInfo?: ErrorInfo): string {
   if (!errorInfo) return "Not available for selected dates";
@@ -150,16 +116,22 @@ export function usePriceDisplay({
         smoobuPrice.currency || currency || ""
       );
       if (!resolvedCurrency) return { status: "available-no-price" };
+      const totalPriceCents = toCents(smoobuPrice.price);
       return {
         status: "available",
-        totalPrice: smoobuPrice.price,
-        perNight: Math.round(smoobuPrice.price / nights),
+        totalPriceCents,
+        perNightCents: Math.round(totalPriceCents / nights),
         nights,
         currency: resolvedCurrency,
       };
     }
 
-    const rateResult = computePriceFromRates(checkIn, checkOut, rateMap);
+    // Fallback: compute from per-night rates using the shared domain function
+    const rateResult = computeStayPrice(
+      formatDate(checkIn),
+      formatDate(checkOut),
+      rateMap
+    );
     const resolvedCurrency = currency
       ? normalizeIsoCurrency(currency)
       : null;
@@ -170,8 +142,8 @@ export function usePriceDisplay({
 
     return {
       status: "available",
-      totalPrice: rateResult.total,
-      perNight: rateResult.perNight,
+      totalPriceCents: rateResult.totalCents,
+      perNightCents: rateResult.perNightCents,
       nights: rateResult.nights,
       currency: resolvedCurrency,
     };
