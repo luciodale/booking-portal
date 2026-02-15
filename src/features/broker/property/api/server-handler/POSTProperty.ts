@@ -6,7 +6,12 @@ import { genUniqueId } from "@/modules/utils/id";
 import type { PropertyWithDetails } from "@/schemas/property";
 import { createPropertySchema } from "@/schemas/property";
 import type { APIRoute } from "astro";
-import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
+import {
+  jsonError,
+  jsonSuccess,
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -64,7 +69,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error creating property:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to create property",
+      safeErrorMessage(error, "Failed to create property"),
       mapErrorToStatus(error)
     );
   }

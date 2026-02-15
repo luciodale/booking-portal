@@ -133,7 +133,7 @@ export function UserAvatarDropdown() {
             href="/backoffice"
             className="flex items-center gap-2 px-3 py-2 text-sm text-foreground rounded-lg hover:bg-secondary transition-colors"
           >
-            Manage Properties
+            Backoffice
           </a>
 
           <button

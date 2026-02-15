@@ -24,7 +24,7 @@ export function ImagesManager({
   images,
   onRefresh,
 }: ImagesManagerProps) {
-  const [uploading, setUploading] = useState(false);
+  const [uploadingSlot, setUploadingSlot] = useState<"primary" | "gallery" | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [settingPrimaryId, setSettingPrimaryId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +56,7 @@ export function ImagesManager({
     }
 
     setError(null);
-    setUploading(true);
+    setUploadingSlot(isPrimary ? "primary" : "gallery");
 
     try {
       const processed = await processImage(file);
@@ -96,7 +96,7 @@ export function ImagesManager({
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
-      setUploading(false);
+      setUploadingSlot(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -197,7 +197,7 @@ export function ImagesManager({
                   type="file"
                   accept={ACCEPTED_TYPES.join(",")}
                   className="sr-only"
-                  disabled={uploading}
+                  disabled={uploadingSlot !== null}
                   onChange={(e) => handleUpload(e.target.files, true)}
                 />
               </label>
@@ -220,7 +220,7 @@ export function ImagesManager({
                 Primary
               </span>
             </div>
-            {uploading && (
+            {uploadingSlot === "primary" && (
               <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
                 <Loader2 className="w-8 h-8 text-white animate-spin" />
               </div>
@@ -230,7 +230,7 @@ export function ImagesManager({
           <label
             className={cn(
               "flex flex-col items-center justify-center h-64 rounded-xl border-2 border-dashed transition-colors cursor-pointer",
-              uploading
+              uploadingSlot === "primary"
                 ? "border-border bg-secondary/50 cursor-not-allowed"
                 : "border-border hover:border-primary/50 hover:bg-card"
             )}
@@ -240,10 +240,10 @@ export function ImagesManager({
               type="file"
               accept={ACCEPTED_TYPES.join(",")}
               className="sr-only"
-              disabled={uploading}
+              disabled={uploadingSlot !== null}
               onChange={(e) => handleUpload(e.target.files, true)}
             />
-            {uploading ? (
+            {uploadingSlot === "primary" ? (
               <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
             ) : (
               <>
@@ -322,7 +322,7 @@ export function ImagesManager({
           <label
             className={cn(
               "flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-colors cursor-pointer aspect-4/3",
-              uploading
+              uploadingSlot === "gallery"
                 ? "border-border bg-secondary/50 cursor-not-allowed"
                 : "border-border hover:border-primary/50 hover:bg-card"
             )}
@@ -331,10 +331,10 @@ export function ImagesManager({
               type="file"
               accept={ACCEPTED_TYPES.join(",")}
               className="sr-only"
-              disabled={uploading}
+              disabled={uploadingSlot !== null}
               onChange={(e) => handleUpload(e.target.files, false)}
             />
-            {uploading ? (
+            {uploadingSlot === "gallery" ? (
               <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
             ) : (
               <>

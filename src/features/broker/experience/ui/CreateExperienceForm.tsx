@@ -3,6 +3,7 @@
  */
 
 import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
+import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
 import { NumberInput } from "@/modules/ui/react/form-inputs/NumberInput";
 import { SelectInput } from "@/modules/ui/react/form-inputs/SelectInput";
@@ -22,15 +23,20 @@ export function CreateExperienceForm({
   onSubmit,
   isLoading = false,
 }: CreateExperienceFormProps) {
-  const { control, handleSubmit, formState, reset } =
+  const { control, handleSubmit, formState, reset, watch, setValue } =
     useForm<CreateExperienceInput>({
       resolver: zodResolver(createExperienceSchema),
       defaultValues: {
         status: "draft",
         currency: "eur",
         featured: false,
+        instantBook: false,
+        additionalCosts: [],
       },
     });
+
+  const additionalCosts = watch("additionalCosts") ?? [];
+  const instantBook = watch("instantBook") ?? false;
 
   const categoryOptions = Object.entries(experienceCategoryLabels).map(
     ([value, label]) => ({
@@ -137,6 +143,41 @@ export function CreateExperienceForm({
             { value: "gbp", label: "GBP" },
           ]}
         />
+      </FormSection>
+
+      <FormSection title="Additional Costs">
+        <p className="text-sm text-muted-foreground">
+          Optional fees charged on top of the base price (amounts in cents).
+        </p>
+        <AdditionalCostsEditor
+          costs={additionalCosts}
+          perOptions={[
+            { value: "booking", label: "Per Booking" },
+            { value: "participant", label: "Per Participant" },
+          ]}
+          onChange={(costs) => setValue("additionalCosts", costs, { shouldDirty: true })}
+          disabled={isLoading}
+        />
+      </FormSection>
+
+      <FormSection title="Booking Options">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={instantBook}
+            onChange={(e) => setValue("instantBook", e.target.checked, { shouldDirty: true })}
+            disabled={isLoading}
+            className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+          />
+          <div>
+            <span className="text-sm font-medium text-foreground">
+              Instant Book
+            </span>
+            <p className="text-sm text-muted-foreground">
+              Allow guests to book without requiring host approval.
+            </p>
+          </div>
+        </label>
       </FormSection>
 
       <div className="flex justify-end gap-4">

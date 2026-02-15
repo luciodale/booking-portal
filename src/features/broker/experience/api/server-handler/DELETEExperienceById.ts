@@ -4,7 +4,12 @@ import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwners
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
+import {
+  jsonError,
+  jsonSuccess,
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "./responseHelpers";
 
 export const DELETE: APIRoute = async ({ params, locals }) => {
   try {
@@ -49,7 +54,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
   } catch (error) {
     console.error("Error deleting experience:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to archive experience",
+      safeErrorMessage(error, "Failed to archive experience"),
       mapErrorToStatus(error)
     );
   }

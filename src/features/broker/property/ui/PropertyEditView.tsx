@@ -7,6 +7,8 @@ import { propertyQueryKeys } from "@/features/broker/property/constants/queryKey
 import { useProperty } from "@/features/broker/property/queries/useProperty";
 import { useUpdateProperty } from "@/features/broker/property/queries/useUpdateProperty";
 import { getFacilityOptions } from "@/modules/constants";
+import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
+import type { PropertyAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
 import type { UpdatePropertyInput } from "@/schemas/property";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -264,6 +266,32 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
         </div>
       </section>
 
+      {/* Additional Costs */}
+      <section className="bg-card border border-border p-6 rounded-xl">
+        <EditableSectionField
+          title="Additional Costs"
+          description="Optional fees charged on top of the nightly rate (amounts in cents)."
+          values={{ additionalCosts: (property.additionalCosts ?? []) as PropertyAdditionalCost[] }}
+          onSave={(data) => saveField("additionalCosts", data.additionalCosts)}
+          renderFields={({ values, onChange, disabled }) => (
+            <AdditionalCostsEditor
+              costs={values.additionalCosts}
+              perOptions={[
+                { value: "stay", label: "Per Stay" },
+                { value: "night", label: "Per Night" },
+                { value: "guest", label: "Per Guest" },
+                { value: "night_per_guest", label: "Per Night Per Guest" },
+              ]}
+              showMaxNights
+              onChange={(costs) =>
+                onChange({ additionalCosts: costs as PropertyAdditionalCost[] })
+              }
+              disabled={disabled}
+            />
+          )}
+        />
+      </section>
+
       {/* Images */}
       <section className="bg-card border border-border p-6 rounded-xl">
         <ImagesManager
@@ -296,6 +324,19 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
             placeholder="/flyers/mallorca-villa.pdf"
           />
         </div>
+      </section>
+
+      {/* Booking Options */}
+      <section className="bg-card border border-border p-6 rounded-xl">
+        <EditableSelectField
+          label="Instant Book"
+          value={property.instantBook ? "yes" : "no"}
+          onSave={(v) => saveField("instantBook", v === "yes")}
+          options={[
+            { value: "yes", label: "Yes" },
+            { value: "no", label: "No" },
+          ]}
+        />
       </section>
 
       {/* Property Status */}

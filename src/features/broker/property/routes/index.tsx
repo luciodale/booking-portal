@@ -2,7 +2,7 @@ import { useIsPmsIntegrated } from "@/features/broker/pms/queries/useIsPmsIntegr
 import { PmsIntegration } from "@/features/broker/pms/ui/PmsIntegration";
 import { createRoute } from "@tanstack/react-router";
 import { rootRoute } from "./BackofficeRoot";
-import { PropertySection } from "./PropertySection";
+import { ExperienceSection, PropertySection } from "./PropertySection";
 
 export const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -29,13 +29,19 @@ function Dashboard() {
             </p>
           </div>
         </div>
-      ) : isIntegrated ? (
-        <PropertySection />
       ) : (
-        <PmsIntegration
-          integrationStatus={integrationStatus}
-          isLoading={isLoading}
-        />
+        <div className="space-y-8">
+          {isIntegrated ? (
+            <PropertySection />
+          ) : (
+            <PmsIntegration
+              integrationStatus={integrationStatus}
+              isLoading={isLoading}
+            />
+          )}
+
+          <ExperienceSection />
+        </div>
       )}
     </div>
   );

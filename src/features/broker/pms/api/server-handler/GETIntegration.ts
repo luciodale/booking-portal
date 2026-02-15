@@ -1,7 +1,10 @@
 import { getDb } from "@/db";
 import { pmsIntegrations } from "@/db/schema";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
-import { mapErrorToStatus } from "@/features/broker/property/api/server-handler/responseHelpers";
+import {
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import type { TGetIntegrationsResponse } from "../types";
@@ -39,7 +42,7 @@ export const GET: APIRoute = async ({ locals }) => {
   } catch (error) {
     console.error("Error checking integration:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to check integration",
+      safeErrorMessage(error, "Failed to check integration"),
       mapErrorToStatus(error)
     );
   }

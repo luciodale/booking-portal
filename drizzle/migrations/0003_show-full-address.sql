@@ -1,1 +1,0 @@
-ALTER TABLE `assets` ADD `show_full_address` integer DEFAULT true NOT NULL;

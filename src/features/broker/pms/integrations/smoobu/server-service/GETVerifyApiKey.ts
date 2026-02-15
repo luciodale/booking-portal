@@ -8,6 +8,7 @@ import type { APIRoute } from "astro";
 import {
   jsonError,
   jsonSuccess,
+  safeErrorMessage,
 } from "../../../api/server-handler/responseHelpers";
 import { SMOOBU_BASE_URL } from "../constants";
 
@@ -44,7 +45,7 @@ export const GETVerifyApiKey: APIRoute = async ({ request }) => {
   } catch (error) {
     console.error("Error verifying Smoobu API key:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to verify API key"
+      safeErrorMessage(error, "Failed to verify API key")
     );
   }
 };

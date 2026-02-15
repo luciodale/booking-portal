@@ -5,7 +5,12 @@ import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContex
 import type { ExperienceWithDetails } from "@/schemas/experience";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
+import {
+  jsonError,
+  jsonSuccess,
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "./responseHelpers";
 
 export const GET: APIRoute = async ({ params, locals }) => {
   try {
@@ -48,7 +53,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
   } catch (error) {
     console.error("Error fetching experience:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to fetch experience",
+      safeErrorMessage(error, "Failed to fetch experience"),
       mapErrorToStatus(error)
     );
   }

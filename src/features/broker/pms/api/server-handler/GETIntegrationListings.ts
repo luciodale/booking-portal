@@ -3,9 +3,12 @@ import { assets, pmsIntegrations } from "@/db/schema";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type { TGetIntegrationListingsResponse } from "@/features/broker/pms/api/types";
 import { fetchListApartments } from "@/features/broker/pms/integrations/smoobu/server-service/GETListApartments";
-import { mapErrorToStatus } from "@/features/broker/property/api/server-handler/responseHelpers";
+import {
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIRoute } from "astro";
-import { and, eq, isNotNull } from "drizzle-orm";
+import { eq, isNotNull } from "drizzle-orm";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ locals }) => {
@@ -39,12 +42,7 @@ export const GET: APIRoute = async ({ locals }) => {
       db
         .select({ smoobuPropertyId: assets.smoobuPropertyId })
         .from(assets)
-        .where(
-          and(
-            eq(assets.userId, ctx.userId),
-            isNotNull(assets.smoobuPropertyId)
-          )
-        ),
+        .where(isNotNull(assets.smoobuPropertyId)),
     ]);
 
     const importedIds = new Set(
@@ -60,9 +58,7 @@ export const GET: APIRoute = async ({ locals }) => {
   } catch (error) {
     console.error("Error listing integration properties:", error);
     return jsonError(
-      error instanceof Error
-        ? error.message
-        : "Failed to list integration properties",
+      safeErrorMessage(error, "Failed to list integration properties"),
       mapErrorToStatus(error)
     );
   }

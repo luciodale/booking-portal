@@ -3,7 +3,10 @@ import { pmsIntegrations } from "@/db/schema";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type { TGetIntegrationListingDetailResponse } from "@/features/broker/pms/api/types";
 import { fetchApartmentById } from "@/features/broker/pms/integrations/smoobu/server-service/GETApartmentById";
-import { mapErrorToStatus } from "@/features/broker/property/api/server-handler/responseHelpers";
+import {
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { jsonError, jsonSuccess } from "./responseHelpers";
@@ -43,9 +46,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
   } catch (error) {
     console.error("Error fetching integration listing:", error);
     return jsonError(
-      error instanceof Error
-        ? error.message
-        : "Failed to fetch integration listing",
+      safeErrorMessage(error, "Failed to fetch integration listing"),
       mapErrorToStatus(error)
     );
   }

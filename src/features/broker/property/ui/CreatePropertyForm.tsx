@@ -9,6 +9,7 @@ import {
   syncFeatureFields,
 } from "@/features/broker/property/domain/sync-features";
 import { getFacilityOptions } from "@/modules/constants";
+import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
 import {
   ImagesInput,
@@ -100,10 +101,14 @@ export function CreatePropertyForm({
         views: [],
         images: [],
         showFullAddress: true,
+        additionalCosts: [],
+        instantBook: false,
       },
     });
 
   const images = watch("images");
+  const additionalCosts = watch("additionalCosts") ?? [];
+  const instantBook = watch("instantBook") ?? false;
   const amenities = watch("amenities") ?? [];
   const highlights = watch("highlights") ?? [];
   const views = watch("views") ?? [];
@@ -339,6 +344,46 @@ export function CreatePropertyForm({
           }
           formatValue={displayToKebab}
         />
+      </FormSection>
+
+      {/* Additional Costs */}
+      <FormSection title="Additional Costs">
+        <p className="text-sm text-muted-foreground">
+          Optional fees charged on top of the nightly rate (amounts in cents).
+        </p>
+        <AdditionalCostsEditor
+          costs={additionalCosts}
+          perOptions={[
+            { value: "stay", label: "Per Stay" },
+            { value: "night", label: "Per Night" },
+            { value: "guest", label: "Per Guest" },
+            { value: "night_per_guest", label: "Per Night Per Guest" },
+          ]}
+          showMaxNights
+          onChange={(costs) => setValue("additionalCosts", costs, { shouldDirty: true })}
+          disabled={isLoading}
+        />
+      </FormSection>
+
+      {/* Booking Options */}
+      <FormSection title="Booking Options">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={instantBook}
+            onChange={(e) => setValue("instantBook", e.target.checked, { shouldDirty: true })}
+            disabled={isLoading}
+            className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
+          />
+          <div>
+            <span className="text-sm font-medium text-foreground">
+              Instant Book
+            </span>
+            <p className="text-sm text-muted-foreground">
+              Allow guests to book without requiring host approval.
+            </p>
+          </div>
+        </label>
       </FormSection>
 
       {/* Images */}

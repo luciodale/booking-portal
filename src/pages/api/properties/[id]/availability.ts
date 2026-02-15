@@ -1,6 +1,7 @@
 import { getDb } from "@/db";
 import { assets, pmsIntegrations } from "@/db/schema";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
+import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 
@@ -90,10 +91,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     console.error("Error checking availability:", error);
     return new Response(
       JSON.stringify({
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to check availability",
+        error: safeErrorMessage(error, "Failed to check availability"),
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

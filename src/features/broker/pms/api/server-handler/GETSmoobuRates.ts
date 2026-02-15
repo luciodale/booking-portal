@@ -3,7 +3,7 @@ import { assets, pmsIntegrations } from "@/db/schema";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { jsonError, jsonSuccess } from "./responseHelpers";
+import { jsonError, jsonSuccess, safeErrorMessage } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ locals, url }) => {
   try {
@@ -56,7 +56,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
   } catch (error) {
     console.error("Error fetching Smoobu rates:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to fetch rates"
+      safeErrorMessage(error, "Failed to fetch rates")
     );
   }
 };

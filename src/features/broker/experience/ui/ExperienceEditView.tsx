@@ -3,23 +3,28 @@
  */
 
 import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
-import { experienceQueryKeys } from "@/features/broker/experience/constants/queryKeys";
 import { useExperience } from "@/features/broker/experience/queries/useExperience";
 import { useUpdateExperience } from "@/features/broker/experience/queries/useUpdateExperience";
 import {
+  EditableSectionField,
   EditableSelectField,
   EditableTextField,
   EditableTextareaField,
 } from "@/features/broker/property/ui/EditableField";
+import type { ExperienceAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
+import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import type { UpdateExperienceInput } from "@/schemas/experience";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface ExperienceEditViewProps {
   experienceId: string;
 }
 
+const experiencePerOptions = [
+  { value: "booking", label: "Per Booking" },
+  { value: "participant", label: "Per Participant" },
+] as const;
+
 export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
-  const queryClient = useQueryClient();
   const { data: experience, isLoading, error } = useExperience(experienceId);
   const updateExperience = useUpdateExperience();
 
@@ -152,6 +157,39 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
             ]}
           />
         </div>
+      </section>
+
+      <section className="bg-card border border-border p-6 rounded-xl">
+        <EditableSectionField
+          title="Additional Costs"
+          description="Optional fees charged on top of the base price (amounts in cents)."
+          values={{ additionalCosts: (experience.additionalCosts ?? []) as ExperienceAdditionalCost[] }}
+          onSave={(data) =>
+            saveField("additionalCosts", data.additionalCosts)
+          }
+          renderFields={({ values, onChange, disabled }) => (
+            <AdditionalCostsEditor
+              costs={values.additionalCosts}
+              perOptions={[...experiencePerOptions]}
+              onChange={(costs) =>
+                onChange({ additionalCosts: costs as ExperienceAdditionalCost[] })
+              }
+              disabled={disabled}
+            />
+          )}
+        />
+      </section>
+
+      <section className="bg-card border border-border p-6 rounded-xl">
+        <EditableSelectField
+          label="Instant Book"
+          value={experience.instantBook ? "yes" : "no"}
+          onSave={(v) => saveField("instantBook", v === "yes")}
+          options={[
+            { value: "yes", label: "Yes" },
+            { value: "no", label: "No" },
+          ]}
+        />
       </section>
 
       <section className="bg-card border border-border p-6 rounded-xl">

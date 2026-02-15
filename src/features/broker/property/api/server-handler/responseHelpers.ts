@@ -29,3 +29,16 @@ export function mapErrorToStatus(error: unknown): number {
   if (msg.startsWith("Forbidden")) return 403;
   return 500;
 }
+
+export function safeErrorMessage(error: unknown, fallback: string): string {
+  if (!(error instanceof Error)) return fallback;
+  const msg = error.message;
+  if (msg === "Unauthorized") return msg;
+  if (msg.startsWith("Forbidden")) return msg;
+  if (msg.includes("UNIQUE constraint failed"))
+    return "This record already exists";
+  if (msg.includes("NOT NULL constraint failed"))
+    return "A required field is missing";
+  if (msg.includes("Failed query:") || msg.includes("SQLITE_")) return fallback;
+  return fallback;
+}

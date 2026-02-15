@@ -5,7 +5,12 @@ import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import type { ExperienceListResponse } from "@/schemas/api";
 import type { APIRoute } from "astro";
 import { and, desc, eq, like, or } from "drizzle-orm";
-import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
+import {
+  jsonError,
+  jsonSuccess,
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "./responseHelpers";
 
 export const GET: APIRoute = async ({ locals, url }) => {
   try {
@@ -84,7 +89,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
   } catch (error) {
     console.error("Error listing experiences:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to list experiences",
+      safeErrorMessage(error, "Failed to list experiences"),
       mapErrorToStatus(error)
     );
   }

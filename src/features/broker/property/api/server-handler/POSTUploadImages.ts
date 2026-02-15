@@ -15,7 +15,12 @@ import { genUniqueId } from "@/modules/utils/id";
 import type { UploadImagesResponse } from "@/schemas/api";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
+import {
+  jsonError,
+  jsonSuccess,
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -118,7 +123,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error uploading images:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to upload images",
+      safeErrorMessage(error, "Failed to upload images"),
       mapErrorToStatus(error)
     );
   }

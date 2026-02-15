@@ -3,7 +3,7 @@ import { assets, pmsIntegrations } from "@/db/schema";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { jsonError, jsonSuccess } from "./responseHelpers";
+import { jsonError, jsonSuccess, safeErrorMessage } from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -68,7 +68,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error checking Smoobu availability:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to check availability"
+      safeErrorMessage(error, "Failed to check availability")
     );
   }
 };

@@ -9,6 +9,7 @@ import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
+import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
 import { z } from "zod";
 
 const checkoutBodySchema = z.object({
@@ -326,7 +327,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
     return jsonResponse(
-      { error: error instanceof Error ? error.message : "Checkout failed" },
+      { error: safeErrorMessage(error, "Checkout failed") },
       500
     );
   }

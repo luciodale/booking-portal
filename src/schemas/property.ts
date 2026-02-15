@@ -79,6 +79,9 @@ const propertyFieldsSchema = baseAssetInsertSchema
       .optional()
       .nullable(),
 
+    latitude: z.string().min(1, "Latitude is required"),
+    longitude: z.string().min(1, "Longitude is required"),
+
     videoUrl: z.string().url().optional().nullable(),
     showFullAddress: z.boolean().optional(),
   });

@@ -6,7 +6,12 @@ import type { ExperienceWithDetails } from "@/schemas/experience";
 import { updateExperienceSchema } from "@/schemas/experience";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
+import {
+  jsonError,
+  jsonSuccess,
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "./responseHelpers";
 
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   try {
@@ -72,7 +77,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   } catch (error) {
     console.error("Error updating experience:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to update experience",
+      safeErrorMessage(error, "Failed to update experience"),
       mapErrorToStatus(error)
     );
   }

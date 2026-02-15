@@ -7,7 +7,10 @@ import { getDb } from "@/db";
 import { assets, images } from "@/db/schema";
 import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
-import { mapErrorToStatus } from "@/features/broker/property/api/server-handler/responseHelpers";
+import {
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 
@@ -79,10 +82,7 @@ export const PUT: APIRoute = async ({ params, locals }) => {
     console.error("Error setting primary image:", error);
     return new Response(
       JSON.stringify({
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to set primary image",
+        error: safeErrorMessage(error, "Failed to set primary image"),
       }),
       {
         status: mapErrorToStatus(error),

@@ -5,7 +5,12 @@ import { genUniqueId } from "@/modules/utils/id";
 import type { ExperienceWithDetails } from "@/schemas/experience";
 import { createExperienceSchema } from "@/schemas/experience";
 import type { APIRoute } from "astro";
-import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
+import {
+  jsonError,
+  jsonSuccess,
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
@@ -52,7 +57,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error creating experience:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to create experience",
+      safeErrorMessage(error, "Failed to create experience"),
       mapErrorToStatus(error)
     );
   }

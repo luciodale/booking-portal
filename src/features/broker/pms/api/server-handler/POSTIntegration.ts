@@ -6,7 +6,10 @@ import type {
 } from "@/features/broker/pms/api/types";
 import { availablePms } from "@/features/broker/pms/constants/integrations";
 import { insertIntegration } from "@/features/broker/pms/integrations/smoobu/insertIntegration";
-import { mapErrorToStatus } from "@/features/broker/property/api/server-handler/responseHelpers";
+import {
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIRoute } from "astro";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
@@ -52,7 +55,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error creating integration:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to create integration",
+      safeErrorMessage(error, "Failed to create integration"),
       mapErrorToStatus(error)
     );
   }

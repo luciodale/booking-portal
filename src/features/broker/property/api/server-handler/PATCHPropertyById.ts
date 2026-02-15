@@ -7,7 +7,12 @@ import type { PropertyWithDetails } from "@/schemas/property";
 import { updatePropertySchema } from "@/schemas/property";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
-import { jsonError, jsonSuccess, mapErrorToStatus } from "./responseHelpers";
+import {
+  jsonError,
+  jsonSuccess,
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "./responseHelpers";
 
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   try {
@@ -79,7 +84,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   } catch (error) {
     console.error("Error updating property:", error);
     return jsonError(
-      error instanceof Error ? error.message : "Failed to update property",
+      safeErrorMessage(error, "Failed to update property"),
       mapErrorToStatus(error)
     );
   }

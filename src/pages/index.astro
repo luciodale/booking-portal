@@ -13,34 +13,34 @@ export const prerender = false;
 
 const db = getDb(Astro.locals.runtime.env.DB);
 
-const assetsRaw = await db
-  .select()
-  .from(assets)
-  .where(eq(assets.status, "published"))
-  .orderBy(desc(assets.createdAt))
-  .limit(12);
+async function fetchProperties(tier: "elite" | "standard", limit: number) {
+  const rows = await db
+    .select()
+    .from(assets)
+    .where(and(eq(assets.status, "published"), eq(assets.tier, tier)))
+    .orderBy(desc(assets.createdAt))
+    .limit(limit);
 
-const featuredProperties = await Promise.all(
-  assetsRaw.map(async (asset) => {
-    const [primaryImage] = await db
-      .select()
-      .from(images)
-      .where(and(eq(images.assetId, asset.id), eq(images.isPrimary, true)))
-      .limit(1);
+  return Promise.all(
+    rows.map(async (asset) => {
+      const [primaryImage] = await db
+        .select()
+        .from(images)
+        .where(and(eq(images.assetId, asset.id), eq(images.isPrimary, true)))
+        .limit(1);
 
-    return {
-      asset,
-      imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
-    };
-  })
-);
+      return {
+        asset,
+        imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
+      };
+    })
+  );
+}
 
-const eliteProperties = featuredProperties.filter(
-  (p) => p.asset.tier === "elite"
-);
-const standardProperties = featuredProperties.filter(
-  (p) => p.asset.tier === "standard"
-);
+const [eliteProperties, standardProperties] = await Promise.all([
+  fetchProperties("elite", 2),
+  fetchProperties("standard", 3),
+]);
 ---
 
 <PageLayout title="Home">
@@ -72,9 +72,9 @@ const standardProperties = featuredProperties.filter(
         </a>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {eliteProperties.map((property) => (
-          <PropertyCard {...property} price={null} />
+          <PropertyCard {...property} />
         ))}
       </div>
     </div>
@@ -98,9 +98,9 @@ const standardProperties = featuredProperties.filter(
         </a>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {standardProperties.map((property) => (
-          <PropertyCard {...property} price={null} />
+          <PropertyCard {...property} />
         ))}
       </div>
     </div>
@@ -127,7 +127,7 @@ const standardProperties = featuredProperties.filter(
         travelers directly.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button href="/host">Become a Host</Button>
+        <Button href="/backoffice">Become a Host</Button>
         <Button variant="secondary" href="/about">Learn More</Button>
       </div>
     </div>

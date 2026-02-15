@@ -1,3 +1,4 @@
+import { useScrollTopOnNavigate } from "@/features/broker/property/hooks/useScrollTopOnNavigate";
 import { BackofficeUserMenu } from "@/features/broker/ui/BackofficeUserMenu";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -15,6 +16,8 @@ const queryClient = new QueryClient({
 });
 
 function BackofficeLayout() {
+  useScrollTopOnNavigate();
+
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const isAdmin =

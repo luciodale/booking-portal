@@ -55,6 +55,17 @@ const experienceFieldsSchema = baseExperienceInsertSchema
       .int()
       .min(100, "Base price must be at least 1 EUR (100 cents)")
       .max(100000000, "Base price too high"),
+    additionalCosts: z
+      .array(
+        z.object({
+          label: z.string(),
+          amount: z.number(),
+          per: z.enum(["booking", "participant"]),
+        })
+      )
+      .optional()
+      .nullable(),
+    instantBook: z.boolean().optional(),
   });
 
 /**

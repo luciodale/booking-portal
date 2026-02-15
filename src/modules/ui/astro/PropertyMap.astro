@@ -1,0 +1,45 @@
+---
+interface Props {
+  latitude: string;
+  longitude: string;
+}
+
+const { latitude, longitude } = Astro.props;
+---
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<div
+  id="property-map"
+  class="w-full md:w-2/3 md:mx-auto aspect-[2/1] rounded-2xl z-0"
+  data-lat={latitude}
+  data-lng={longitude}
+></div>
+
+<script>
+  import L from "leaflet";
+
+  const mapEl = document.getElementById("property-map");
+  if (mapEl) {
+    const lat = parseFloat(mapEl.dataset.lat ?? "0");
+    const lng = parseFloat(mapEl.dataset.lng ?? "0");
+
+    const isMobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+    const map = L.map(mapEl, {
+      scrollWheelZoom: isMobile,
+      dragging: isMobile,
+      touchZoom: true,
+      doubleClickZoom: isMobile,
+      attributionControl: false,
+      zoomControl: true,
+    }).setView([lat, lng], 14);
+
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+      subdomains: "abcd",
+      maxZoom: 19,
+    }).addTo(map);
+
+    L.marker([lat, lng]).addTo(map);
+  }
+</script>

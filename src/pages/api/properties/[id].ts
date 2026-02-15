@@ -3,6 +3,7 @@ import { assets, images } from "@/db/schema";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import { formatLocation } from "@/utils/formatLocation";
 import type { APIRoute } from "astro";
+import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
 import { asc, eq } from "drizzle-orm";
 
 export const GET: APIRoute = async ({ params, locals }) => {
@@ -72,8 +73,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     console.error("Error fetching property:", error);
     return new Response(
       JSON.stringify({
-        error:
-          error instanceof Error ? error.message : "Failed to fetch property",
+        error: safeErrorMessage(error, "Failed to fetch property"),
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

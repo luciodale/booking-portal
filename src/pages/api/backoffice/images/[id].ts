@@ -7,7 +7,10 @@ import { getDb } from "@/db";
 import { assets, images } from "@/db/schema";
 import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
-import { mapErrorToStatus } from "@/features/broker/property/api/server-handler/responseHelpers";
+import {
+  mapErrorToStatus,
+  safeErrorMessage,
+} from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 
@@ -98,8 +101,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
     console.error("Error deleting image:", error);
     return new Response(
       JSON.stringify({
-        error:
-          error instanceof Error ? error.message : "Failed to delete image",
+        error: safeErrorMessage(error, "Failed to delete image"),
       }),
       {
         status: mapErrorToStatus(error),

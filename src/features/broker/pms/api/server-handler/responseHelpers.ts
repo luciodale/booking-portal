@@ -5,6 +5,8 @@ export function jsonSuccess<T>(data: T, status = 200): Response {
   });
 }
 
+export { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
+
 export function jsonError(
   message: string,
   status = 500,
