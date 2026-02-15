@@ -1,5 +1,5 @@
 import { getDb } from "@/db";
-import { assets, pmsIntegrations } from "@/db/schema";
+import { assets, cityTaxDefaults, pmsIntegrations } from "@/db/schema";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
 import { computePropertyAdditionalCosts } from "@/features/public/booking/domain/computeAdditionalCosts";
@@ -7,7 +7,7 @@ import { toCents } from "@/features/public/booking/domain/computeStayPrice";
 import { requireAuth } from "@/modules/auth/auth";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import Stripe from "stripe";
 import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
 import { z } from "zod";
@@ -19,6 +19,7 @@ const checkoutBodySchema = z.object({
   guests: z.number().int().min(1),
   currency: z.string().min(1),
   nightPriceCents: z.record(z.string(), z.number().int().nonnegative()),
+  cityTaxCents: z.number().int().nonnegative(),
   guestInfo: z.object({
     firstName: z.string().min(1),
     lastName: z.string().min(1),
@@ -66,6 +67,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       guests,
       currency,
       nightPriceCents,
+      cityTaxCents,
       guestInfo,
     } = body.data;
     const db = getDb(D1Database);
@@ -217,7 +219,40 @@ export const POST: APIRoute = async ({ request, locals }) => {
       (sum, item) => sum + item.amountCents,
       0
     );
-    const grandTotalCents = serverPriceCents + additionalTotalCents;
+
+    // Compute city tax server-side
+    const [cityTaxRow] = await db
+      .select()
+      .from(cityTaxDefaults)
+      .where(
+        and(
+          eq(cityTaxDefaults.userId, asset.userId),
+          eq(cityTaxDefaults.city, asset.city ?? ""),
+          eq(cityTaxDefaults.country, asset.country ?? "")
+        )
+      )
+      .limit(1);
+
+    const serverCityTaxCents = cityTaxRow
+      ? cityTaxRow.amount *
+        Math.min(nights, cityTaxRow.maxNights ?? nights) *
+        guests
+      : 0;
+
+    if (cityTaxCents !== serverCityTaxCents) {
+      log.error({
+        source: "checkout",
+        message: `City tax mismatch: client=${cityTaxCents}¢, server=${serverCityTaxCents}¢`,
+        metadata: { propertyId, cityTaxCents, serverCityTaxCents },
+      });
+      return jsonResponse(
+        { error: "City tax has changed. Please refresh and try again." },
+        409
+      );
+    }
+
+    const grandTotalCents =
+      serverPriceCents + additionalTotalCents + serverCityTaxCents;
 
     const origin = new URL(request.url).origin;
 
@@ -293,6 +328,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
         },
         quantity: 1,
       })),
+      ...(serverCityTaxCents > 0
+        ? [
+            {
+              price_data: {
+                currency: currency.toLowerCase(),
+                unit_amount: serverCityTaxCents,
+                product_data: {
+                  name: `City Tax (${asset.city ?? "local"})`,
+                },
+              },
+              quantity: 1,
+            },
+          ]
+        : []),
     ];
 
     const session = await stripe.checkout.sessions.create({

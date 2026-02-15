@@ -4,6 +4,8 @@
  */
 
 import { propertyQueryKeys } from "@/features/broker/property/constants/queryKeys";
+import { useCityTaxDefault } from "@/features/broker/property/hooks/useCityTaxDefault";
+import { useUpsertCityTax } from "@/features/broker/property/hooks/useUpsertCityTax";
 import { useProperty } from "@/features/broker/property/queries/useProperty";
 import { useUpdateProperty } from "@/features/broker/property/queries/useUpdateProperty";
 import { getFacilityOptions } from "@/modules/constants";
@@ -292,6 +294,11 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
         />
       </section>
 
+      {/* City Tax */}
+      {property.city && property.country && (
+        <CityTaxSection city={property.city} country={property.country} />
+      )}
+
       {/* Images */}
       <section className="bg-card border border-border p-6 rounded-xl">
         <ImagesManager
@@ -371,5 +378,89 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
         </div>
       </section>
     </div>
+  );
+}
+
+function CityTaxSection({ city, country }: { city: string; country: string }) {
+  const cityTaxQuery = useCityTaxDefault(city, country);
+  const upsertCityTax = useUpsertCityTax();
+
+  const currentAmount = cityTaxQuery.data?.amount ?? undefined;
+  const currentMaxNights = cityTaxQuery.data?.maxNights ?? undefined;
+
+  return (
+    <section className="bg-card border border-border p-6 rounded-xl">
+      <EditableSectionField
+        title="City Tax"
+        description={`Tourist tax for ${city}, ${country} (cents per person per night).`}
+        values={{
+          amount: currentAmount,
+          maxNights: currentMaxNights,
+        }}
+        onSave={async (data) => {
+          if (data.amount == null) return;
+          await upsertCityTax.mutateAsync({
+            city,
+            country,
+            amount: data.amount,
+            maxNights: data.maxNights ?? null,
+          });
+        }}
+        renderFields={({ values, onChange, disabled }) => (
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <label
+                htmlFor="edit-cityTaxAmount"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Amount (cents/person/night)
+              </label>
+              <input
+                id="edit-cityTaxAmount"
+                type="number"
+                value={values.amount ?? ""}
+                onChange={(e) =>
+                  onChange({
+                    ...values,
+                    amount:
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
+                  })
+                }
+                disabled={disabled}
+                min={0}
+                className="input"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="edit-cityTaxMaxNights"
+                className="block text-sm font-medium text-foreground mb-1"
+              >
+                Max Nights (optional)
+              </label>
+              <input
+                id="edit-cityTaxMaxNights"
+                type="number"
+                value={values.maxNights ?? ""}
+                onChange={(e) =>
+                  onChange({
+                    ...values,
+                    maxNights:
+                      e.target.value === ""
+                        ? undefined
+                        : Number(e.target.value),
+                  })
+                }
+                disabled={disabled}
+                min={1}
+                className="input"
+              />
+            </div>
+          </div>
+        )}
+      />
+    </section>
   );
 }

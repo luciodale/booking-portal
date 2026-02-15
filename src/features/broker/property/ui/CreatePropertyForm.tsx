@@ -8,6 +8,7 @@ import {
   displayToKebab,
   syncFeatureFields,
 } from "@/features/broker/property/domain/sync-features";
+import { useCityTaxDefault } from "@/features/broker/property/hooks/useCityTaxDefault";
 import { getFacilityOptions } from "@/modules/constants";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
@@ -24,6 +25,7 @@ import type { CreatePropertyInput } from "@/schemas/property";
 import { createPropertySchema } from "@/schemas/property";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link2 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LocationSection } from "./LocationSection";
@@ -32,9 +34,11 @@ import { LocationSection } from "./LocationSection";
 // Types
 // =============================================================================
 
-/** Form data - property fields + new images */
+/** Form data - property fields + new images + optional city tax */
 export interface CreatePropertyFormData extends CreatePropertyInput {
   images: NewImage[];
+  cityTaxAmount?: number;
+  cityTaxMaxNights?: number;
 }
 
 // =============================================================================
@@ -50,6 +54,8 @@ const imageSchema = z.object({
 
 const formSchema = createPropertySchema.extend({
   images: z.array(imageSchema).min(1, "At least one image required"),
+  cityTaxAmount: z.number().int().nonnegative().optional(),
+  cityTaxMaxNights: z.number().int().positive().optional(),
 });
 
 // =============================================================================
@@ -112,6 +118,21 @@ export function CreatePropertyForm({
   const amenities = watch("amenities") ?? [];
   const highlights = watch("highlights") ?? [];
   const views = watch("views") ?? [];
+  const city = watch("city") ?? "";
+  const country = watch("country") ?? "";
+
+  const cityTaxQuery = useCityTaxDefault(city, country);
+  const cityTaxPrefilled = useRef(false);
+
+  useEffect(() => {
+    if (cityTaxQuery.data && !cityTaxPrefilled.current) {
+      cityTaxPrefilled.current = true;
+      setValue("cityTaxAmount", cityTaxQuery.data.amount, { shouldDirty: true });
+      if (cityTaxQuery.data.maxNights != null) {
+        setValue("cityTaxMaxNights", cityTaxQuery.data.maxNights, { shouldDirty: true });
+      }
+    }
+  }, [cityTaxQuery.data, setValue]);
 
   const isElite = tier === "elite";
 
@@ -363,6 +384,32 @@ export function CreatePropertyForm({
           onChange={(costs) => setValue("additionalCosts", costs, { shouldDirty: true })}
           disabled={isLoading}
         />
+      </FormSection>
+
+      {/* City Tax */}
+      <FormSection title="City Tax">
+        <p className="text-sm text-muted-foreground">
+          Tourist tax per person per night (in cents). Saved as a default for this city.
+        </p>
+        {cityTaxQuery.data && (
+          <p className="text-xs text-primary">
+            Pre-filled from existing default for {city}, {country}
+          </p>
+        )}
+        <div className="grid grid-cols-2 gap-4">
+          <NumberInput
+            name="cityTaxAmount"
+            control={control}
+            label="Amount (cents/person/night)"
+            min={0}
+          />
+          <NumberInput
+            name="cityTaxMaxNights"
+            control={control}
+            label="Max Nights (optional)"
+            min={1}
+          />
+        </div>
       </FormSection>
 
       {/* Booking Options */}

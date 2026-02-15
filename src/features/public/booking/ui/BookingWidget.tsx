@@ -1,4 +1,7 @@
-import type { PropertyAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
+import type {
+  CityTax,
+  PropertyAdditionalCost,
+} from "@/features/public/booking/domain/pricingTypes";
 import { useBookingCalendar } from "@/features/public/booking/hooks/useBookingCalendar";
 import { useBookingCheckout } from "@/features/public/booking/hooks/useBookingCheckout";
 import { BookingForm } from "@/features/public/booking/ui/BookingForm";
@@ -18,6 +21,7 @@ type BookingWidgetProps = {
   maxGuests: number;
   instantBook: boolean;
   additionalCosts: PropertyAdditionalCost[] | null;
+  cityTax: CityTax | null;
 };
 
 export function BookingWidget(props: BookingWidgetProps) {
@@ -34,6 +38,7 @@ function BookingWidgetInner({
   maxGuests,
   instantBook,
   additionalCosts,
+  cityTax,
 }: BookingWidgetProps) {
   const calendar = useBookingCalendar(propertyId, smoobuPropertyId);
   const { isSignedIn } = useAuth();
@@ -46,6 +51,7 @@ function BookingWidgetInner({
     nightPriceCents: calendar.nightPriceCents,
     currency: calendar.currency,
     isSignedIn,
+    cityTax,
   });
 
   if (!instantBook) {
@@ -110,6 +116,7 @@ function BookingWidgetInner({
           availabilityError={calendar.availabilityError}
           additionalCosts={additionalCosts}
           guests={guestCount}
+          cityTax={cityTax}
           onRetry={calendar.retryDates}
         />
 

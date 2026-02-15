@@ -1,4 +1,5 @@
 import { createCheckoutSession } from "@/features/public/booking/api/createCheckoutSession";
+import type { CityTax } from "@/features/public/booking/domain/pricingTypes";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -19,6 +20,7 @@ export function useBookingCheckout(params: {
   nightPriceCents: Record<string, number> | null;
   currency: string | null;
   isSignedIn: boolean | undefined;
+  cityTax?: CityTax | null;
 }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,13 +42,25 @@ export function useBookingCheckout(params: {
 
     setIsSubmitting(true);
     try {
+      const guests = data.adults + data.children;
+      const nights = Object.keys(params.nightPriceCents).length;
+      let cityTaxCents = 0;
+      if (params.cityTax) {
+        const effectiveNights =
+          params.cityTax.maxNights != null
+            ? Math.min(nights, params.cityTax.maxNights)
+            : nights;
+        cityTaxCents = params.cityTax.amount * effectiveNights * guests;
+      }
+
       const result = await createCheckoutSession({
         propertyId: params.propertyId,
         checkIn: params.checkIn,
         checkOut: params.checkOut,
-        guests: data.adults + data.children,
+        guests,
         currency: params.currency,
         nightPriceCents: params.nightPriceCents,
+        cityTaxCents,
         guestInfo: {
           firstName: data.firstName,
           lastName: data.lastName,

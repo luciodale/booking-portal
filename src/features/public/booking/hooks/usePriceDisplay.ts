@@ -2,7 +2,9 @@ import {
   computePropertyAdditionalCosts,
   formatPropertyCostPreview,
 } from "@/features/public/booking/domain/computeAdditionalCosts";
+import { formatPrice } from "@/features/public/booking/domain/dateUtils";
 import type {
+  CityTax,
   PriceLineItem,
   PropertyAdditionalCost,
 } from "@/features/public/booking/domain/pricingTypes";
@@ -34,6 +36,7 @@ type PriceDisplayInput = {
   availabilityError: Error | null;
   additionalCosts?: PropertyAdditionalCost[] | null;
   guests?: number | null;
+  cityTax?: CityTax | null;
 };
 
 type ErrorInfo = {
@@ -93,6 +96,7 @@ export function usePriceDisplay({
   availabilityError,
   additionalCosts,
   guests,
+  cityTax,
 }: PriceDisplayInput): PriceDisplayState {
   return useMemo(() => {
     if (!checkIn || !checkOut) return { status: "no-dates" };
@@ -142,6 +146,21 @@ export function usePriceDisplay({
       0
     );
 
+    // Compute city tax
+    let cityTaxCents = 0;
+    if (cityTax && guests != null && guests > 0) {
+      const effectiveNights =
+        cityTax.maxNights != null
+          ? Math.min(nights, cityTax.maxNights)
+          : nights;
+      cityTaxCents = cityTax.amount * effectiveNights * guests;
+      additionalCostItems.push({
+        label: "City Tax",
+        amountCents: cityTaxCents,
+        detail: `${formatPrice(cityTax.amount / 100, resolvedCurrency)}/night/guest${cityTax.maxNights != null ? ` (max ${cityTax.maxNights} nights)` : ""}`,
+      });
+    }
+
     return {
       status: "available",
       totalPriceCents,
@@ -149,7 +168,7 @@ export function usePriceDisplay({
       nights,
       currency: resolvedCurrency,
       additionalCostItems,
-      grandTotalCents: totalPriceCents + additionalTotalCents,
+      grandTotalCents: totalPriceCents + additionalTotalCents + cityTaxCents,
     };
   }, [
     checkIn,
@@ -163,5 +182,6 @@ export function usePriceDisplay({
     availabilityError,
     additionalCosts,
     guests,
+    cityTax,
   ]);
 }

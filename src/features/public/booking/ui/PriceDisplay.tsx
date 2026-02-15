@@ -1,5 +1,8 @@
 import { formatPrice } from "@/features/public/booking/domain/dateUtils";
-import type { PropertyAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
+import type {
+  CityTax,
+  PropertyAdditionalCost,
+} from "@/features/public/booking/domain/pricingTypes";
 import { usePriceDisplay } from "@/features/public/booking/hooks/usePriceDisplay";
 import { PriceBreakdown } from "@/features/public/booking/ui/PriceBreakdown";
 import type { SmoobuAvailabilityResponse } from "@/schemas/smoobu";
@@ -16,6 +19,7 @@ type PriceDisplayProps = {
   availabilityError: Error | null;
   additionalCosts: PropertyAdditionalCost[] | null;
   guests: number | null;
+  cityTax?: CityTax | null;
   onRetry?: () => void;
 };
 

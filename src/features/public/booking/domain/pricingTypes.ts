@@ -16,3 +16,8 @@ export type PriceLineItem = {
   amountCents: number;
   detail?: string;
 };
+
+export type CityTax = {
+  amount: number;
+  maxNights: number | null;
+};

@@ -10,6 +10,7 @@ import { useIntegrationListings } from "@/features/broker/pms/queries/useIntegra
 import { useIsPmsIntegrated } from "@/features/broker/pms/queries/useIsPmsIntegrated";
 import { mapSmoobuListingToCreatePropertyPartial } from "@/features/broker/property/domain/mapIntegrationListingToPrefill";
 import { displayToKebab } from "@/features/broker/property/domain/sync-features";
+import { useUpsertCityTax } from "@/features/broker/property/hooks/useUpsertCityTax";
 import { useCreateProperty } from "@/features/broker/property/queries/useCreateProperty";
 import { createSectionRoute } from "@/features/broker/property/routes/CreateSection";
 import {
@@ -87,6 +88,7 @@ function CreatePropertyPage() {
     selectedListing?.id ?? null
   );
   const createProperty = useCreateProperty({});
+  const upsertCityTax = useUpsertCityTax();
   const [isUploading, setIsUploading] = useState(false);
 
   const smoobuData =
@@ -99,7 +101,7 @@ function CreatePropertyPage() {
 
   async function handleSubmit(data: CreatePropertyFormData) {
     try {
-      const { images, ...propertyData } = data;
+      const { images, cityTaxAmount, cityTaxMaxNights, ...propertyData } = data;
       const normalizedData = {
         ...propertyData,
         amenities: propertyData.amenities?.map(displayToKebab) ?? [],
@@ -108,6 +110,15 @@ function CreatePropertyPage() {
       };
 
       const newProperty = await createProperty.mutateAsync(normalizedData);
+
+      if (cityTaxAmount != null && cityTaxAmount > 0 && propertyData.city && propertyData.country) {
+        await upsertCityTax.mutateAsync({
+          city: propertyData.city,
+          country: propertyData.country,
+          amount: cityTaxAmount,
+          maxNights: cityTaxMaxNights ?? null,
+        });
+      }
 
       if (images.length > 0) {
         setIsUploading(true);

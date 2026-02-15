@@ -51,6 +51,7 @@ export function AdditionalCostsEditor<P extends string>({
   return (
     <div className="space-y-3">
       {costs.map((row, index) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: cost rows have no stable ID
         <div key={index} className="flex items-start gap-3">
           <div className="flex-1 min-w-0">
             <input
