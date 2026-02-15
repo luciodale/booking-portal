@@ -62,7 +62,7 @@ export function useBookingCheckout(params: {
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to create checkout session"
+          : "Something didn't work. Please try again or contact the host."
       );
       setIsSubmitting(false);
     }

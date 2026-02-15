@@ -3,11 +3,10 @@
  * Shared logic for uploading images to R2 bucket
  */
 
-import { unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const BUCKET_NAME = "booking-portal-images";
-const MAX_CONCURRENCY = 3;
+const MAX_CONCURRENCY = 5;
 const MAX_RETRIES = 3;
 
 export type ImageManifestEntry = {
@@ -47,29 +46,28 @@ async function fetchRemoteImage(url: string): Promise<ArrayBuffer> {
 }
 
 /**
- * Uploads a single file to R2 via Wrangler CLI.
- * Uses Bun.spawnSync to avoid Bun shell hanging on wrangler.
+ * Uploads a single file to R2 via Wrangler CLI (async).
  */
-function uploadToR2Sync(
+async function uploadToR2(
   key: string,
   data: ArrayBuffer,
   contentType: string,
   mode: Mode,
   rootDir: string
-): void {
+): Promise<void> {
   const tempFile = join(
     rootDir,
     `.tmp-${Date.now()}-${Math.random().toString(36).slice(2)}`
   );
 
-  writeFileSync(tempFile, Buffer.from(data));
+  await Bun.write(tempFile, data);
 
   const modeFlag = mode === "local" ? "--local" : "--remote";
   let lastError: unknown;
 
   try {
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      const result = Bun.spawnSync(
+      const proc = Bun.spawn(
         [
           "bunx",
           "wrangler",
@@ -89,21 +87,25 @@ function uploadToR2Sync(
         }
       );
 
-      if (result.exitCode === 0) return; // Success
+      const exitCode = await proc.exited;
 
-      lastError = new Error(
-        result.stderr.toString() || "Unknown wrangler error"
-      );
+      if (exitCode === 0) return;
+
+      const stderr = await new Response(proc.stderr).text();
+      lastError = new Error(stderr || "Unknown wrangler error");
       if (attempt < MAX_RETRIES) {
-        // Exponential backoff: sync sleep via Bun
-        Bun.sleepSync(500 * 2 ** (attempt - 1));
+        await Bun.sleep(500 * 2 ** (attempt - 1));
       }
     }
 
     throw lastError;
   } finally {
     try {
-      unlinkSync(tempFile);
+      const file = Bun.file(tempFile);
+      if (await file.exists()) {
+        const { unlinkSync } = await import("node:fs");
+        unlinkSync(tempFile);
+      }
     } catch {
       // Ignore cleanup errors
     }
@@ -124,7 +126,7 @@ async function processImage(
       ? await fetchRemoteImage(entry.sourcePath)
       : await readLocalFile(entry.sourcePath, rootDir);
 
-    uploadToR2Sync(entry.r2Key, data, entry.contentType, mode, rootDir);
+    await uploadToR2(entry.r2Key, data, entry.contentType, mode, rootDir);
 
     const icon = entry.isRemote ? "🌐" : "📁";
     console.log(`${prefix} ${icon} ✅ ${entry.r2Key}`);
@@ -145,16 +147,21 @@ export async function seedImages(
   const allImages = [...manifest.propertyImages, ...manifest.experienceImages];
   const total = allImages.length;
 
-  console.log(`\n📤 Uploading ${total} images to R2 (${mode})...`);
+  console.log(`\n📤 Uploading ${total} images to R2 (${mode}) [concurrency=${MAX_CONCURRENCY}]...`);
 
-  // Process sequentially — wrangler CLI calls are already sync
   let success = 0;
   let failed = 0;
 
-  for (let i = 0; i < allImages.length; i++) {
-    const result = await processImage(allImages[i], mode, i, total, rootDir);
-    if (result) success++;
-    else failed++;
+  // Process in batches of MAX_CONCURRENCY
+  for (let i = 0; i < allImages.length; i += MAX_CONCURRENCY) {
+    const chunk = allImages.slice(i, i + MAX_CONCURRENCY);
+    const results = await Promise.all(
+      chunk.map((entry, j) => processImage(entry, mode, i + j, total, rootDir))
+    );
+    for (const result of results) {
+      if (result) success++;
+      else failed++;
+    }
   }
 
   console.log(`\n${"=".repeat(40)}`);

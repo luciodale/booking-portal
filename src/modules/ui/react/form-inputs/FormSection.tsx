@@ -11,7 +11,7 @@ export function FormSection({ title, children }: FormSectionProps) {
   return (
     <section className="bg-card border border-border p-6 rounded-xl">
       <h2 className="text-xl font-semibold text-foreground mb-4">{title}</h2>
-      {children}
+      <div className="flex flex-col gap-4">{children}</div>
     </section>
   );
 }

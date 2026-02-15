@@ -4,7 +4,7 @@ interface Props {
   title: string;
   titleGradient?: string;
   subtitle?: string;
-  showSearch?: boolean;
+  cityName?: string | null;
   backgroundImage?: string;
   height?: "full" | "medium" | "small";
 }
@@ -14,7 +14,7 @@ const {
   title,
   titleGradient,
   subtitle,
-  showSearch = false,
+  cityName,
   backgroundImage,
   height = "full",
 } = Astro.props;
@@ -87,53 +87,21 @@ const heightClasses = {
     </h1>
 
     {
-      subtitle && (
+      cityName ? (
+        <p
+          class="text-4xl md:text-6xl font-bold text-primary mb-6 animate-slide-up opacity-0"
+          style="animation-delay: 0.5s"
+        >
+          {cityName}
+        </p>
+      ) : subtitle ? (
         <p
           class="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-slide-up opacity-0"
           style="animation-delay: 0.6s"
         >
           {subtitle}
         </p>
-      )
-    }
-
-    {
-      showSearch && (
-        <div
-          class="max-w-3xl mx-auto animate-slide-up opacity-0"
-          style="animation-delay: 0.8s"
-        >
-          <div class="glass rounded-2xl p-2">
-            <div class="flex flex-col md:flex-row gap-2">
-              <div class="flex-1">
-                <input
-                  type="text"
-                  placeholder="Where do you want to go?"
-                  class="input !bg-transparent !border-0 !ring-0"
-                />
-              </div>
-              <div class="flex-1">
-                <input
-                  type="text"
-                  placeholder="Check in - Check out"
-                  class="input !bg-transparent !border-0 !ring-0"
-                />
-              </div>
-              <div class="flex-1">
-                <input
-                  type="text"
-                  placeholder="Guests"
-                  class="input !bg-transparent !border-0 !ring-0"
-                />
-              </div>
-              <button class="btn-primary flex items-center gap-2">
-                <i data-lucide="search" class="w-5 h-5" />
-                Search
-              </button>
-            </div>
-          </div>
-        </div>
-      )
+      ) : null
     }
 
     <slot />

@@ -1,6 +1,7 @@
 import { getDb } from "@/db";
 import { assets, images } from "@/db/schema";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
+import { formatLocation } from "@/utils/formatLocation";
 import type { APIRoute } from "astro";
 import { asc, eq } from "drizzle-orm";
 
@@ -50,7 +51,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
         data: {
           id: asset.id,
           title: asset.title,
-          location: asset.location,
+          location: formatLocation(asset),
           tier: asset.tier,
           description: asset.description,
           shortDescription: asset.shortDescription,

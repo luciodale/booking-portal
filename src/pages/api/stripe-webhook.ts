@@ -1,5 +1,11 @@
 import { getDb } from "@/db";
-import { assets, bookings, brokerLogs, pmsIntegrations } from "@/db/schema";
+import {
+  assets,
+  bookings,
+  brokerLogs,
+  experienceBookings,
+  pmsIntegrations,
+} from "@/db/schema";
 import { createSmoobuBooking } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCreateBooking";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
@@ -19,25 +25,36 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   const log = createEventLogger(D1Database);
-  const stripe = new Stripe(stripeKey);
   const body = await request.text();
-  const sig = request.headers.get("stripe-signature");
-
-  if (!sig) {
-    return new Response("Missing signature", { status: 400 });
-  }
 
   let event: Stripe.Event;
-  try {
-    event = await stripe.webhooks.constructEventAsync(body, sig, webhookSecret);
-  } catch (err) {
-    console.error("Webhook signature verification failed:", err);
-    log.error({
-      source: "stripe-webhook",
-      message: "Webhook signature verification failed",
-      metadata: { error: err instanceof Error ? err.message : String(err) },
-    });
-    return new Response("Invalid signature", { status: 400 });
+
+  if (import.meta.env.DEV) {
+    // Dev mode: accept unsigned payloads from the mock server
+    event = JSON.parse(body) as Stripe.Event;
+  } else {
+    const stripe = new Stripe(stripeKey);
+    const sig = request.headers.get("stripe-signature");
+
+    if (!sig) {
+      return new Response("Missing signature", { status: 400 });
+    }
+
+    try {
+      event = await stripe.webhooks.constructEventAsync(
+        body,
+        sig,
+        webhookSecret
+      );
+    } catch (err) {
+      console.error("Webhook signature verification failed:", err);
+      log.error({
+        source: "stripe-webhook",
+        message: "Webhook signature verification failed",
+        metadata: { error: err instanceof Error ? err.message : String(err) },
+      });
+      return new Response("Invalid signature", { status: 400 });
+    }
   }
 
   if (
@@ -53,6 +70,51 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const meta = session.metadata ?? {};
 
+    // ── Experience booking ────────────────────────────────────────────────
+    if (meta.type === "experience") {
+      // Idempotency
+      const [existing] = await db
+        .select({ id: experienceBookings.id })
+        .from(experienceBookings)
+        .where(eq(experienceBookings.stripeSessionId, session.id))
+        .limit(1);
+
+      if (existing) return new Response("OK", { status: 200 });
+
+      const expBookingId = nanoid();
+      await db.insert(experienceBookings).values({
+        id: expBookingId,
+        experienceId: meta.experienceId ?? "",
+        userId: meta.userId ?? "",
+        bookingDate: meta.bookingDate ?? "",
+        participants: Number(meta.participants),
+        totalPrice: Number(meta.totalPriceCents),
+        currency: meta.currency ?? "eur",
+        status: "confirmed",
+        stripeSessionId: session.id,
+        stripePaymentIntentId: (session.payment_intent as string) ?? null,
+        paidAt: new Date().toISOString(),
+        firstName: meta.guestFirstName ?? "",
+        lastName: meta.guestLastName ?? "",
+        email: meta.guestEmail ?? "",
+        phone: meta.guestPhone || null,
+        guestNote: meta.guestNote || null,
+      });
+
+      log.info({
+        source: "stripe-webhook",
+        message: `Experience booking ${expBookingId} confirmed`,
+        metadata: {
+          experienceBookingId: expBookingId,
+          experienceId: meta.experienceId,
+          stripeSessionId: session.id,
+        },
+      });
+
+      return new Response("OK", { status: 200 });
+    }
+
+    // ── Property booking (existing flow) ──────────────────────────────────
     // Idempotency: skip if booking with this stripeSessionId already exists
     const [existingBooking] = await db
       .select({ id: bookings.id })

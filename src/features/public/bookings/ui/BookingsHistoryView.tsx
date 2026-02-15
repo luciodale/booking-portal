@@ -103,7 +103,7 @@ function BookingCard({ booking }: { booking: BookingListItem }) {
 
   return (
     <a
-      href={`/elite/${booking.propertyId}`}
+      href={`/bookings/${booking.id}`}
       className="block p-5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors"
     >
       <div className="flex items-start justify-between gap-4">

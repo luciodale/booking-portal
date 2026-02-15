@@ -101,14 +101,6 @@ export function CreateExperienceForm({
       </FormSection>
 
       <FormSection title="Location">
-        <TextInput
-          name="location"
-          control={control}
-          label="Location"
-          required
-          placeholder="Sardinia, Italy"
-        />
-
         <div className="grid grid-cols-2 gap-4">
           <TextInput
             name="city"

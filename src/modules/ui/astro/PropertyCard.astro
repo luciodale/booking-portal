@@ -1,5 +1,6 @@
 ---
 import type { Asset } from "@/db/schema";
+import { formatLocation } from "@/utils/formatLocation";
 import Badge from "@/modules/ui/astro/Badge.astro";
 
 interface Props {
@@ -8,15 +9,13 @@ interface Props {
   price?: number | null; // null means "no dates selected yet"
   nights?: number;
   appliedRules?: string[];
+  target?: string;
 }
 
-const { asset, imageUrl, price, nights, appliedRules } = Astro.props;
+const { asset, imageUrl, price, nights, appliedRules, target } = Astro.props;
 
-// If price is explicitly null, show placeholder
-// If price is undefined, fallback to base price (backward compat)
-// If price is a number, use it
 const showPlaceholder = price === null;
-const displayPrice = price === null ? 0 : (price ?? asset.basePrice / 100);
+const displayPrice = price ?? 0;
 
 const isElite = asset.tier === "elite";
 const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
@@ -24,6 +23,7 @@ const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
 
 <a
   href={href}
+  target={target}
   class:list={[
     "group block rounded-2xl overflow-hidden bg-card card-hover",
     { "card-elite": isElite },
@@ -49,14 +49,6 @@ const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
       <Badge variant={asset.tier} />
     </div>
 
-    <!-- Favorite Button -->
-    <button
-      class="absolute top-4 right-4 p-2 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors opacity-0 group-hover:opacity-100"
-      aria-label="Save to favorites"
-    >
-      <i data-lucide="heart" class="w-5 h-5 text-white"></i>
-    </button>
-
     <!-- Price Tag -->
     <div class="absolute bottom-4 left-4">
       {
@@ -69,8 +61,7 @@ const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
         ) : (
           <div class="text-white">
             <span class="text-2xl font-bold">
-              {asset.currency === "eur" ? "€" : asset.currency.toUpperCase()}
-              {displayPrice.toLocaleString()}
+              €{displayPrice.toLocaleString()}
             </span>
             <span class="text-white/70 text-sm">
               {nights && nights > 1 ? ` / ${nights} nights` : " / night"}
@@ -97,7 +88,7 @@ const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
 
     <p class="text-muted-foreground text-sm mb-4 flex items-center gap-1">
       <i data-lucide="map-pin" class="w-4 h-4"></i>
-      {asset.location}
+      {formatLocation(asset)}
     </p>
 
     <!-- Amenities -->
@@ -119,10 +110,10 @@ const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
         )
       }
       {
-        asset.maxGuests && (
+        asset.maxOccupancy && (
           <div class="flex items-center gap-1.5">
             <i data-lucide="users" class="w-4 h-4" />
-            {asset.maxGuests} guest{asset.maxGuests !== 1 ? "s" : ""}
+            {asset.maxOccupancy} guest{asset.maxOccupancy !== 1 ? "s" : ""}
           </div>
         )
       }

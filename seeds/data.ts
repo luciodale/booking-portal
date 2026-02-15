@@ -5,8 +5,10 @@
 
 import type {
   NewAsset,
+  NewCityTaxDefault,
   NewExperience,
   NewImage,
+  NewPmsIntegration,
   NewUser,
 } from "../src/db/schema";
 
@@ -34,7 +36,6 @@ export type SeedAsset = Required<
     | "title"
     | "description"
     | "shortDescription"
-    | "location"
     | "street"
     | "zip"
     | "city"
@@ -50,8 +51,11 @@ export type SeedAsset = Required<
     | "instantBook"
     | "featured"
     | "sortOrder"
+    | "additionalCosts"
+    | "showFullAddress"
   >
 > & {
+  smoobuPropertyId?: number;
   amenities: string[];
   views: string[];
   highlights: string[];
@@ -72,7 +76,6 @@ export type SeedExperience = Required<
     | "title"
     | "description"
     | "shortDescription"
-    | "location"
     | "city"
     | "country"
     | "category"
@@ -83,7 +86,20 @@ export type SeedExperience = Required<
     | "imageUrl"
     | "status"
     | "featured"
+    | "instantBook"
+    | "additionalCosts"
   >
+>;
+
+export type SeedCityTaxDefault = Required<
+  Pick<
+    NewCityTaxDefault,
+    "id" | "userId" | "city" | "country" | "amount" | "maxNights"
+  >
+>;
+
+export type SeedPmsIntegration = Required<
+  Pick<NewPmsIntegration, "id" | "userId" | "provider" | "apiKey" | "pmsUserId">
 >;
 
 export type SeedData = {
@@ -91,6 +107,8 @@ export type SeedData = {
   assets: SeedAsset[];
   images: SeedImage[];
   experiences: SeedExperience[];
+  cityTaxDefaults: SeedCityTaxDefault[];
+  pmsIntegrations: SeedPmsIntegration[];
 };
 
 // ============================================================================
@@ -140,7 +158,6 @@ The spa includes a sauna, a double shower, a freestanding bathtub, and plenty of
 The pool area is a great place to relax. It features a saltwater infinity pool, plenty of space for loungers, a large lounge area, and a pool house with a bedroom, bathroom, and kitchen.`,
     shortDescription:
       "1200m² villa with 6 bedrooms, sea views, saltwater pool, spa, wine cellar in exclusive Sol de Mallorca",
-    location: "Sol de Mallorca, Spain",
     street: "Sol de Mallorca",
     zip: "07180",
     city: "Calvià",
@@ -184,9 +201,14 @@ The pool area is a great place to relax. It features a saltwater infinity pool, 
     ],
     videoUrl: null,
     pdfAssetPath: null,
+    additionalCosts: [
+      { label: "Cleaning fee", amount: 35000, per: "stay" },
+      { label: "Tourist tax", amount: 350, per: "night_per_guest", maxNights: 10 },
+    ],
     instantBook: false,
     featured: true,
     sortOrder: 1,
+    showFullAddress: true,
   },
   {
     id: "davos-chalet",
@@ -205,7 +227,6 @@ The house has four spacious bedrooms, three bathrooms, a guest toilet, two livin
 There is WIFI TV in the whole house with Netflix, Amazon Prime and Apple TV+. The property offers covered parking for 2 cars and 3 outside parking spaces.`,
     shortDescription:
       "300m² chalet with 4 bedrooms, sauna, mountain views, 3 min to WEF venue in Davos",
-    location: "Davos, Switzerland",
     street: "Börtjistrasse 23",
     zip: "7260",
     city: "Davos",
@@ -238,13 +259,18 @@ There is WIFI TV in the whole house with Netflix, Amazon Prime and Apple TV+. Th
     highlights: ["Mountain Chic", "3 min to WEF", "Sauna", "Sunny Location"],
     videoUrl: null,
     pdfAssetPath: null,
+    additionalCosts: [
+      { label: "Cleaning fee", amount: 25000, per: "stay" },
+    ],
     instantBook: false,
     featured: true,
     sortOrder: 2,
+    showFullAddress: true,
   },
   {
     id: "barcelona-penthouse",
     userId: "seed_broker_001",
+    smoobuPropertyId: 100001,
     tier: "standard",
     status: "published",
     title: "Modern Downtown Penthouse",
@@ -253,7 +279,6 @@ There is WIFI TV in the whole house with Netflix, Amazon Prime and Apple TV+. Th
 This modern apartment features a fully equipped kitchen, comfortable bedrooms, and a sunny balcony overlooking the vibrant neighborhood.`,
     shortDescription:
       "Charming Eixample apartment near Gaudí landmarks with sunny balcony.",
-    location: "Barcelona, Spain",
     street: "Carrer de Mallorca 123",
     zip: "08008",
     city: "Barcelona",
@@ -275,9 +300,232 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
     highlights: ["City Center", "Walking Distance", "Local Shops"],
     videoUrl: null,
     pdfAssetPath: null,
+    additionalCosts: [
+      { label: "Cleaning fee", amount: 8000, per: "stay" },
+      { label: "Tourist tax", amount: 225, per: "night_per_guest", maxNights: 7 },
+    ],
     instantBook: true,
     featured: false,
     sortOrder: 3,
+    showFullAddress: true,
+  },
+  {
+    id: "como-lakehouse",
+    userId: "seed_broker_001",
+    tier: "elite",
+    status: "published",
+    title: "Lake Como Lakefront Estate",
+    description: `An exquisite lakefront estate on the shores of Lake Como, offering breathtaking views of the Italian Alps and the serene waters below.
+
+The property features lush gardens, a private dock, and interiors designed by a renowned Milanese architect. Every room opens to panoramic lake views through floor-to-ceiling windows.`,
+    shortDescription:
+      "Lakefront estate with private dock, Alpine views, and Italian designer interiors on Lake Como.",
+    street: "Via Roma 45",
+    zip: "22021",
+    city: "Bellagio",
+    country: "Italy",
+    latitude: "45.9868",
+    longitude: "9.2614",
+    maxOccupancy: 10,
+    bedrooms: 5,
+    bathrooms: 4,
+    sqMeters: 600,
+    amenities: [
+      "Private Dock",
+      "Lake Views",
+      "Garden",
+      "Wine Cellar",
+      "Heated Pool",
+      "WiFi",
+      "Air Conditioning",
+      "Fireplace",
+      "Parking",
+    ],
+    views: ["Lake Como", "Italian Alps", "Garden"],
+    highlights: ["Lakefront", "Private Dock", "Wine Cellar", "Heated Pool"],
+    videoUrl: null,
+    pdfAssetPath: null,
+    additionalCosts: [
+      { label: "Cleaning fee", amount: 20000, per: "stay" },
+      { label: "Tourist tax", amount: 300, per: "night_per_guest", maxNights: 14 },
+    ],
+    instantBook: false,
+    featured: true,
+    sortOrder: 4,
+    showFullAddress: true,
+  },
+  {
+    id: "lisbon-loft",
+    userId: "seed_broker_001",
+    smoobuPropertyId: 100002,
+    tier: "standard",
+    status: "published",
+    title: "Alfama District Art Loft",
+    description: `A stylish loft in Lisbon's historic Alfama district, blending traditional azulejo tiles with contemporary design.
+
+Steps from Fado houses and the iconic Tram 28 route. Rooftop terrace with sweeping views over the Tagus River.`,
+    shortDescription:
+      "Art loft in Alfama with rooftop terrace and Tagus River views.",
+    street: "Rua de São Miguel 18",
+    zip: "1100-544",
+    city: "Lisbon",
+    country: "Portugal",
+    latitude: "38.7110",
+    longitude: "-9.1304",
+    maxOccupancy: 3,
+    bedrooms: 1,
+    bathrooms: 1,
+    sqMeters: 65,
+    amenities: [
+      "WiFi",
+      "Kitchen",
+      "Rooftop Terrace",
+      "Air Conditioning",
+      "Washing Machine",
+    ],
+    views: ["Tagus River", "City Views"],
+    highlights: ["Historic District", "Rooftop Terrace", "River Views"],
+    videoUrl: null,
+    pdfAssetPath: null,
+    additionalCosts: [
+      { label: "Cleaning fee", amount: 6000, per: "stay" },
+      { label: "Tourist tax", amount: 200, per: "night_per_guest", maxNights: 7 },
+    ],
+    instantBook: true,
+    featured: false,
+    sortOrder: 5,
+    showFullAddress: true,
+  },
+  {
+    id: "zermatt-lodge",
+    userId: "seed_broker_001",
+    tier: "elite",
+    status: "published",
+    title: "Matterhorn View Alpine Lodge",
+    description: `Perched above Zermatt, this alpine lodge delivers unobstructed Matterhorn views from every living space.
+
+Hand-crafted timber interiors, a private outdoor hot tub, and ski-in/ski-out access make this the ultimate mountain retreat. The lodge includes a cinema room and a wellness area with sauna and steam bath.`,
+    shortDescription:
+      "Ski-in/ski-out lodge with Matterhorn views, hot tub, cinema, and wellness area.",
+    street: "Haus Alpenblick 7",
+    zip: "3920",
+    city: "Zermatt",
+    country: "Switzerland",
+    latitude: "46.0207",
+    longitude: "7.7491",
+    maxOccupancy: 8,
+    bedrooms: 4,
+    bathrooms: 3,
+    sqMeters: 350,
+    amenities: [
+      "Hot Tub",
+      "Sauna",
+      "Steam Bath",
+      "Cinema Room",
+      "Ski-In/Ski-Out",
+      "Boot Warmers",
+      "Fireplace",
+      "WiFi",
+      "Covered Parking",
+    ],
+    views: ["Matterhorn", "Alpine Peaks", "Village Views"],
+    highlights: ["Matterhorn View", "Ski-In/Ski-Out", "Hot Tub", "Cinema"],
+    videoUrl: null,
+    pdfAssetPath: null,
+    additionalCosts: [
+      { label: "Cleaning fee", amount: 20000, per: "stay" },
+    ],
+    instantBook: false,
+    featured: true,
+    sortOrder: 6,
+    showFullAddress: true,
+  },
+  {
+    id: "nice-apartment",
+    userId: "seed_broker_001",
+    smoobuPropertyId: 100003,
+    tier: "standard",
+    status: "published",
+    title: "Promenade des Anglais Apartment",
+    description: `Bright two-bedroom apartment along Nice's famous Promenade des Anglais, just steps from the pebbly beach.
+
+Enjoy the morning light flooding through large French windows while sipping coffee on the balcony overlooking the Mediterranean.`,
+    shortDescription:
+      "Seafront apartment on the Promenade des Anglais with Mediterranean views.",
+    street: "Promenade des Anglais 84",
+    zip: "06000",
+    city: "Nice",
+    country: "France",
+    latitude: "43.6947",
+    longitude: "7.2653",
+    maxOccupancy: 4,
+    bedrooms: 2,
+    bathrooms: 1,
+    sqMeters: 75,
+    amenities: [
+      "WiFi",
+      "Kitchen",
+      "Air Conditioning",
+      "Balcony",
+      "Beach Access",
+      "Elevator",
+    ],
+    views: ["Mediterranean Sea", "Promenade"],
+    highlights: ["Seafront", "Beach Access", "French Riviera"],
+    videoUrl: null,
+    pdfAssetPath: null,
+    additionalCosts: [
+      { label: "Cleaning fee", amount: 7000, per: "stay" },
+      { label: "Tourist tax", amount: 150, per: "night_per_guest" },
+    ],
+    instantBook: true,
+    featured: false,
+    sortOrder: 7,
+    showFullAddress: true,
+  },
+  {
+    id: "mykonos-villa",
+    userId: "seed_broker_001",
+    tier: "elite",
+    status: "published",
+    title: "Cycladic Cliffside Villa",
+    description: `A stunning whitewashed villa perched on the cliffs of Mykonos, offering infinity pool views straight into the Aegean Sea.
+
+Traditional Cycladic architecture meets contemporary luxury, with a private chef kitchen, outdoor dining terraces, and direct path to a secluded cove.`,
+    shortDescription:
+      "Cliffside Cycladic villa with infinity pool, private cove, and Aegean panoramas.",
+    street: "Agios Lazaros",
+    zip: "84600",
+    city: "Mykonos",
+    country: "Greece",
+    latitude: "37.4467",
+    longitude: "25.3289",
+    maxOccupancy: 8,
+    bedrooms: 4,
+    bathrooms: 4,
+    sqMeters: 400,
+    amenities: [
+      "Infinity Pool",
+      "Private Cove Access",
+      "Chef Kitchen",
+      "Outdoor Dining",
+      "Air Conditioning",
+      "WiFi",
+      "Parking",
+      "BBQ",
+    ],
+    views: ["Aegean Sea", "Sunset Views", "Island Panorama"],
+    highlights: ["Infinity Pool", "Private Cove", "Sunset Views", "Chef Kitchen"],
+    videoUrl: null,
+    pdfAssetPath: null,
+    additionalCosts: [
+      { label: "Cleaning fee", amount: 25000, per: "stay" },
+      { label: "Tourist tax", amount: 400, per: "night_per_guest", maxNights: 7 },
+    ],
+    instantBook: false,
+    featured: true,
+    sortOrder: 8,
+    showFullAddress: true,
   },
 ];
 
@@ -558,6 +806,119 @@ export const images: SeedImage[] = [
     order: 2,
     sourcePath: "properties/barcelona/bedroom.webp",
   },
+  // Como Lakehouse (reuse mallorca images)
+  {
+    id: "img-como-1",
+    assetId: "como-lakehouse",
+    r2Key: "properties/mallorca/view.webp",
+    alt: "Lake Como lakefront view",
+    isPrimary: true,
+    order: 0,
+    sourcePath: "properties/mallorca/view.webp",
+  },
+  {
+    id: "img-como-2",
+    assetId: "como-lakehouse",
+    r2Key: "properties/mallorca/living-room.webp",
+    alt: "Estate living room",
+    isPrimary: false,
+    order: 1,
+    sourcePath: "properties/mallorca/living-room.webp",
+  },
+  // Lisbon Loft (reuse barcelona images)
+  {
+    id: "img-lisbon-1",
+    assetId: "lisbon-loft",
+    r2Key: "properties/barcelona/main.webp",
+    alt: "Lisbon loft exterior",
+    isPrimary: true,
+    order: 0,
+    sourcePath: "properties/barcelona/main.webp",
+  },
+  {
+    id: "img-lisbon-2",
+    assetId: "lisbon-loft",
+    r2Key: "properties/barcelona/living.webp",
+    alt: "Loft interior",
+    isPrimary: false,
+    order: 1,
+    sourcePath: "properties/barcelona/living.webp",
+  },
+  // Zermatt Lodge (reuse chalet images)
+  {
+    id: "img-zermatt-1",
+    assetId: "zermatt-lodge",
+    r2Key: "properties/chalet/outside.webp",
+    alt: "Alpine lodge exterior",
+    isPrimary: true,
+    order: 0,
+    sourcePath: "properties/chalet/outside.webp",
+  },
+  {
+    id: "img-zermatt-2",
+    assetId: "zermatt-lodge",
+    r2Key: "properties/chalet/view.webp",
+    alt: "Matterhorn view",
+    isPrimary: false,
+    order: 1,
+    sourcePath: "properties/chalet/view.webp",
+  },
+  {
+    id: "img-zermatt-3",
+    assetId: "zermatt-lodge",
+    r2Key: "properties/chalet/living-room.webp",
+    alt: "Lodge living room",
+    isPrimary: false,
+    order: 2,
+    sourcePath: "properties/chalet/living-room.webp",
+  },
+  // Nice Apartment (reuse barcelona images)
+  {
+    id: "img-nice-1",
+    assetId: "nice-apartment",
+    r2Key: "properties/barcelona/main.webp",
+    alt: "Nice apartment main view",
+    isPrimary: true,
+    order: 0,
+    sourcePath: "properties/barcelona/main.webp",
+  },
+  {
+    id: "img-nice-2",
+    assetId: "nice-apartment",
+    r2Key: "properties/barcelona/bedroom.webp",
+    alt: "Apartment bedroom",
+    isPrimary: false,
+    order: 1,
+    sourcePath: "properties/barcelona/bedroom.webp",
+  },
+  // Mykonos Villa (reuse mallorca images)
+  {
+    id: "img-mykonos-1",
+    assetId: "mykonos-villa",
+    r2Key: "properties/mallorca/main.webp",
+    alt: "Cycladic villa exterior",
+    isPrimary: true,
+    order: 0,
+    sourcePath: "properties/mallorca/main.webp",
+  },
+  {
+    id: "img-mykonos-2",
+    assetId: "mykonos-villa",
+    r2Key: "properties/mallorca/terrace.webp",
+    alt: "Villa terrace with sea view",
+    isPrimary: false,
+    order: 1,
+    sourcePath: "properties/mallorca/terrace.webp",
+  },
+  {
+    id: "img-mykonos-3",
+    assetId: "mykonos-villa",
+    r2Key: "properties/mallorca/bedroom.webp",
+    alt: "Villa bedroom",
+    isPrimary: false,
+    order: 2,
+    sourcePath: "properties/mallorca/bedroom.webp",
+  },
 ];
 
 // ============================================================================
@@ -571,7 +932,6 @@ export const experiences: SeedExperience[] = [
     description:
       "Sail the stunning Sardinian coastline aboard a luxury yacht with a private captain and chef.",
     shortDescription: "Luxury yacht charter along the Sardinian coast.",
-    location: "Sardinia, Italy",
     city: "Sardinia",
     country: "Italy",
     category: "sailing",
@@ -580,8 +940,12 @@ export const experiences: SeedExperience[] = [
     basePrice: 250000,
     currency: "eur",
     imageUrl: "experiences/exp-1/main.webp",
+    additionalCosts: [
+      { label: "Fuel surcharge", amount: 15000, per: "booking" },
+    ],
     status: "published",
     featured: true,
+    instantBook: true,
   },
   {
     id: "exp-2",
@@ -590,7 +954,6 @@ export const experiences: SeedExperience[] = [
     description:
       "Discover the finest Tuscan wines with a private sommelier at exclusive vineyards.",
     shortDescription: "Private Tuscan wine tasting experience.",
-    location: "Tuscany, Italy",
     city: "Tuscany",
     country: "Italy",
     category: "food_wine",
@@ -599,8 +962,10 @@ export const experiences: SeedExperience[] = [
     basePrice: 45000,
     currency: "eur",
     imageUrl: "experiences/exp-2/main.webp",
+    additionalCosts: null,
     status: "published",
     featured: true,
+    instantBook: true,
   },
   {
     id: "exp-3",
@@ -609,7 +974,6 @@ export const experiences: SeedExperience[] = [
     description:
       "Soar above Monaco and the French Riviera in a private helicopter tour.",
     shortDescription: "Exclusive helicopter tour over Monaco.",
-    location: "Monaco",
     city: "Monaco",
     country: "Monaco",
     category: "adventure",
@@ -618,8 +982,10 @@ export const experiences: SeedExperience[] = [
     basePrice: 380000,
     currency: "eur",
     imageUrl: "experiences/exp-3/main.webp",
+    additionalCosts: null,
     status: "published",
     featured: true,
+    instantBook: false,
   },
   {
     id: "exp-4",
@@ -628,7 +994,6 @@ export const experiences: SeedExperience[] = [
     description:
       "Private cooking class and dinner with a Michelin-starred chef in Paris.",
     shortDescription: "Cook with a Michelin-starred chef.",
-    location: "Paris, France",
     city: "Paris",
     country: "France",
     category: "food_wine",
@@ -637,8 +1002,10 @@ export const experiences: SeedExperience[] = [
     basePrice: 120000,
     currency: "eur",
     imageUrl: "experiences/exp-4/main.webp",
+    additionalCosts: null,
     status: "published",
     featured: true,
+    instantBook: true,
   },
   {
     id: "exp-5",
@@ -647,7 +1014,6 @@ export const experiences: SeedExperience[] = [
     description:
       "Sail into the famous Santorini sunset aboard a luxury catamaran.",
     shortDescription: "Romantic Santorini sunset cruise.",
-    location: "Santorini, Greece",
     city: "Santorini",
     country: "Greece",
     category: "sailing",
@@ -656,8 +1022,10 @@ export const experiences: SeedExperience[] = [
     basePrice: 68000,
     currency: "eur",
     imageUrl: "experiences/exp-5/main.webp",
+    additionalCosts: null,
     status: "published",
     featured: false,
+    instantBook: true,
   },
   {
     id: "exp-6",
@@ -666,7 +1034,6 @@ export const experiences: SeedExperience[] = [
     description:
       "Exclusive after-hours tour of Florence's finest art galleries with an expert curator.",
     shortDescription: "Private gallery tour in Florence.",
-    location: "Florence, Italy",
     city: "Florence",
     country: "Italy",
     category: "culture",
@@ -675,8 +1042,159 @@ export const experiences: SeedExperience[] = [
     basePrice: 35000,
     currency: "eur",
     imageUrl: "experiences/exp-6/main.webp",
+    additionalCosts: null,
     status: "published",
     featured: false,
+    instantBook: false,
+  },
+  {
+    id: "exp-7",
+    userId: "seed_broker_001",
+    title: "Alpine Ski Safari",
+    description:
+      "A full-day guided ski safari across hidden off-piste runs in the Swiss Alps with a certified mountain guide.",
+    shortDescription: "Off-piste ski adventure in the Swiss Alps.",
+    city: "Zermatt",
+    country: "Switzerland",
+    category: "adventure",
+    duration: "7 hours",
+    maxParticipants: 6,
+    basePrice: 95000,
+    currency: "eur",
+    imageUrl: "experiences/exp-1/main.webp",
+    additionalCosts: [
+      { label: "Equipment rental", amount: 8000, per: "participant" },
+    ],
+    status: "published",
+    featured: false,
+    instantBook: true,
+  },
+  {
+    id: "exp-8",
+    userId: "seed_broker_001",
+    title: "Truffle Hunting in Piedmont",
+    description:
+      "Join a truffle hunter and his trained dog through the forests of Piedmont, followed by a truffle lunch at a family estate.",
+    shortDescription: "Truffle hunt and lunch in Piedmont.",
+    city: "Alba",
+    country: "Italy",
+    category: "food_wine",
+    duration: "5 hours",
+    maxParticipants: 8,
+    basePrice: 52000,
+    currency: "eur",
+    imageUrl: "experiences/exp-2/main.webp",
+    additionalCosts: null,
+    status: "published",
+    featured: true,
+    instantBook: true,
+  },
+  {
+    id: "exp-9",
+    userId: "seed_broker_001",
+    title: "Private Flamenco Show",
+    description:
+      "An intimate, private flamenco performance in a historic tablao in Seville, paired with tapas and sherry.",
+    shortDescription: "Private flamenco show with tapas in Seville.",
+    city: "Seville",
+    country: "Spain",
+    category: "culture",
+    duration: "3 hours",
+    maxParticipants: 10,
+    basePrice: 28000,
+    currency: "eur",
+    imageUrl: "experiences/exp-4/main.webp",
+    additionalCosts: null,
+    status: "published",
+    featured: false,
+    instantBook: false,
+  },
+  {
+    id: "exp-10",
+    userId: "seed_broker_001",
+    title: "Aegean Island Hopping",
+    description:
+      "A multi-island day trip through the Cyclades aboard a private speedboat, with swimming stops at secluded bays.",
+    shortDescription: "Private speedboat island hopping in the Cyclades.",
+    city: "Mykonos",
+    country: "Greece",
+    category: "sailing",
+    duration: "10 hours",
+    maxParticipants: 6,
+    basePrice: 180000,
+    currency: "eur",
+    imageUrl: "experiences/exp-5/main.webp",
+    additionalCosts: null,
+    status: "published",
+    featured: true,
+    instantBook: true,
+  },
+];
+
+// ============================================================================
+// City Tax Defaults
+// ============================================================================
+export const cityTaxDefaults: SeedCityTaxDefault[] = [
+  {
+    id: "ctx-calvia",
+    userId: "seed_broker_001",
+    city: "Calvià",
+    country: "Spain",
+    amount: 350,
+    maxNights: 10,
+  },
+  {
+    id: "ctx-barcelona",
+    userId: "seed_broker_001",
+    city: "Barcelona",
+    country: "Spain",
+    amount: 225,
+    maxNights: 7,
+  },
+  {
+    id: "ctx-bellagio",
+    userId: "seed_broker_001",
+    city: "Bellagio",
+    country: "Italy",
+    amount: 300,
+    maxNights: 14,
+  },
+  {
+    id: "ctx-lisbon",
+    userId: "seed_broker_001",
+    city: "Lisbon",
+    country: "Portugal",
+    amount: 200,
+    maxNights: 7,
+  },
+  {
+    id: "ctx-nice",
+    userId: "seed_broker_001",
+    city: "Nice",
+    country: "France",
+    amount: 150,
+    maxNights: null,
+  },
+  {
+    id: "ctx-mykonos",
+    userId: "seed_broker_001",
+    city: "Mykonos",
+    country: "Greece",
+    amount: 400,
+    maxNights: 7,
+  },
+];
+
+// ============================================================================
+// PMS Integrations
+// ============================================================================
+export const pmsIntegrations: SeedPmsIntegration[] = [
+  {
+    id: "pms-seed-001",
+    userId: "seed_broker_001",
+    provider: "smoobu",
+    apiKey: "mock-api-key",
+    pmsUserId: 50001,
   },
 ];
 
@@ -688,4 +1206,6 @@ export const seedData: SeedData = {
   assets,
   images,
   experiences,
+  cityTaxDefaults,
+  pmsIntegrations,
 };

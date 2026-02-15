@@ -1,11 +1,19 @@
+import {
+  computePropertyAdditionalCosts,
+  formatPropertyCostPreview,
+} from "@/features/public/booking/domain/computeAdditionalCosts";
+import type {
+  PriceLineItem,
+  PropertyAdditionalCost,
+} from "@/features/public/booking/domain/pricingTypes";
 import type { SmoobuAvailabilityResponse } from "@/schemas/smoobu";
 import { useMemo } from "react";
 
 const SUPPORTED_CURRENCIES = new Set(["EUR", "GBP", "USD"]);
 
 const SYMBOL_TO_ISO: Record<string, string> = {
-  "€": "EUR",
-  "£": "GBP",
+  "\u20AC": "EUR",
+  "\u00A3": "GBP",
   $: "USD",
 };
 
@@ -24,6 +32,8 @@ type PriceDisplayInput = {
   availabilityResult: SmoobuAvailabilityResponse | null;
   availabilityLoading: boolean;
   availabilityError: Error | null;
+  additionalCosts?: PropertyAdditionalCost[] | null;
+  guests?: number | null;
 };
 
 type ErrorInfo = {
@@ -48,6 +58,8 @@ type PriceDisplayState =
       perNightCents: number;
       nights: number;
       currency: string;
+      additionalCostItems: PriceLineItem[];
+      grandTotalCents: number;
     };
 
 function getUnavailableMessage(errorInfo?: ErrorInfo): string {
@@ -79,6 +91,8 @@ export function usePriceDisplay({
   availabilityResult,
   availabilityLoading,
   availabilityError,
+  additionalCosts,
+  guests,
 }: PriceDisplayInput): PriceDisplayState {
   return useMemo(() => {
     if (!checkIn || !checkOut) return { status: "no-dates" };
@@ -109,12 +123,33 @@ export function usePriceDisplay({
 
     const nights = Object.keys(nightPriceCents).length;
 
+    // Compute additional costs
+    let additionalCostItems: PriceLineItem[];
+    if (guests != null && guests > 0) {
+      additionalCostItems = computePropertyAdditionalCosts(
+        additionalCosts ?? null,
+        { nights, guests, currency: resolvedCurrency }
+      );
+    } else {
+      additionalCostItems = formatPropertyCostPreview(
+        additionalCosts ?? null,
+        resolvedCurrency
+      );
+    }
+
+    const additionalTotalCents = additionalCostItems.reduce(
+      (sum, item) => sum + item.amountCents,
+      0
+    );
+
     return {
       status: "available",
       totalPriceCents,
       perNightCents: Math.round(totalPriceCents / nights),
       nights,
       currency: resolvedCurrency,
+      additionalCostItems,
+      grandTotalCents: totalPriceCents + additionalTotalCents,
     };
   }, [
     checkIn,
@@ -126,5 +161,7 @@ export function usePriceDisplay({
     availabilityResult,
     availabilityLoading,
     availabilityError,
+    additionalCosts,
+    guests,
   ]);
 }

@@ -42,7 +42,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
       conditions.push(
         or(
           like(experiences.title, `%${search}%`),
-          like(experiences.location, `%${search}%`)
+          like(experiences.city, `%${search}%`)
         )
       );
     }

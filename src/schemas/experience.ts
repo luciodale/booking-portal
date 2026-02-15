@@ -45,7 +45,6 @@ const experienceFieldsSchema = baseExperienceInsertSchema
       .string()
       .min(10, "Short description must be at least 10 characters")
       .max(300),
-    location: z.string().min(3),
     city: z.string().min(2).optional(),
     country: z.string().min(2).optional(),
     category: z.string().min(1, "Category is required"),
@@ -98,7 +97,8 @@ export const experienceListItemSchema = experienceSelectSchema
     id: true,
     title: true,
     shortDescription: true,
-    location: true,
+    city: true,
+    country: true,
     category: true,
     duration: true,
     status: true,

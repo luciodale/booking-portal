@@ -7,12 +7,16 @@
 import { join } from "node:path";
 import {
   type SeedAsset,
+  type SeedCityTaxDefault,
   type SeedExperience,
   type SeedImage,
+  type SeedPmsIntegration,
   type SeedUser,
   assets,
+  cityTaxDefaults,
   experiences,
   images,
+  pmsIntegrations,
   users,
 } from "../seeds/data";
 
@@ -36,9 +40,14 @@ function generateUserInsert(user: SeedUser): string {
 VALUES (${escapeString(user.id)}, ${escapeString(user.name)}, ${escapeString(user.email)}, ${escapeString(user.whatsappNumber)}, ${escapeString(user.bio)}, ${escapeString(user.avatarUrl)}, ${boolToInt(user.verified)});`;
 }
 
+function jsonValue(val: unknown): string {
+  if (val === null || val === undefined) return "NULL";
+  return escapeString(JSON.stringify(val));
+}
+
 function generateAssetInsert(asset: SeedAsset): string {
-  return `INSERT INTO assets (id, user_id, tier, status, title, description, short_description, location, street, zip, city, country, latitude, longitude, max_occupancy, bedrooms, bathrooms, sq_meters, amenities, views, highlights, video_url, pdf_asset_path, instant_book, featured, sort_order)
-VALUES (${escapeString(asset.id)}, ${escapeString(asset.userId)}, ${escapeString(asset.tier)}, ${escapeString(asset.status)}, ${escapeString(asset.title)}, ${escapeString(asset.description)}, ${escapeString(asset.shortDescription)}, ${escapeString(asset.location)}, ${escapeString(asset.street)}, ${escapeString(asset.zip)}, ${escapeString(asset.city)}, ${escapeString(asset.country)}, ${escapeString(asset.latitude)}, ${escapeString(asset.longitude)}, ${asset.maxOccupancy}, ${asset.bedrooms}, ${asset.bathrooms}, ${asset.sqMeters}, ${jsonArray(asset.amenities)}, ${jsonArray(asset.views)}, ${jsonArray(asset.highlights)}, ${escapeString(asset.videoUrl)}, ${escapeString(asset.pdfAssetPath)}, ${boolToInt(asset.instantBook)}, ${boolToInt(asset.featured)}, ${asset.sortOrder});`;
+  return `INSERT INTO assets (id, user_id, smoobu_property_id, tier, status, title, description, short_description, street, zip, city, country, latitude, longitude, max_occupancy, bedrooms, bathrooms, sq_meters, amenities, views, highlights, additional_costs, video_url, pdf_asset_path, instant_book, featured, sort_order, show_full_address)
+VALUES (${escapeString(asset.id)}, ${escapeString(asset.userId)}, ${asset.smoobuPropertyId ?? "NULL"}, ${escapeString(asset.tier)}, ${escapeString(asset.status)}, ${escapeString(asset.title)}, ${escapeString(asset.description)}, ${escapeString(asset.shortDescription)}, ${escapeString(asset.street)}, ${escapeString(asset.zip)}, ${escapeString(asset.city)}, ${escapeString(asset.country)}, ${escapeString(asset.latitude)}, ${escapeString(asset.longitude)}, ${asset.maxOccupancy}, ${asset.bedrooms}, ${asset.bathrooms}, ${asset.sqMeters}, ${jsonArray(asset.amenities)}, ${jsonArray(asset.views)}, ${jsonArray(asset.highlights)}, ${jsonValue(asset.additionalCosts)}, ${escapeString(asset.videoUrl)}, ${escapeString(asset.pdfAssetPath)}, ${boolToInt(asset.instantBook)}, ${boolToInt(asset.featured)}, ${asset.sortOrder}, ${boolToInt(asset.showFullAddress)});`;
 }
 
 function generateImageInsert(image: SeedImage): string {
@@ -47,15 +56,28 @@ VALUES (${escapeString(image.id)}, ${escapeString(image.assetId)}, ${escapeStrin
 }
 
 function generateExperienceInsert(exp: SeedExperience): string {
-  return `INSERT INTO experiences (id, user_id, title, description, short_description, location, city, country, category, duration, max_participants, base_price, currency, image_url, status, featured)
-VALUES (${escapeString(exp.id)}, ${escapeString(exp.userId)}, ${escapeString(exp.title)}, ${escapeString(exp.description)}, ${escapeString(exp.shortDescription)}, ${escapeString(exp.location)}, ${escapeString(exp.city)}, ${escapeString(exp.country)}, ${escapeString(exp.category)}, ${escapeString(exp.duration)}, ${exp.maxParticipants}, ${exp.basePrice}, ${escapeString(exp.currency)}, ${escapeString(exp.imageUrl)}, ${escapeString(exp.status)}, ${boolToInt(exp.featured)});`;
+  return `INSERT INTO experiences (id, user_id, title, description, short_description, city, country, category, duration, max_participants, base_price, currency, image_url, additional_costs, status, featured, instant_book)
+VALUES (${escapeString(exp.id)}, ${escapeString(exp.userId)}, ${escapeString(exp.title)}, ${escapeString(exp.description)}, ${escapeString(exp.shortDescription)}, ${escapeString(exp.city)}, ${escapeString(exp.country)}, ${escapeString(exp.category)}, ${escapeString(exp.duration)}, ${exp.maxParticipants}, ${exp.basePrice}, ${escapeString(exp.currency)}, ${escapeString(exp.imageUrl)}, ${jsonValue(exp.additionalCosts)}, ${escapeString(exp.status)}, ${boolToInt(exp.featured)}, ${boolToInt(exp.instantBook)});`;
+}
+
+function generatePmsIntegrationInsert(pms: SeedPmsIntegration): string {
+  return `INSERT INTO pms_integrations (id, user_id, provider, api_key, pms_user_id)
+VALUES (${escapeString(pms.id)}, ${escapeString(pms.userId)}, ${escapeString(pms.provider)}, ${escapeString(pms.apiKey)}, ${pms.pmsUserId});`;
+}
+
+function generateCityTaxDefaultInsert(ctx: SeedCityTaxDefault): string {
+  return `INSERT INTO city_tax_defaults (id, user_id, city, country, amount, max_nights)
+VALUES (${escapeString(ctx.id)}, ${escapeString(ctx.userId)}, ${escapeString(ctx.city)}, ${escapeString(ctx.country)}, ${ctx.amount}, ${ctx.maxNights === null ? "NULL" : ctx.maxNights});`;
 }
 
 function generateDeleteStatements(): string {
   // Only delete from tables we seed (children first)
-  // Other tables (reviews, favorites, bookings, etc.) are not seeded
+  // Other tables (reviews, bookings, etc.) are not seeded
   return `-- Clean existing data
 DELETE FROM images;
+DELETE FROM experience_bookings;
+DELETE FROM city_tax_defaults;
+DELETE FROM pms_integrations;
 DELETE FROM experiences;
 DELETE FROM assets;
 DELETE FROM users;
@@ -99,6 +121,20 @@ function generateSQL(): string {
   for (const exp of experiences) {
     lines.push(generateExperienceInsert(exp));
   }
+  lines.push("");
+
+  // Insert pms integrations
+  lines.push("-- PMS Integrations");
+  for (const pms of pmsIntegrations) {
+    lines.push(generatePmsIntegrationInsert(pms));
+  }
+  lines.push("");
+
+  // Insert city tax defaults
+  lines.push("-- City Tax Defaults");
+  for (const ctx of cityTaxDefaults) {
+    lines.push(generateCityTaxDefaultInsert(ctx));
+  }
 
   return lines.join("\n");
 }
@@ -116,6 +152,8 @@ async function main() {
   console.log(`  Assets: ${assets.length}`);
   console.log(`  Images: ${images.length}`);
   console.log(`  Experiences: ${experiences.length}`);
+  console.log(`  PMS Integrations: ${pmsIntegrations.length}`);
+  console.log(`  City Tax Defaults: ${cityTaxDefaults.length}`);
   console.log("\nSQL written to .seed.sql");
 
   // Also output to stdout for piping

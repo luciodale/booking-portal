@@ -17,6 +17,7 @@ import {
   EditableTextareaField,
 } from "./EditableField";
 import { ImagesManager } from "./ImagesManager";
+import { LocationSectionEdit } from "./LocationSectionEdit";
 
 interface PropertyEditViewProps {
   propertyId: string;
@@ -108,46 +109,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
 
       {/* Location */}
       <section className="bg-card border border-border p-6 rounded-xl">
-        <h2 className="text-xl font-semibold text-foreground mb-6">Location</h2>
-
-        <div className="space-y-6">
-          <EditableTextField
-            label="Location"
-            value={property.location}
-            onSave={(v) => saveField("location", v)}
-            placeholder="Amalfi Coast, Italy"
-          />
-
-          <div className="grid grid-cols-2 gap-6">
-            <EditableTextField
-              label="City"
-              value={property.city ?? ""}
-              onSave={(v) => saveField("city", v)}
-              placeholder="Amalfi"
-            />
-
-            <EditableTextField
-              label="Country"
-              value={property.country ?? ""}
-              onSave={(v) => saveField("country", v)}
-              placeholder="Italy"
-            />
-          </div>
-
-          <EditableTextField
-            label="Street Address"
-            value={property.street ?? ""}
-            onSave={(v) => saveField("street", v)}
-            placeholder="Via Cristoforo Colombo 12"
-          />
-
-          <EditableTextField
-            label="Postal Code"
-            value={property.zip ?? ""}
-            onSave={(v) => saveField("zip", v)}
-            placeholder="84011"
-          />
-        </div>
+        <LocationSectionEdit property={property} saveFields={saveFields} />
       </section>
 
       {/* Property Details */}

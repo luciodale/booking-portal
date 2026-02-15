@@ -7,6 +7,7 @@ import { useDeleteProperty } from "@/features/broker/property/queries/useDeleteP
 import { useProperties } from "@/features/broker/property/queries/useProperties";
 import { Select } from "@/modules/ui/Select";
 import { cn } from "@/modules/utils/cn";
+import { formatLocation } from "@/utils/formatLocation";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -154,7 +155,7 @@ export function PropertyList() {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                    {property.location}
+                    {formatLocation(property)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span

@@ -3,6 +3,7 @@ import { useDeleteExperience } from "@/features/broker/experience/queries/useDel
 import { useExperiences } from "@/features/broker/experience/queries/useExperiences";
 import { Select } from "@/modules/ui/Select";
 import { cn } from "@/modules/utils/cn";
+import { formatLocation } from "@/utils/formatLocation";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -143,7 +144,7 @@ export function ExperienceListView() {
                           {exp.title}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {exp.location} &middot; {exp.duration}
+                          {formatLocation(exp)} &middot; {exp.duration}
                         </div>
                       </div>
                     </div>

@@ -25,7 +25,7 @@ type CalendarPopoverProps = {
   onDateClick: (dateStr: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
-  onClear: () => void;
+  onConfirm: () => void;
 };
 
 export function CalendarPopover({
@@ -40,7 +40,7 @@ export function CalendarPopover({
   onDateClick,
   onPrevMonth,
   onNextMonth,
-  onClear,
+  onConfirm,
 }: CalendarPopoverProps) {
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
@@ -71,7 +71,7 @@ export function CalendarPopover({
 
       {isOpen && (
         <FloatingPortal>
-          <FloatingFocusManager context={context} modal={false}>
+          <FloatingFocusManager context={context} modal={false} closeOnFocusOut={false}>
             <div
               ref={refs.setFloating}
               style={floatingStyles}
@@ -90,17 +90,15 @@ export function CalendarPopover({
                 onNextMonth={onNextMonth}
               />
 
-              {(checkIn || checkOut) && (
-                <div className="mt-3 pt-3 border-t border-border flex justify-end">
-                  <button
-                    type="button"
-                    onClick={onClear}
-                    className="text-xs text-primary hover:text-primary/80 transition-colors"
-                  >
-                    Clear dates
-                  </button>
-                </div>
-              )}
+              <div className="mt-3 pt-3 border-t border-border flex justify-end">
+                <button
+                  type="button"
+                  onClick={onConfirm}
+                  className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Confirm
+                </button>
+              </div>
             </div>
           </FloatingFocusManager>
         </FloatingPortal>

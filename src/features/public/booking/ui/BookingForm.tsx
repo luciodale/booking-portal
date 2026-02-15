@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -19,6 +20,7 @@ type BookingFormProps = {
   isAvailable: boolean;
   isSubmitting: boolean;
   onSubmit: (data: BookingGuestInput) => void;
+  onGuestsChange?: (count: number) => void;
 };
 
 export function BookingForm({
@@ -26,15 +28,25 @@ export function BookingForm({
   isAvailable,
   isSubmitting,
   onSubmit,
+  onGuestsChange,
 }: BookingFormProps) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<BookingGuestInput>({
     resolver: zodResolver(bookingGuestSchema),
     defaultValues: { adults: 1, children: 0 },
   });
+
+  const adults = watch("adults");
+  const children = watch("children");
+
+  useEffect(() => {
+    const total = (adults || 1) + (children || 0);
+    onGuestsChange?.(total);
+  }, [adults, children, onGuestsChange]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

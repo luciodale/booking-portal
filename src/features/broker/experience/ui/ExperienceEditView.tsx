@@ -115,12 +115,6 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
       <section className="bg-card border border-border p-6 rounded-xl">
         <h2 className="text-xl font-semibold text-foreground mb-6">Location</h2>
         <div className="space-y-6">
-          <EditableTextField
-            label="Location"
-            value={experience.location}
-            onSave={(v) => saveField("location", v)}
-            placeholder="Sardinia, Italy"
-          />
           <div className="grid grid-cols-2 gap-6">
             <EditableTextField
               label="City"

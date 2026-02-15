@@ -8,6 +8,34 @@
       "when": 1771113692043,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1771170537289,
+      "tag": "0001_bored_the_order",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1771171512428,
+      "tag": "0002_additional-costs-and-city-tax",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1771186406411,
+      "tag": "0003_show-full-address",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1771189790108,
+      "tag": "0004_drop-location-column",
+      "breakpoints": true
     }
   ]
 }

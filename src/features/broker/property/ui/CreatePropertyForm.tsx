@@ -25,6 +25,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { LocationSection } from "./LocationSection";
 
 // =============================================================================
 // Types
@@ -98,6 +99,7 @@ export function CreatePropertyForm({
         highlights: [],
         views: [],
         images: [],
+        showFullAddress: true,
       },
     });
 
@@ -184,66 +186,12 @@ export function CreatePropertyForm({
       </FormSection>
 
       {/* Location */}
-      <FormSection title="Location">
-        <TextInput
-          name="location"
-          control={control}
-          label="Location"
-          required
-          placeholder="Amalfi Coast, Italy"
-          labelSuffix={renderLink("location")}
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-          <TextInput
-            name="city"
-            control={control}
-            label="City"
-            placeholder="Amalfi"
-            labelSuffix={renderLink("city")}
-          />
-          <TextInput
-            name="country"
-            control={control}
-            label="Country"
-            placeholder="Italy"
-            labelSuffix={renderLink("country")}
-          />
-        </div>
-
-        <TextInput
-          name="street"
-          control={control}
-          label="Street Address"
-          placeholder="Via Cristoforo Colombo 12"
-          labelSuffix={renderLink("street")}
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-          <TextInput
-            name="zip"
-            control={control}
-            label="ZIP Code"
-            placeholder="84011"
-            labelSuffix={renderLink("zip")}
-          />
-          <TextInput
-            name="latitude"
-            control={control}
-            label="Latitude"
-            placeholder="40.6331"
-            labelSuffix={renderLink("latitude")}
-          />
-        </div>
-
-        <TextInput
-          name="longitude"
-          control={control}
-          label="Longitude"
-          placeholder="14.6028"
-          labelSuffix={renderLink("longitude")}
-        />
-      </FormSection>
+      <LocationSection
+        control={control}
+        setValue={setValue}
+        smoobuData={smoobuData}
+        renderLink={renderLink}
+      />
 
       {/* Property Details */}
       <FormSection title="Property Details">

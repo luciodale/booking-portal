@@ -51,7 +51,6 @@ const propertyFieldsSchema = baseAssetInsertSchema
       .min(20, "Short description must be at least 20 characters")
       .max(500),
 
-    location: z.string().min(3),
     city: z.string().min(2).optional(),
     country: z.string().min(2).optional(),
 
@@ -81,6 +80,7 @@ const propertyFieldsSchema = baseAssetInsertSchema
       .nullable(),
 
     videoUrl: z.string().url().optional().nullable(),
+    showFullAddress: z.boolean().optional(),
   });
 
 /**
@@ -128,7 +128,8 @@ export const propertyListItemSchema = assetSelectSchema
     smoobuPropertyId: true,
     title: true,
     shortDescription: true,
-    location: true,
+    city: true,
+    country: true,
     tier: true,
     status: true,
     maxOccupancy: true,

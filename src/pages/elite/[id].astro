@@ -16,6 +16,7 @@ import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import Badge from "@/modules/ui/astro/Badge.astro";
 import Button from "@/modules/ui/astro/Button.astro";
 import ImageGallery from "@/modules/ui/astro/ImageGallery.astro";
+import { formatAddress, formatLocation } from "@/utils/formatLocation";
 import { and, asc, eq } from "drizzle-orm";
 
 export const prerender = false;
@@ -44,8 +45,8 @@ const imageUrls = assetImagesList.map((img) => generateImageUrl(img.r2Key));
 const property = {
   id: asset.id,
   title: asset.title,
-  location: asset.location,
-  address: asset.street ?? asset.location,
+  location: formatLocation(asset),
+  address: formatAddress(asset),
   tier: asset.tier,
   tagline: asset.shortDescription ?? "Exceptional Luxury Awaits",
   description: asset.description ?? "",
@@ -95,7 +96,7 @@ const linkedExperiences = await Promise.all(
     return {
       id: exp.id,
       title: exp.title,
-      location: exp.city ?? exp.location,
+      location: formatLocation(exp),
       imageUrl,
       duration: exp.duration ?? "",
       category: exp.category
@@ -272,6 +273,8 @@ const linkedExperiencesFiltered = linkedExperiences.filter(
               propertyId={property.id}
               smoobuPropertyId={asset.smoobuPropertyId ?? null}
               maxGuests={property.maxGuests}
+              instantBook={asset.instantBook}
+              additionalCosts={asset.additionalCosts ?? null}
             />
           </div>
         </div>

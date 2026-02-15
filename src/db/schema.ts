@@ -66,13 +66,15 @@ export const assets = sqliteTable(
     shortDescription: text("short_description"), // For cards
 
     // Location (from Smoobu for hotels)
-    location: text("location").notNull(),
     street: text("street"),
     zip: text("zip"),
     city: text("city"),
     country: text("country"),
     latitude: text("latitude"),
     longitude: text("longitude"),
+    showFullAddress: integer("show_full_address", { mode: "boolean" })
+      .notNull()
+      .default(true),
 
     // Rooms (from Smoobu for hotels)
     maxOccupancy: integer("max_occupancy"),
@@ -100,6 +102,16 @@ export const assets = sqliteTable(
     instantBook: integer("instant_book", { mode: "boolean" })
       .notNull()
       .default(false),
+
+    // Additional Costs
+    additionalCosts: text("additional_costs", { mode: "json" }).$type<
+      Array<{
+        label: string;
+        amount: number;
+        per: "stay" | "night" | "guest" | "night_per_guest";
+        maxNights?: number;
+      }>
+    >(),
 
     // Display
     featured: integer("featured", { mode: "boolean" }).notNull().default(false),
@@ -290,28 +302,6 @@ export const reviews = sqliteTable(
 );
 
 // ============================================================================
-// Favorites table - saved listings
-// ============================================================================
-export const favorites = sqliteTable(
-  "favorites",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    assetId: text("asset_id")
-      .notNull()
-      .references(() => assets.id, { onDelete: "cascade" }),
-    createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-  },
-  (table) => [
-    index("idx_favorites_user").on(table.userId),
-    index("idx_favorites_asset").on(table.assetId),
-    index("idx_favorites_user_asset").on(table.userId, table.assetId),
-  ]
-);
-
-// ============================================================================
 // Experiences table - standalone experiences
 // ============================================================================
 export const experiences = sqliteTable(
@@ -328,7 +318,6 @@ export const experiences = sqliteTable(
     shortDescription: text("short_description"),
 
     // Location
-    location: text("location").notNull(),
     city: text("city"),
     country: text("country"),
 
@@ -350,6 +339,20 @@ export const experiences = sqliteTable(
       .notNull()
       .default("draft"),
     featured: integer("featured", { mode: "boolean" }).notNull().default(false),
+
+    // Additional Costs
+    additionalCosts: text("additional_costs", { mode: "json" }).$type<
+      Array<{
+        label: string;
+        amount: number;
+        per: "booking" | "participant";
+      }>
+    >(),
+
+    // Booking Options
+    instantBook: integer("instant_book", { mode: "boolean" })
+      .notNull()
+      .default(false),
 
     // Timestamps
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
@@ -414,9 +417,78 @@ export const assetExperiences = sqliteTable(
 );
 
 // ============================================================================
-// DEPRECATED TABLES - Removed with Smoobu integration
-// Channels, channel markups, and pricing rules are now managed by Smoobu
+// Experience Bookings table
 // ============================================================================
+export const experienceBookings = sqliteTable(
+  "experience_bookings",
+  {
+    id: text("id").primaryKey(),
+    experienceId: text("experience_id")
+      .notNull()
+      .references(() => experiences.id),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+
+    // Booking details
+    bookingDate: text("booking_date").notNull(), // YYYY-MM-DD
+    participants: integer("participants").notNull(),
+
+    // Pricing
+    totalPrice: integer("total_price").notNull(), // cents
+    currency: text("currency").notNull().default("eur"),
+
+    // Status
+    status: text("status")
+      .$type<"pending" | "confirmed" | "cancelled" | "completed">()
+      .notNull()
+      .default("pending"),
+
+    // Payment
+    stripeSessionId: text("stripe_session_id"),
+    stripePaymentIntentId: text("stripe_payment_intent_id"),
+    paidAt: text("paid_at"),
+
+    // Guest info
+    firstName: text("first_name").notNull(),
+    lastName: text("last_name").notNull(),
+    email: text("email").notNull(),
+    phone: text("phone"),
+    guestNote: text("guest_note"),
+
+    // Timestamps
+    createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("idx_exp_bookings_experience").on(table.experienceId),
+    index("idx_exp_bookings_user").on(table.userId),
+    index("idx_exp_bookings_status").on(table.status),
+  ]
+);
+
+// ============================================================================
+// City Tax Defaults - per-city tourist tax defaults for broker convenience
+// ============================================================================
+export const cityTaxDefaults = sqliteTable(
+  "city_tax_defaults",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id),
+    city: text("city").notNull(),
+    country: text("country").notNull().default("IT"),
+    amount: integer("amount").notNull(), // cents, per person per night
+    maxNights: integer("max_nights"), // null = no cap
+    createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("idx_city_tax_defaults_user").on(table.userId),
+    index("idx_city_tax_defaults_city").on(table.city, table.country),
+  ]
+);
 
 // ============================================================================
 // Type exports
@@ -433,8 +505,6 @@ export type Booking = typeof bookings.$inferSelect;
 export type NewBooking = typeof bookings.$inferInsert;
 export type Review = typeof reviews.$inferSelect;
 export type NewReview = typeof reviews.$inferInsert;
-export type Favorite = typeof favorites.$inferSelect;
-export type NewFavorite = typeof favorites.$inferInsert;
 export type Experience = typeof experiences.$inferSelect;
 export type NewExperience = typeof experiences.$inferInsert;
 export type ExperienceImage = typeof experienceImages.$inferSelect;
@@ -445,3 +515,7 @@ export type BrokerLog = typeof brokerLogs.$inferSelect;
 export type NewBrokerLog = typeof brokerLogs.$inferInsert;
 export type EventLog = typeof eventLogs.$inferSelect;
 export type NewEventLog = typeof eventLogs.$inferInsert;
+export type ExperienceBooking = typeof experienceBookings.$inferSelect;
+export type NewExperienceBooking = typeof experienceBookings.$inferInsert;
+export type CityTaxDefault = typeof cityTaxDefaults.$inferSelect;
+export type NewCityTaxDefault = typeof cityTaxDefaults.$inferInsert;

@@ -1,49 +1,27 @@
 ---
 import { getDb } from "@/db";
-import { assets, images } from "@/db/schema";
+import {
+  fetchCityCards,
+  fetchPropertiesByCity,
+} from "@/features/public/browse/queries";
 import PageLayout from "@/layouts/PageLayout.astro";
-import { generateImageUrl } from "@/modules/r2/r2-helpers";
-import Button from "@/modules/ui/astro/Button.astro";
 import Hero from "@/modules/ui/astro/Hero.astro";
 import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
-import { and, desc, eq } from "drizzle-orm";
 
 export const prerender = false;
 
 const db = getDb(Astro.locals.runtime.env.DB);
+const cityParam = Astro.url.searchParams.get("city");
+const currentPage = Math.max(1, Number(Astro.url.searchParams.get("page") || "1"));
 
-const elitePropertiesRaw = await db
-  .select()
-  .from(assets)
-  .where(and(eq(assets.tier, "elite"), eq(assets.status, "published")))
-  .orderBy(desc(assets.createdAt));
-
-const eliteProperties = await Promise.all(
-  elitePropertiesRaw.map(async (asset) => {
-    const [primaryImage] = await db
-      .select()
-      .from(images)
-      .where(and(eq(images.assetId, asset.id), eq(images.isPrimary, true)))
-      .limit(1);
-
-    return {
-      asset,
-      imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
-    };
-  })
-);
-
-const filters = [
-  "Beachfront",
-  "Mountain",
-  "City Center",
-  "Pool",
-  "5+ Bedrooms",
-];
+const cityCards = cityParam ? [] : await fetchCityCards(db, "elite");
+const { properties, totalCount, totalPages } = cityParam
+  ? await fetchPropertiesByCity(db, "elite", cityParam, currentPage)
+  : { properties: [], totalCount: 0, totalPages: 0 };
 ---
 
 <PageLayout
-  title="Elite Collection"
+  title={cityParam ? `Elite in ${cityParam}` : "Elite Collection"}
   description="Discover our curated selection of the world's most extraordinary luxury properties."
   showMarble
 >
@@ -52,51 +30,105 @@ const filters = [
     title="Elite Collection"
     titleGradient="Elite"
     subtitle="A handpicked selection of the world's most extraordinary properties. Each residence meets our rigorous standards for luxury, location, and exceptional service."
+    cityName={cityParam}
     height="medium"
   />
 
-  <section
-    class="sticky top-header-height z-30 glass border-y border-border/50"
-  >
-    <div class="container mx-auto px-6 py-4">
-      <div class="flex flex-wrap items-center gap-4">
-        <button class="amenity-chip">
-          <i data-lucide="filter" class="w-4 h-4"></i>
-          Filters
-        </button>
-        {
-          filters.map((filter) => (
-            <button class="amenity-chip">{filter}</button>
-          ))
-        }
-        <div class="ml-auto flex items-center gap-3 text-sm text-muted-foreground">
-          <span>{eliteProperties.length} properties</span>
+  {
+    !cityParam ? (
+      <section class="py-16 px-6">
+        <div class="container mx-auto">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {cityCards.map((card, index) => (
+              <a
+                href={`/elite?city=${encodeURIComponent(card.city)}`}
+                class="group relative block rounded-2xl overflow-hidden aspect-4/3 card-hover"
+                style={`animation-delay: ${0.1 + index * 0.1}s`}
+              >
+                <img
+                  src={card.imageUrl}
+                  alt={card.city}
+                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  loading="lazy"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+                <div class="absolute bottom-6 left-6">
+                  <h3 class="text-2xl font-bold text-white">{card.city}</h3>
+                  <p class="text-white/70 text-sm mt-1">
+                    {card.count} {card.count === 1 ? "property" : "properties"}
+                  </p>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="py-16 px-6">
-    <div class="container mx-auto">
-      <div
-        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        id="property-grid"
-      >
-        {
-          eliteProperties.map((property, index) => (
-            <div
-              class="animate-slide-up opacity-0"
-              style={`animation-delay: ${0.1 + index * 0.1}s`}
+      </section>
+    ) : (
+      <section class="py-16 px-6">
+        <div class="container mx-auto">
+          <div class="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
+            <a
+              href="/elite"
+              class="hover:text-foreground transition-colors flex items-center gap-1"
             >
-              <PropertyCard {...property} price={null} />
-            </div>
-          ))
-        }
-      </div>
-    </div>
-  </section>
+              <i data-lucide="arrow-left" class="w-4 h-4" />
+              All cities
+            </a>
+            <span>/</span>
+            <span class="text-foreground">{cityParam}</span>
+            <span class="ml-auto">
+              {totalCount} {totalCount === 1 ? "property" : "properties"}
+            </span>
+          </div>
 
-  <section class="pb-20 px-6 text-center">
-    <Button variant="secondary">Load More Properties</Button>
-  </section>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {properties.map((property, index) => (
+              <div
+                class="animate-slide-up opacity-0"
+                style={`animation-delay: ${0.1 + index * 0.1}s`}
+              >
+                <PropertyCard {...property} price={null} target="_blank" />
+              </div>
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <nav class="mt-12 flex justify-center items-center gap-2">
+              {currentPage > 1 && (
+                <a
+                  href={`/elite?city=${encodeURIComponent(cityParam)}&page=${currentPage - 1}`}
+                  class="px-4 py-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors text-sm"
+                >
+                  Previous
+                </a>
+              )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                (page) => (
+                  <a
+                    href={`/elite?city=${encodeURIComponent(cityParam)}&page=${page}`}
+                    class:list={[
+                      "px-4 py-2 rounded-lg text-sm transition-colors",
+                      page === currentPage
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-card border border-border hover:bg-muted",
+                    ]}
+                  >
+                    {page}
+                  </a>
+                )
+              )}
+              {currentPage < totalPages && (
+                <a
+                  href={`/elite?city=${encodeURIComponent(cityParam)}&page=${currentPage + 1}`}
+                  class="px-4 py-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors text-sm"
+                >
+                  Next
+                </a>
+              )}
+            </nav>
+          )}
+        </div>
+      </section>
+    )
+  }
 </PageLayout>

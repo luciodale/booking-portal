@@ -4,16 +4,16 @@ import {
 } from "@/features/public/booking/domain/computeStayPrice";
 import {
   addMonths,
-  formatDate,
+  computeRateRange,
   startOfMonth,
   subMonths,
   toDate,
 } from "@/features/public/booking/domain/dateUtils";
 import { useBookingDatesFromUrl } from "@/features/public/booking/hooks/useBookingDatesFromUrl";
+import { useCalendarAutoClose } from "@/features/public/booking/hooks/useCalendarAutoClose";
 import { usePropertyAvailability } from "@/features/public/booking/hooks/usePropertyAvailability";
 import { usePropertyRates } from "@/features/public/booking/hooks/usePropertyRates";
 import type { SmoobuRateDay } from "@/schemas/smoobu";
-import { endOfMonth } from "date-fns";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 export function useBookingCalendar(
@@ -36,6 +36,7 @@ export function useBookingCalendar(
 
   const [isCalendarOpen, setCalendarOpen] = useState(false);
   const [hasCalendarBeenOpened, setHasCalendarBeenOpened] = useState(false);
+  const { shouldAutoClose, resetAutoClose } = useCalendarAutoClose();
 
   // Track whether we're about to fire the URL-based availability check.
   // This lets PriceDisplay show "loading" instead of "select dates" on first render.
@@ -48,8 +49,7 @@ export function useBookingCalendar(
   }, [isCalendarOpen, hasCalendarBeenOpened]);
 
   // Fetch rates after calendar opened OR when dates come from URL
-  const rangeStart = formatDate(startOfMonth(currentMonth));
-  const rangeEnd = formatDate(endOfMonth(addMonths(currentMonth, 1)));
+  const { rangeStart, rangeEnd } = computeRateRange(currentMonth);
 
   const ratesQuery = usePropertyRates({
     propertyId,
@@ -93,7 +93,9 @@ export function useBookingCalendar(
       availabilityMutation.reset();
     } else if (dateStr > checkIn) {
       setCheckOut(dateStr);
-      setCalendarOpen(false);
+      if (shouldAutoClose()) {
+        setCalendarOpen(false);
+      }
       availabilityMutation.mutate({
         arrivalDate: checkIn,
         departureDate: dateStr,
@@ -105,9 +107,14 @@ export function useBookingCalendar(
     }
   }
 
-  function clearDates() {
-    clearUrlDates();
+  function confirmCalendar() {
     setCalendarOpen(false);
+  }
+
+  function retryDates() {
+    clearUrlDates();
+    resetAutoClose();
+    setCalendarOpen(true);
     availabilityMutation.reset();
   }
 
@@ -160,6 +167,7 @@ export function useBookingCalendar(
     goNextMonth,
     goPrevMonth,
     handleDateClick,
-    clearDates,
+    confirmCalendar,
+    retryDates,
   };
 }

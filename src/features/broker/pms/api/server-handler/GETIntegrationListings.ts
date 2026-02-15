@@ -1,11 +1,11 @@
 import { getDb } from "@/db";
-import { pmsIntegrations } from "@/db/schema";
+import { assets, pmsIntegrations } from "@/db/schema";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type { TGetIntegrationListingsResponse } from "@/features/broker/pms/api/types";
 import { fetchListApartments } from "@/features/broker/pms/integrations/smoobu/server-service/GETListApartments";
 import { mapErrorToStatus } from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIRoute } from "astro";
-import { eq } from "drizzle-orm";
+import { and, eq, isNotNull } from "drizzle-orm";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ locals }) => {
@@ -34,9 +34,27 @@ export const GET: APIRoute = async ({ locals }) => {
       } satisfies TGetIntegrationListingsResponse);
     }
 
-    const data = await fetchListApartments(integration.apiKey);
+    const [data, existingProperties] = await Promise.all([
+      fetchListApartments(integration.apiKey),
+      db
+        .select({ smoobuPropertyId: assets.smoobuPropertyId })
+        .from(assets)
+        .where(
+          and(
+            eq(assets.userId, ctx.userId),
+            isNotNull(assets.smoobuPropertyId)
+          )
+        ),
+    ]);
+
+    const importedIds = new Set(
+      existingProperties.map((p) => p.smoobuPropertyId)
+    );
+
     const response: TGetIntegrationListingsResponse = {
-      listings: data.apartments.map((a) => ({ id: a.id, name: a.name })),
+      listings: data.apartments
+        .filter((a) => !importedIds.has(a.id))
+        .map((a) => ({ id: a.id, name: a.name })),
     };
     return jsonSuccess(response);
   } catch (error) {

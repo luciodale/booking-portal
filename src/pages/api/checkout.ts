@@ -2,6 +2,7 @@ import { getDb } from "@/db";
 import { assets, pmsIntegrations } from "@/db/schema";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
+import { computePropertyAdditionalCosts } from "@/features/public/booking/domain/computeAdditionalCosts";
 import { toCents } from "@/features/public/booking/domain/computeStayPrice";
 import { requireAuth } from "@/modules/auth/auth";
 import { createEventLogger } from "@/modules/logging/eventLogger";
@@ -106,6 +107,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
 
     if (!availability.availableApartments.includes(asset.smoobuPropertyId)) {
+      const errorInfo =
+        availability.errorMessages[String(asset.smoobuPropertyId)];
+
+      if (errorInfo?.errorCode === 1 && errorInfo.minimumLengthOfStay) {
+        log.error({
+          source: "checkout",
+          message: `Minimum stay violation for property ${propertyId}: requires ${errorInfo.minimumLengthOfStay} nights`,
+          metadata: { propertyId, checkIn, checkOut, guests },
+        });
+        return jsonResponse(
+          {
+            error: `Minimum stay is ${errorInfo.minimumLengthOfStay} nights for the selected dates`,
+          },
+          400
+        );
+      }
+
       log.error({
         source: "checkout",
         message: `Availability conflict for property ${propertyId} (${checkIn} - ${checkOut})`,
@@ -145,6 +163,23 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
     const rateMap = ratesResponse.data[propId] ?? {};
 
+    // Belt-and-suspenders: check min_length_of_stay from rates data
+    const minStayValues = clientDates
+      .map((date) => rateMap[date]?.min_length_of_stay)
+      .filter((v): v is number => v != null);
+
+    if (minStayValues.length > 0) {
+      const maxMinStay = Math.max(...minStayValues);
+      if (nights < maxMinStay) {
+        return jsonResponse(
+          {
+            error: `Minimum stay is ${maxMinStay} nights for the selected dates`,
+          },
+          400
+        );
+      }
+    }
+
     let serverPriceCents = 0;
     for (const date of clientDates) {
       const serverRate = rateMap[date];
@@ -172,44 +207,98 @@ export const POST: APIRoute = async ({ request, locals }) => {
       serverPriceCents += serverCents;
     }
 
-    // Create Stripe Checkout Session (booking is created by webhook after payment)
-    const stripe = new Stripe(stripeKey);
+    // Compute additional costs server-side
+    const additionalCostItems = computePropertyAdditionalCosts(
+      asset.additionalCosts ?? null,
+      { nights, guests, currency: currency.toLowerCase() }
+    );
+    const additionalTotalCents = additionalCostItems.reduce(
+      (sum, item) => sum + item.amountCents,
+      0
+    );
+    const grandTotalCents = serverPriceCents + additionalTotalCents;
 
     const origin = new URL(request.url).origin;
+
+    const metadata = {
+      propertyId,
+      smoobuPropertyId: propId,
+      userId: authContext.userId,
+      checkIn,
+      checkOut,
+      nights: String(nights),
+      guests: String(guests),
+      currency: currency.toLowerCase(),
+      totalPriceCents: String(grandTotalCents),
+      guestNote: guestInfo.guestNote ?? "",
+      guestFirstName: guestInfo.firstName,
+      guestLastName: guestInfo.lastName,
+      guestEmail: guestInfo.email,
+      guestPhone: guestInfo.phone ?? "",
+      adults: String(guestInfo.adults),
+      children: String(guestInfo.children),
+    };
+
+    // ── Dev mode: skip Stripe, fire webhook via mock server ───────────────
+    if (import.meta.env.DEV) {
+      const mockSessionId = `mock_${Date.now()}`;
+      const mockRes = await fetch(
+        `${import.meta.env.SMOOBU_BASE_URL}/mock/trigger-webhook`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ metadata, sessionId: mockSessionId }),
+        }
+      );
+
+      if (!mockRes.ok) {
+        return jsonResponse({ error: "Mock webhook failed" }, 502);
+      }
+
+      log.info({
+        source: "checkout",
+        message: "Dev checkout — mock webhook fired",
+        metadata: { propertyId },
+      });
+
+      return jsonResponse({
+        url: `${origin}/booking/success?session_id=${mockSessionId}`,
+      });
+    }
+
+    // ── Production: create Stripe Checkout Session ────────────────────────
+    const stripe = new Stripe(stripeKey);
+
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+      {
+        price_data: {
+          currency: currency.toLowerCase(),
+          unit_amount: serverPriceCents,
+          product_data: {
+            name: asset.title,
+            description: `${nights} night${nights !== 1 ? "s" : ""} · ${checkIn} to ${checkOut}`,
+          },
+        },
+        quantity: 1,
+      },
+      ...additionalCostItems.map((item) => ({
+        price_data: {
+          currency: currency.toLowerCase(),
+          unit_amount: item.amountCents,
+          product_data: {
+            name: item.label,
+            ...(item.detail ? { description: item.detail } : {}),
+          },
+        },
+        quantity: 1,
+      })),
+    ];
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       customer_email: guestInfo.email,
-      line_items: [
-        {
-          price_data: {
-            currency: currency.toLowerCase(),
-            unit_amount: serverPriceCents,
-            product_data: {
-              name: asset.title,
-              description: `${nights} night${nights !== 1 ? "s" : ""} · ${checkIn} to ${checkOut}`,
-            },
-          },
-          quantity: 1,
-        },
-      ],
-      metadata: {
-        propertyId,
-        smoobuPropertyId: propId,
-        userId: authContext.userId,
-        checkIn,
-        checkOut,
-        nights: String(nights),
-        guests: String(guests),
-        currency: currency.toLowerCase(),
-        totalPriceCents: String(serverPriceCents),
-        guestNote: guestInfo.guestNote ?? "",
-        guestFirstName: guestInfo.firstName,
-        guestLastName: guestInfo.lastName,
-        guestEmail: guestInfo.email,
-        guestPhone: guestInfo.phone ?? "",
-        adults: String(guestInfo.adults),
-        children: String(guestInfo.children),
-      },
+      line_items: lineItems,
+      metadata,
       success_url: `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/elite/${propertyId}`,
     });

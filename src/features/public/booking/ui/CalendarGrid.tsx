@@ -3,6 +3,7 @@ import {
   formatDate,
   formatMonthYear,
   formatPrice,
+  getDayDisplayState,
   getMonthDays,
   getStartPadding,
   todayStr,
@@ -117,37 +118,36 @@ function MonthGrid({
 
         {days.map((day) => {
           const dateStr = formatDate(day);
-          const rate = rateMap[dateStr];
-          const past = dateStr < today;
-          const unavailable =
-            past || (rate !== undefined && rate.available === 0);
-          const isCheckIn = dateStr === checkIn;
-          const isCheckOut = dateStr === checkOut;
-          const inRange =
-            checkIn && checkOut && dateStr > checkIn && dateStr < checkOut;
-
-          const price = rate?.price;
+          const ds = getDayDisplayState({
+            dateStr,
+            today,
+            checkIn,
+            checkOut,
+            rate: rateMap[dateStr],
+            ratesLoading,
+            currency,
+          });
 
           return (
             <button
               key={dateStr}
               data-testid={`calendar-day-${dateStr}`}
               type="button"
-              disabled={unavailable}
+              disabled={ds.unavailable}
               onClick={() => onDateClick(dateStr)}
               className={`
                 relative flex flex-col items-center justify-center py-1.5 rounded-lg text-xs
                 transition-colors min-h-[44px]
-                ${unavailable ? "text-muted-foreground/40 cursor-not-allowed line-through" : "hover:bg-primary/20 cursor-pointer"}
-                ${isCheckIn ? "bg-primary text-primary-foreground rounded-r-none" : ""}
-                ${isCheckOut ? "bg-primary text-primary-foreground rounded-l-none" : ""}
-                ${inRange ? "bg-primary/10" : ""}
+                ${ds.unavailable ? "text-muted-foreground/40 cursor-not-allowed line-through" : "hover:bg-primary/20 cursor-pointer"}
+                ${ds.isCheckIn ? "bg-primary text-primary-foreground rounded-r-none" : ""}
+                ${ds.isCheckOut ? "bg-primary text-primary-foreground rounded-l-none" : ""}
+                ${ds.inRange ? "bg-primary/10" : ""}
               `}
             >
               <span className="font-medium">{day.getDate()}</span>
-              {!ratesLoading && price != null && !past && currency && (
+              {ds.showPrice && ds.price != null && currency && (
                 <span className="text-[9px] text-muted-foreground mt-0.5">
-                  {formatPrice(price, currency)}
+                  {formatPrice(ds.price, currency)}
                 </span>
               )}
             </button>
