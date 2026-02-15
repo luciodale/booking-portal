@@ -15,7 +15,6 @@ export type SeedUser = Required<
   Pick<
     NewUser,
     | "id"
-    | "clerkUserId"
     | "name"
     | "email"
     | "whatsappNumber"
@@ -100,7 +99,6 @@ export type SeedData = {
 export const users: SeedUser[] = [
   {
     id: "user_39g4hv3lngCrCxq6Y2v6akxvJx9",
-    clerkUserId: "user_39g4hv3lngCrCxq6Y2v6akxvJx9",
     name: "John Doe",
     email: "john.doe@example.com",
     whatsappNumber: "+41 79 123 45 67",
@@ -109,8 +107,7 @@ export const users: SeedUser[] = [
     verified: true,
   },
   {
-    id: "user-001",
-    clerkUserId: "seed_broker_clerk_001",
+    id: "seed_broker_001",
     name: "Premium Properties Group",
     email: "contact@premiumproperties.com",
     whatsappNumber: "+41 79 123 45 67",
@@ -126,7 +123,7 @@ export const users: SeedUser[] = [
 export const assets: SeedAsset[] = [
   {
     id: "mallorca-villa",
-    userId: "user-001",
+    userId: "seed_broker_001",
     tier: "elite",
     status: "published",
     title: "Modern Villa Overlooking the Bay of Palma",
@@ -193,7 +190,7 @@ The pool area is a great place to relax. It features a saltwater infinity pool, 
   },
   {
     id: "davos-chalet",
-    userId: "user-001",
+    userId: "seed_broker_001",
     tier: "elite",
     status: "published",
     title: "Chalet Bellevue - Davos",
@@ -247,7 +244,7 @@ There is WIFI TV in the whole house with Netflix, Amazon Prime and Apple TV+. Th
   },
   {
     id: "barcelona-penthouse",
-    userId: "user-001",
+    userId: "seed_broker_001",
     tier: "standard",
     status: "published",
     title: "Modern Downtown Penthouse",
@@ -569,7 +566,7 @@ export const images: SeedImage[] = [
 export const experiences: SeedExperience[] = [
   {
     id: "exp-1",
-    userId: "user-001",
+    userId: "seed_broker_001",
     title: "Private Yacht Day",
     description:
       "Sail the stunning Sardinian coastline aboard a luxury yacht with a private captain and chef.",
@@ -588,7 +585,7 @@ export const experiences: SeedExperience[] = [
   },
   {
     id: "exp-2",
-    userId: "user-001",
+    userId: "seed_broker_001",
     title: "Wine Tasting Tour",
     description:
       "Discover the finest Tuscan wines with a private sommelier at exclusive vineyards.",
@@ -607,7 +604,7 @@ export const experiences: SeedExperience[] = [
   },
   {
     id: "exp-3",
-    userId: "user-001",
+    userId: "seed_broker_001",
     title: "Private Helicopter Tour",
     description:
       "Soar above Monaco and the French Riviera in a private helicopter tour.",
@@ -626,7 +623,7 @@ export const experiences: SeedExperience[] = [
   },
   {
     id: "exp-4",
-    userId: "user-001",
+    userId: "seed_broker_001",
     title: "Michelin Chef Experience",
     description:
       "Private cooking class and dinner with a Michelin-starred chef in Paris.",
@@ -645,7 +642,7 @@ export const experiences: SeedExperience[] = [
   },
   {
     id: "exp-5",
-    userId: "user-001",
+    userId: "seed_broker_001",
     title: "Sunset Catamaran Cruise",
     description:
       "Sail into the famous Santorini sunset aboard a luxury catamaran.",
@@ -664,7 +661,7 @@ export const experiences: SeedExperience[] = [
   },
   {
     id: "exp-6",
-    userId: "user-001",
+    userId: "seed_broker_001",
     title: "Private Art Gallery Tour",
     description:
       "Exclusive after-hours tour of Florence's finest art galleries with an expert curator.",

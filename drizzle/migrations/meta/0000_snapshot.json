@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "aa1be07b-ba3d-4e14-b05c-8b6faf358838",
+  "id": "5a77ba2e-7854-4e8c-b007-2b49c22639b8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "asset_experiences": {
@@ -1514,13 +1514,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "clerk_user_id": {
-          "name": "clerk_user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "email": {
           "name": "email",
           "type": "text",
@@ -1596,22 +1589,7 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {
-        "users_clerk_user_id_unique": {
-          "name": "users_clerk_user_id_unique",
-          "columns": [
-            "clerk_user_id"
-          ],
-          "isUnique": true
-        },
-        "idx_users_clerk": {
-          "name": "idx_users_clerk",
-          "columns": [
-            "clerk_user_id"
-          ],
-          "isUnique": false
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},

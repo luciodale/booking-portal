@@ -8,7 +8,6 @@ export const users = sqliteTable(
   "users",
   {
     id: text("id").primaryKey(),
-    clerkUserId: text("clerk_user_id").notNull().unique(),
     email: text("email").notNull(),
     name: text("name"),
     phone: text("phone"),
@@ -21,8 +20,7 @@ export const users = sqliteTable(
       .default(false),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
     updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
-  },
-  (table) => [index("idx_users_clerk").on(table.clerkUserId)]
+  }
 );
 
 // ============================================================================

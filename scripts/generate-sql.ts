@@ -32,8 +32,8 @@ function jsonArray(arr: string[]): string {
 }
 
 function generateUserInsert(user: SeedUser): string {
-  return `INSERT INTO users (id, clerk_user_id, name, email, whatsapp_number, bio, avatar_url, verified)
-VALUES (${escapeString(user.id)}, ${escapeString(user.clerkUserId)}, ${escapeString(user.name)}, ${escapeString(user.email)}, ${escapeString(user.whatsappNumber)}, ${escapeString(user.bio)}, ${escapeString(user.avatarUrl)}, ${boolToInt(user.verified)});`;
+  return `INSERT INTO users (id, name, email, whatsapp_number, bio, avatar_url, verified)
+VALUES (${escapeString(user.id)}, ${escapeString(user.name)}, ${escapeString(user.email)}, ${escapeString(user.whatsappNumber)}, ${escapeString(user.bio)}, ${escapeString(user.avatarUrl)}, ${boolToInt(user.verified)});`;
 }
 
 function generateAssetInsert(asset: SeedAsset): string {

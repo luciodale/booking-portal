@@ -1,7 +1,6 @@
 import { getDb } from "@/db";
 import { users } from "@/db/schema";
 import { createEventLogger } from "@/modules/logging/eventLogger";
-import { genUniqueId } from "@/modules/utils/id";
 import type { APIRoute } from "astro";
 import { Webhook } from "svix";
 
@@ -84,8 +83,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   try {
     await db.insert(users).values({
-      id: genUniqueId("user"),
-      clerkUserId: data.id,
+      id: data.id,
       email,
       name,
       avatarUrl: data.image_url,

@@ -15,13 +15,12 @@ export async function resolveBrokerContext(
   db: ReturnType<typeof getDb>
 ): Promise<BrokerContext> {
   const auth = requireAuth(locals);
-  console.log(auth, "auth");
   const isAdmin = checkRole(auth, "admin");
 
   const [user] = await db
     .select({ id: users.id })
     .from(users)
-    .where(eq(users.clerkUserId, auth.clerkUserId))
+    .where(eq(users.id, auth.userId))
     .limit(1);
 
   if (!user && !isAdmin) {

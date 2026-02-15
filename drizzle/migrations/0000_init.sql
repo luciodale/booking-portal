@@ -210,7 +210,6 @@ CREATE INDEX `idx_reviews_user` ON `reviews` (`user_id`);--> statement-breakpoin
 CREATE INDEX `idx_reviews_status` ON `reviews` (`status`);--> statement-breakpoint
 CREATE TABLE `users` (
 	`id` text PRIMARY KEY NOT NULL,
-	`clerk_user_id` text NOT NULL,
 	`email` text NOT NULL,
 	`name` text,
 	`phone` text,
@@ -222,6 +221,3 @@ CREATE TABLE `users` (
 	`created_at` text DEFAULT CURRENT_TIMESTAMP,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP
 );
---> statement-breakpoint
-CREATE UNIQUE INDEX `users_clerk_user_id_unique` ON `users` (`clerk_user_id`);--> statement-breakpoint
-CREATE INDEX `idx_users_clerk` ON `users` (`clerk_user_id`);

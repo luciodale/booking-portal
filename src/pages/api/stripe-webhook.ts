@@ -1,5 +1,5 @@
 import { getDb } from "@/db";
-import { assets, bookings, brokerLogs, pmsIntegrations, users } from "@/db/schema";
+import { assets, bookings, brokerLogs, pmsIntegrations } from "@/db/schema";
 import { createSmoobuBooking } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCreateBooking";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
@@ -64,23 +64,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response("OK", { status: 200 });
     }
 
-    // Look up internal userId from clerkUserId
-    const [user] = await db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.clerkUserId, meta.clerkUserId ?? ""))
-      .limit(1);
-
-    if (!user) {
-      console.error(`No user found for clerkUserId: ${meta.clerkUserId}`);
-      log.error({
-        source: "stripe-webhook",
-        message: `No user found for clerkUserId: ${meta.clerkUserId}`,
-        metadata: { stripeSessionId: session.id, clerkUserId: meta.clerkUserId },
-      });
-      return new Response("OK", { status: 200 });
-    }
-
     // Create booking from session metadata
     const bookingId = nanoid();
     const totalPriceCents = Number(meta.totalPriceCents);
@@ -88,7 +71,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     await db.insert(bookings).values({
       id: bookingId,
       assetId: meta.propertyId ?? "",
-      userId: user.id,
+      userId: meta.userId ?? "",
       checkIn: meta.checkIn ?? "",
       checkOut: meta.checkOut ?? "",
       nights: Number(meta.nights),

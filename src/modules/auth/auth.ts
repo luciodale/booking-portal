@@ -3,10 +3,8 @@ import type { APIContext } from "astro";
 type Role = "admin" | "broker" | "user";
 
 export interface AuthContext {
-  clerkUserId: string;
   userId: string;
   role: Role;
-  email?: string;
 }
 
 export function requireAuth(locals: APIContext["locals"]): AuthContext {
@@ -20,7 +18,6 @@ export function requireAuth(locals: APIContext["locals"]): AuthContext {
     "user";
 
   return {
-    clerkUserId: auth.userId,
     userId: auth.userId,
     role,
   };

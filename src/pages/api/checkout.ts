@@ -187,7 +187,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       metadata: {
         propertyId,
         smoobuPropertyId: propId,
-        clerkUserId: authContext.clerkUserId,
+        userId: authContext.userId,
         checkIn,
         checkOut,
         nights: String(nights),
