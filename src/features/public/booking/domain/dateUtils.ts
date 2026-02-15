@@ -1,16 +1,13 @@
 import {
-  addDays,
   addMonths,
-  eachDayOfInterval,
   endOfMonth,
   format,
   getDay,
-  isBefore,
-  isSameDay,
   startOfMonth,
   startOfToday,
   subMonths,
 } from "date-fns";
+import { eachDayOfInterval } from "date-fns";
 
 export function getMonthDays(date: Date): Date[] {
   const start = startOfMonth(date);
@@ -41,16 +38,13 @@ export function formatPrice(price: number, currency: string): string {
   }).format(price);
 }
 
-export function isBeforeToday(date: Date): boolean {
-  return isBefore(date, startOfToday());
+export function todayStr(): string {
+  return formatDate(startOfToday());
 }
 
-export function getDaysInRange(start: Date, end: Date): Date[] {
-  return eachDayOfInterval({ start, end: addDays(end, -1) });
+export function toDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day, 12);
 }
 
-export function isSame(a: Date, b: Date): boolean {
-  return isSameDay(a, b);
-}
-
-export { addMonths, subMonths, startOfToday };
+export { addMonths, subMonths, startOfToday, startOfMonth };

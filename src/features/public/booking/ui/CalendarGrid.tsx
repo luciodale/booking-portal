@@ -5,8 +5,7 @@ import {
   formatPrice,
   getMonthDays,
   getStartPadding,
-  isBeforeToday,
-  isSame,
+  todayStr,
 } from "@/features/public/booking/domain/dateUtils";
 import type { SmoobuRateDay } from "@/schemas/smoobu";
 
@@ -14,12 +13,12 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 type CalendarGridProps = {
   currentMonth: Date;
-  checkIn: Date | null;
-  checkOut: Date | null;
+  checkIn: string | null;
+  checkOut: string | null;
   rateMap: Record<string, SmoobuRateDay>;
   ratesLoading: boolean;
   currency: string | null;
-  onDateClick: (date: Date) => void;
+  onDateClick: (dateStr: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
 };
@@ -88,15 +87,16 @@ function MonthGrid({
   onDateClick,
 }: {
   month: Date;
-  checkIn: Date | null;
-  checkOut: Date | null;
+  checkIn: string | null;
+  checkOut: string | null;
   rateMap: Record<string, SmoobuRateDay>;
   ratesLoading: boolean;
   currency: string | null;
-  onDateClick: (date: Date) => void;
+  onDateClick: (dateStr: string) => void;
 }) {
   const days = getMonthDays(month);
   const padding = getStartPadding(month);
+  const today = todayStr();
 
   return (
     <div>
@@ -118,13 +118,13 @@ function MonthGrid({
         {days.map((day) => {
           const dateStr = formatDate(day);
           const rate = rateMap[dateStr];
-          const past = isBeforeToday(day);
+          const past = dateStr < today;
           const unavailable =
             past || (rate !== undefined && rate.available === 0);
-          const isCheckIn = checkIn ? isSame(day, checkIn) : false;
-          const isCheckOut = checkOut ? isSame(day, checkOut) : false;
+          const isCheckIn = dateStr === checkIn;
+          const isCheckOut = dateStr === checkOut;
           const inRange =
-            checkIn && checkOut && day > checkIn && day < checkOut;
+            checkIn && checkOut && dateStr > checkIn && dateStr < checkOut;
 
           const price = rate?.price;
 
@@ -134,7 +134,7 @@ function MonthGrid({
               data-testid={`calendar-day-${dateStr}`}
               type="button"
               disabled={unavailable}
-              onClick={() => onDateClick(day)}
+              onClick={() => onDateClick(dateStr)}
               className={`
                 relative flex flex-col items-center justify-center py-1.5 rounded-lg text-xs
                 transition-colors min-h-[44px]

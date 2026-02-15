@@ -5,14 +5,15 @@ import {
 import {
   addMonths,
   formatDate,
-  startOfToday,
+  startOfMonth,
   subMonths,
+  toDate,
 } from "@/features/public/booking/domain/dateUtils";
 import { useBookingDatesFromUrl } from "@/features/public/booking/hooks/useBookingDatesFromUrl";
 import { usePropertyAvailability } from "@/features/public/booking/hooks/usePropertyAvailability";
 import { usePropertyRates } from "@/features/public/booking/hooks/usePropertyRates";
 import type { SmoobuRateDay } from "@/schemas/smoobu";
-import { endOfMonth, startOfMonth } from "date-fns";
+import { endOfMonth } from "date-fns";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 export function useBookingCalendar(
@@ -29,8 +30,8 @@ export function useBookingCalendar(
   } = useBookingDatesFromUrl();
 
   const [currentMonth, setCurrentMonth] = useState(() => {
-    if (checkIn) return startOfMonth(checkIn);
-    return startOfToday();
+    if (checkIn) return startOfMonth(toDate(checkIn));
+    return startOfMonth(new Date());
   });
 
   const [isCalendarOpen, setCalendarOpen] = useState(false);
@@ -72,8 +73,8 @@ export function useBookingCalendar(
     if (!checkIn || !checkOut) return;
     setPendingUrlCheck(false);
     availabilityMutation.mutate({
-      arrivalDate: formatDate(checkIn),
-      departureDate: formatDate(checkOut),
+      arrivalDate: checkIn,
+      departureDate: checkOut,
     });
   }, [pendingUrlCheck, checkIn, checkOut, availabilityMutation.mutate]);
 
@@ -85,20 +86,20 @@ export function useBookingCalendar(
     setCurrentMonth((m) => subMonths(m, 1));
   }, []);
 
-  function handleDateClick(date: Date) {
+  function handleDateClick(dateStr: string) {
     if (!checkIn || (checkIn && checkOut)) {
-      setCheckIn(date);
+      setCheckIn(dateStr);
       setCheckOut(null);
       availabilityMutation.reset();
-    } else if (date > checkIn) {
-      setCheckOut(date);
+    } else if (dateStr > checkIn) {
+      setCheckOut(dateStr);
       setCalendarOpen(false);
       availabilityMutation.mutate({
-        arrivalDate: formatDate(checkIn),
-        departureDate: formatDate(date),
+        arrivalDate: checkIn,
+        departureDate: dateStr,
       });
     } else {
-      setCheckIn(date);
+      setCheckIn(dateStr);
       setCheckOut(null);
       availabilityMutation.reset();
     }
@@ -123,7 +124,7 @@ export function useBookingCalendar(
     )
       return null;
 
-    const dates = getDateRange(formatDate(checkIn), formatDate(checkOut));
+    const dates = getDateRange(checkIn, checkOut);
     const result: Record<string, number> = {};
     for (const date of dates) {
       const rate = rateMap[date];

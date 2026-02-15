@@ -14,8 +14,8 @@ type BookingGuestInput = {
 
 export function useBookingCheckout(params: {
   propertyId: string;
-  checkIn: Date | null;
-  checkOut: Date | null;
+  checkIn: string | null;
+  checkOut: string | null;
   nightPriceCents: Record<string, number> | null;
   currency: string | null;
   isSignedIn: boolean | undefined;
@@ -42,8 +42,8 @@ export function useBookingCheckout(params: {
     try {
       const result = await createCheckoutSession({
         propertyId: params.propertyId,
-        checkIn: params.checkIn.toISOString().split("T")[0],
-        checkOut: params.checkOut.toISOString().split("T")[0],
+        checkIn: params.checkIn,
+        checkOut: params.checkOut,
         guests: data.adults + data.children,
         currency: params.currency,
         nightPriceCents: params.nightPriceCents,

@@ -15,8 +15,8 @@ function normalizeIsoCurrency(raw: string): string | null {
 }
 
 type PriceDisplayInput = {
-  checkIn: Date | null;
-  checkOut: Date | null;
+  checkIn: string | null;
+  checkOut: string | null;
   smoobuPropertyId: number | null;
   currency: string | null;
   nightPriceCents: Record<string, number> | null;

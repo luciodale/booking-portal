@@ -2,10 +2,7 @@ import { getDb } from "@/db";
 import { assets, pmsIntegrations } from "@/db/schema";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
-import {
-  getDateRange,
-  toCents,
-} from "@/features/public/booking/domain/computeStayPrice";
+import { toCents } from "@/features/public/booking/domain/computeStayPrice";
 import { requireAuth } from "@/modules/auth/auth";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
@@ -120,7 +117,25 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    // Verify price integrity: compare each night's price individually (no floating-point math)
+    // Compute nights
+    const checkInDate = new Date(`${checkIn}T00:00:00`);
+    const checkOutDate = new Date(`${checkOut}T00:00:00`);
+    const nights = Math.round(
+      (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Validate client sent correct number of nights
+    const clientDates = Object.keys(nightPriceCents).sort();
+    if (clientDates.length !== nights) {
+      return jsonResponse(
+        {
+          error: `Expected ${nights} night prices, received ${clientDates.length}`,
+        },
+        400
+      );
+    }
+
+    // Verify price integrity: compare each night's price against Smoobu rates
     const propId = String(asset.smoobuPropertyId);
     const ratesResponse = await fetchSmoobuRates(
       integration.apiKey,
@@ -129,10 +144,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       checkOut
     );
     const rateMap = ratesResponse.data[propId] ?? {};
-    const stayDates = getDateRange(checkIn, checkOut);
 
     let serverPriceCents = 0;
-    for (const date of stayDates) {
+    for (const date of clientDates) {
       const serverRate = rateMap[date];
       const clientCents = nightPriceCents[date];
 
@@ -157,13 +171,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
       serverPriceCents += serverCents;
     }
-
-    // Compute nights
-    const checkInDate = new Date(`${checkIn}T00:00:00`);
-    const checkOutDate = new Date(`${checkOut}T00:00:00`);
-    const nights = Math.round(
-      (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
 
     // Create Stripe Checkout Session (booking is created by webhook after payment)
     const stripe = new Stripe(stripeKey);

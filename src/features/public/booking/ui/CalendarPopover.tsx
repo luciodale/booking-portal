@@ -1,4 +1,3 @@
-import { formatDate } from "@/features/public/booking/domain/dateUtils";
 import { CalendarGrid } from "@/features/public/booking/ui/CalendarGrid";
 import type { SmoobuRateDay } from "@/schemas/smoobu";
 import {
@@ -18,12 +17,12 @@ type CalendarPopoverProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   currentMonth: Date;
-  checkIn: Date | null;
-  checkOut: Date | null;
+  checkIn: string | null;
+  checkOut: string | null;
   rateMap: Record<string, SmoobuRateDay>;
   ratesLoading: boolean;
   currency: string | null;
-  onDateClick: (date: Date) => void;
+  onDateClick: (dateStr: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onClear: () => void;
@@ -114,8 +113,8 @@ function DateTrigger({
   checkIn,
   checkOut,
 }: {
-  checkIn: Date | null;
-  checkOut: Date | null;
+  checkIn: string | null;
+  checkOut: string | null;
 }) {
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/50 transition-colors cursor-pointer">
@@ -138,15 +137,9 @@ function DateTrigger({
       </svg>
 
       <div className="flex-1 flex items-center gap-2 min-w-0">
-        <DateSlot
-          label="Check-in"
-          value={checkIn ? formatDate(checkIn) : null}
-        />
+        <DateSlot label="Check-in" value={checkIn} />
         <span className="text-muted-foreground/50">&rarr;</span>
-        <DateSlot
-          label="Check-out"
-          value={checkOut ? formatDate(checkOut) : null}
-        />
+        <DateSlot label="Check-out" value={checkOut} />
       </div>
     </div>
   );

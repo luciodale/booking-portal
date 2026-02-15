@@ -3,8 +3,8 @@ import { usePriceDisplay } from "@/features/public/booking/hooks/usePriceDisplay
 import type { SmoobuAvailabilityResponse } from "@/schemas/smoobu";
 
 type PriceDisplayProps = {
-  checkIn: Date | null;
-  checkOut: Date | null;
+  checkIn: string | null;
+  checkOut: string | null;
   smoobuPropertyId: number | null;
   currency: string | null;
   nightPriceCents: Record<string, number> | null;

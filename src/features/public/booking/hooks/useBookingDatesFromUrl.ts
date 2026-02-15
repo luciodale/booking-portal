@@ -1,22 +1,21 @@
-import { formatDate } from "@/features/public/booking/domain/dateUtils";
-import { isValid, parseISO } from "date-fns";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-function parseDateParam(value: string | null): Date | null {
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+
+function parseDateParam(value: string | null): string | null {
   if (!value) return null;
-  const date = parseISO(value);
-  return isValid(date) ? date : null;
+  return DATE_REGEX.test(value) ? value : null;
 }
 
-function syncDatesToUrl(checkIn: Date | null, checkOut: Date | null) {
+function syncDatesToUrl(checkIn: string | null, checkOut: string | null) {
   const params = new URLSearchParams(window.location.search);
   if (checkIn) {
-    params.set("checkIn", formatDate(checkIn));
+    params.set("checkIn", checkIn);
   } else {
     params.delete("checkIn");
   }
   if (checkOut) {
-    params.set("checkOut", formatDate(checkOut));
+    params.set("checkOut", checkOut);
   } else {
     params.delete("checkOut");
   }
@@ -30,8 +29,8 @@ export function useBookingDatesFromUrl() {
   const initialCheckIn = parseDateParam(params.get("checkIn"));
   const initialCheckOut = parseDateParam(params.get("checkOut"));
 
-  const [checkIn, setCheckIn] = useState<Date | null>(initialCheckIn);
-  const [checkOut, setCheckOut] = useState<Date | null>(initialCheckOut);
+  const [checkIn, setCheckIn] = useState<string | null>(initialCheckIn);
+  const [checkOut, setCheckOut] = useState<string | null>(initialCheckOut);
 
   const hadDatesFromUrl = useRef(
     initialCheckIn !== null && initialCheckOut !== null
