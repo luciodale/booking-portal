@@ -102,7 +102,7 @@ export function CreatePropertyForm({
       defaultValues: {
         smoobuPropertyId: integrationPropertyId,
         tier,
-        status: "draft",
+        status: "published",
         amenities: [],
         highlights: [],
         views: [],

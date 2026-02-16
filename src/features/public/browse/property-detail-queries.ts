@@ -45,7 +45,12 @@ export async function fetchLinkedExperiences(
       const [exp] = await db
         .select()
         .from(experiences)
-        .where(eq(experiences.id, link.experienceId))
+        .where(
+          and(
+            eq(experiences.id, link.experienceId),
+            eq(experiences.status, "published")
+          )
+        )
         .limit(1);
       if (!exp) return null;
 

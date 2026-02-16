@@ -27,7 +27,7 @@ export function CreateExperienceForm({
     useForm<CreateExperienceInput>({
       resolver: zodResolver(createExperienceSchema),
       defaultValues: {
-        status: "draft",
+        status: "published",
         currency: "eur",
         instantBook: false,
         additionalCosts: [],

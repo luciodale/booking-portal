@@ -42,7 +42,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         ...data,
         id: experienceId,
         userId: ctx.userId,
-        status: (data.status || "draft") as "draft" | "published" | "archived",
+        status: (data.status || "published") as "draft" | "published" | "archived",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       })

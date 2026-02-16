@@ -14,6 +14,9 @@ import {
 import type { ExperienceAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import type { UpdateExperienceInput } from "@/schemas/experience";
+import { useQueryClient } from "@tanstack/react-query";
+import { experienceQueryKeys } from "@/features/broker/experience/constants/queryKeys";
+import { ExperienceImagesManager } from "./ExperienceImagesManager";
 import { PropertyLinker } from "./PropertyLinker";
 
 interface ExperienceEditViewProps {
@@ -26,8 +29,15 @@ const experiencePerOptions = [
 ] as const;
 
 export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
+  const queryClient = useQueryClient();
   const { data: experience, isLoading, error } = useExperience(experienceId);
   const updateExperience = useUpdateExperience();
+
+  function refreshExperience() {
+    queryClient.invalidateQueries({
+      queryKey: experienceQueryKeys.detail(experienceId),
+    });
+  }
 
   async function saveField<K extends keyof UpdateExperienceInput>(
     field: K,
@@ -199,6 +209,15 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
             { value: "yes", label: "Yes" },
             { value: "no", label: "No" },
           ]}
+        />
+      </section>
+
+      {/* Images */}
+      <section className="bg-card border border-border p-6 rounded-xl">
+        <ExperienceImagesManager
+          experienceId={experienceId}
+          images={experience.images ?? []}
+          onRefresh={refreshExperience}
         />
       </section>
 
