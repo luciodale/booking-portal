@@ -17,11 +17,11 @@ import {
   CreatePropertyForm,
   type CreatePropertyFormData,
 } from "@/features/broker/property/ui/CreatePropertyForm";
+import { BackofficePageHeader } from "@/features/broker/ui/BackofficePageHeader";
 import { Select } from "@/modules/ui/Select";
 import { showError } from "@/modules/ui/react/stores/notificationStore";
 import { getErrorMessages } from "@/modules/utils/errors";
 import { Link, createRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 // =============================================================================
@@ -164,23 +164,20 @@ function CreatePropertyPage() {
   // No integration
   if (!isIntegrated) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <Link
-          to="/properties"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft size={16} />
-          Back to Properties
-        </Link>
-        <h1 className="text-3xl font-bold text-foreground mb-6">
-          Create New Property
-        </h1>
-        <p className="text-muted-foreground mb-4">
-          Connect an integration to create a property from your PMS.
-        </p>
-        <Link to="/" className="text-primary hover:underline">
-          Go to dashboard to connect integration
-        </Link>
+      <div>
+        <BackofficePageHeader
+          title="Create New Property"
+          backTo="/properties"
+          backLabel="Back to Properties"
+        />
+        <div className="max-w-4xl mx-auto">
+          <p className="text-muted-foreground mb-4">
+            Connect an integration to create a property from your PMS.
+          </p>
+          <Link to="/" className="text-primary hover:underline">
+            Go to dashboard to connect integration
+          </Link>
+        </div>
       </div>
     );
   }
@@ -194,36 +191,32 @@ function CreatePropertyPage() {
   // Step 1: Tier selection
   if (!selectedTier) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <Link
-          to="/properties"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft size={16} />
-          Back to Properties
-        </Link>
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Create New Property
-        </h1>
-        <p className="text-muted-foreground mb-8">
-          Choose the property tier to get started.
-        </p>
-
-        <div className="grid gap-4 max-w-xl">
-          <TierCard
-            tier="elite"
-            title="Elite"
-            description="Luxury properties with premium features, video backgrounds, and PDF flyers."
-            selected={selectedTier === "elite"}
-            onSelect={() => setSelectedTier("elite")}
-          />
-          <TierCard
-            tier="standard"
-            title="Standard"
-            description="Quality vacation rentals with all essential features."
-            selected={selectedTier === "standard"}
-            onSelect={() => setSelectedTier("standard")}
-          />
+      <div>
+        <BackofficePageHeader
+          title="Create New Property"
+          backTo="/properties"
+          backLabel="Back to Properties"
+        />
+        <div className="max-w-4xl mx-auto">
+          <p className="text-muted-foreground mb-8">
+            Choose the property tier to get started.
+          </p>
+          <div className="grid gap-4 max-w-xl">
+            <TierCard
+              tier="elite"
+              title="Elite"
+              description="Luxury properties with premium features, video backgrounds, and PDF flyers."
+              selected={selectedTier === "elite"}
+              onSelect={() => setSelectedTier("elite")}
+            />
+            <TierCard
+              tier="standard"
+              title="Standard"
+              description="Quality vacation rentals with all essential features."
+              selected={selectedTier === "standard"}
+              onSelect={() => setSelectedTier("standard")}
+            />
+          </div>
         </div>
       </div>
     );
@@ -232,53 +225,49 @@ function CreatePropertyPage() {
   // Step 2: Smoobu property selection
   if (!selectedListing) {
     return (
-      <div className="max-w-4xl mx-auto">
-        <Link
-          to="/properties"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft size={16} />
-          Back to Properties
-        </Link>
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Create New Property
-        </h1>
-        <p className="text-muted-foreground mb-6">
-          <span className="capitalize">{selectedTier}</span> tier selected.
-          <button
-            type="button"
-            onClick={() => setSelectedTier(null)}
-            className="text-primary hover:underline ml-2"
-          >
-            Change
-          </button>
-        </p>
-
-        <div className="max-w-md">
-          <label
-            htmlFor="integration-listing-select"
-            className="block text-sm font-medium text-foreground mb-1"
-          >
-            Select a Smoobu property
-          </label>
-          <Select
-            id="integration-listing-select"
-            value=""
-            onChange={(v) => {
-              const id = v ? Number(v) : null;
-              const item = id ? listings.find((l) => l.id === id) : null;
-              setSelectedListing(item ?? null);
-            }}
-            options={listingsOptions}
-            placeholder={
-              listingsQuery.isLoading ? "Loading..." : "Select property"
-            }
-          />
-          {listings.length === 0 && !listingsQuery.isLoading && (
-            <p className="text-sm text-muted-foreground mt-2">
-              No properties found in your Smoobu account.
-            </p>
-          )}
+      <div>
+        <BackofficePageHeader
+          title="Create New Property"
+          backTo="/properties"
+          backLabel="Back to Properties"
+        />
+        <div className="max-w-4xl mx-auto">
+          <p className="text-muted-foreground mb-6">
+            <span className="capitalize">{selectedTier}</span> tier selected.
+            <button
+              type="button"
+              onClick={() => setSelectedTier(null)}
+              className="text-primary hover:underline ml-2"
+            >
+              Change
+            </button>
+          </p>
+          <div className="max-w-md">
+            <label
+              htmlFor="integration-listing-select"
+              className="block text-sm font-medium text-foreground mb-1"
+            >
+              Select a Smoobu property
+            </label>
+            <Select
+              id="integration-listing-select"
+              value=""
+              onChange={(v) => {
+                const id = v ? Number(v) : null;
+                const item = id ? listings.find((l) => l.id === id) : null;
+                setSelectedListing(item ?? null);
+              }}
+              options={listingsOptions}
+              placeholder={
+                listingsQuery.isLoading ? "Loading..." : "Select property"
+              }
+            />
+            {listings.length === 0 && !listingsQuery.isLoading && (
+              <p className="text-sm text-muted-foreground mt-2">
+                No properties found in your Smoobu account.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -287,17 +276,12 @@ function CreatePropertyPage() {
   // Step 3: Form with per-field link buttons
   return (
     <div>
+      <BackofficePageHeader
+        title="Create New Property"
+        backTo="/properties"
+        backLabel="Back to Properties"
+      />
       <div className="max-w-4xl mx-auto mb-8">
-        <Link
-          to="/properties"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
-        >
-          <ArrowLeft size={16} />
-          Back to Properties
-        </Link>
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Create New Property
-        </h1>
         <p className="text-muted-foreground">
           <span className="capitalize">{selectedTier}</span> &middot;{" "}
           {selectedListing.name}

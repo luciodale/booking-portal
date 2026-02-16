@@ -113,10 +113,9 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
     </div>
   </section>
 
-  <section class="sticky top-header-height z-30 h-subheader-height glass border-y border-border/50">
-    <div class="container mx-auto px-6 h-full flex items-center">
-      <div class="flex flex-wrap items-center justify-between gap-6">
-        <div class="flex items-center gap-8">
+  <section class="md:sticky md:top-header-height z-30 glass border-y border-border/50 py-4">
+    <div class="container mx-auto px-6">
+      <div class="grid grid-cols-2 gap-4 md:flex md:flex-wrap md:items-center md:justify-center md:gap-8">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <i data-lucide="bed-double" class="w-5 h-5 text-primary"></i>
@@ -126,7 +125,7 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
               <div class="text-xs text-muted-foreground uppercase tracking-wide">Bedrooms</div>
             </div>
           </div>
-          <div class="w-px h-10 bg-border" />
+          <div class="w-px h-10 bg-border hidden md:block" />
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <i data-lucide="users" class="w-5 h-5 text-primary"></i>
@@ -136,7 +135,7 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
               <div class="text-xs text-muted-foreground uppercase tracking-wide">Guests</div>
             </div>
           </div>
-          <div class="w-px h-10 bg-border" />
+          <div class="w-px h-10 bg-border hidden md:block" />
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <i data-lucide="move" class="w-5 h-5 text-primary"></i>
@@ -146,7 +145,34 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
               <div class="text-xs text-muted-foreground uppercase tracking-wide">m²</div>
             </div>
           </div>
-        </div>
+          {asset.checkIn && (
+            <>
+              <div class="w-px h-10 bg-border hidden md:block" />
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <i data-lucide="clock" class="w-5 h-5 text-primary"></i>
+                </div>
+                <div>
+                  <div class="text-lg font-bold text-foreground">{asset.checkIn}</div>
+                  <div class="text-xs text-muted-foreground uppercase tracking-wide">Check-in</div>
+                </div>
+              </div>
+            </>
+          )}
+          {asset.checkOut && (
+            <>
+              <div class="w-px h-10 bg-border hidden md:block" />
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <i data-lucide="clock" class="w-5 h-5 text-primary"></i>
+                </div>
+                <div>
+                  <div class="text-lg font-bold text-foreground">{asset.checkOut}</div>
+                  <div class="text-xs text-muted-foreground uppercase tracking-wide">Check-out</div>
+                </div>
+              </div>
+            </>
+          )}
       </div>
     </div>
   </section>

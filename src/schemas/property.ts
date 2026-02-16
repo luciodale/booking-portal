@@ -71,12 +71,6 @@ const propertyFieldsSchema = baseAssetInsertSchema
     views: z.array(z.string()).optional(),
     highlights: z.array(z.string()).optional(),
 
-    pdfAssetPath: z
-      .string()
-      .regex(/^\/flyers\/[a-z0-9-]+\.pdf$/, "Invalid PDF path format")
-      .optional()
-      .nullable(),
-
     checkIn: z
       .string()
       .regex(/^\d{2}:\d{2}$/, "Use HH:mm format")
@@ -91,7 +85,6 @@ const propertyFieldsSchema = baseAssetInsertSchema
     latitude: z.string().min(1, "Latitude is required"),
     longitude: z.string().min(1, "Longitude is required"),
 
-    videoUrl: z.string().url().optional().nullable(),
     showFullAddress: z.boolean().optional(),
   });
 

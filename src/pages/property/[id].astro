@@ -133,6 +133,24 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
               <div class="text-2xl font-bold text-foreground mb-1">{property.sqMeters}</div>
               <div class="text-sm text-muted-foreground">m²</div>
             </div>
+            {asset.checkIn && (
+              <div class="text-center">
+                <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
+                  <i data-lucide="clock" class="w-6 h-6 text-primary"></i>
+                </div>
+                <div class="text-2xl font-bold text-foreground mb-1">{asset.checkIn}</div>
+                <div class="text-sm text-muted-foreground">Check-in</div>
+              </div>
+            )}
+            {asset.checkOut && (
+              <div class="text-center">
+                <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
+                  <i data-lucide="clock" class="w-6 h-6 text-primary"></i>
+                </div>
+                <div class="text-2xl font-bold text-foreground mb-1">{asset.checkOut}</div>
+                <div class="text-sm text-muted-foreground">Check-out</div>
+              </div>
+            )}
           </div>
 
           <div>

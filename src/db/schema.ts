@@ -98,10 +98,6 @@ export const assets = sqliteTable(
     views: text("views", { mode: "json" }).$type<string[]>(),
     highlights: text("highlights", { mode: "json" }).$type<string[]>(),
 
-    // Media
-    videoUrl: text("video_url"), // For Elite tier video backgrounds
-    pdfAssetPath: text("pdf_asset_path"), // Static PDF path e.g. /flyers/property-name.pdf
-
     // Booking Options
     instantBook: integer("instant_book", { mode: "boolean" })
       .notNull()

@@ -462,27 +462,6 @@ export function CreatePropertyForm({
         />
       </FormSection>
 
-      {/* Elite-Only: Additional Media */}
-      {isElite && (
-        <FormSection title="Additional Media (Elite)">
-          <TextInput
-            name="videoUrl"
-            control={control}
-            label="Video URL"
-            description="Optional video URL for elite property showcase"
-            placeholder="https://vimeo.com/..."
-          />
-
-          <TextInput
-            name="pdfAssetPath"
-            control={control}
-            label="PDF Flyer Path"
-            description="Path to manually uploaded PDF flyer"
-            placeholder="/flyers/mallorca-villa.pdf"
-          />
-        </FormSection>
-      )}
-
       {/* Submit */}
       <div className="flex justify-end gap-4">
         <button type="button" className="btn-secondary" onClick={() => reset()}>

@@ -46,8 +46,6 @@ export type SeedAsset = Required<
     | "bedrooms"
     | "bathrooms"
     | "sqMeters"
-    | "videoUrl"
-    | "pdfAssetPath"
     | "instantBook"
     | "additionalCosts"
     | "showFullAddress"
@@ -196,8 +194,6 @@ The pool area is a great place to relax. It features a saltwater infinity pool, 
       "Wine Cellar",
       "Energy Certificate A",
     ],
-    videoUrl: null,
-    pdfAssetPath: null,
     additionalCosts: [
       { label: "Cleaning fee", amount: 35000, per: "stay" },
       { label: "Tourist tax", amount: 350, per: "night_per_guest", maxNights: 10 },
@@ -252,8 +248,6 @@ There is WIFI TV in the whole house with Netflix, Amazon Prime and Apple TV+. Th
     ],
     views: ["Mountain Views", "Alpine Peaks", "Valley Views"],
     highlights: ["Mountain Chic", "3 min to WEF", "Sauna", "Sunny Location"],
-    videoUrl: null,
-    pdfAssetPath: null,
     additionalCosts: [
       { label: "Cleaning fee", amount: 25000, per: "stay" },
     ],
@@ -291,8 +285,6 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
     ],
     views: ["City Views"],
     highlights: ["City Center", "Walking Distance", "Local Shops"],
-    videoUrl: null,
-    pdfAssetPath: null,
     additionalCosts: [
       { label: "Cleaning fee", amount: 8000, per: "stay" },
       { label: "Tourist tax", amount: 225, per: "night_per_guest", maxNights: 7 },
@@ -334,8 +326,6 @@ The property features lush gardens, a private dock, and interiors designed by a 
     ],
     views: ["Lake Como", "Italian Alps", "Garden"],
     highlights: ["Lakefront", "Private Dock", "Wine Cellar", "Heated Pool"],
-    videoUrl: null,
-    pdfAssetPath: null,
     additionalCosts: [
       { label: "Cleaning fee", amount: 20000, per: "stay" },
       { label: "Tourist tax", amount: 300, per: "night_per_guest", maxNights: 14 },
@@ -374,8 +364,6 @@ Steps from Fado houses and the iconic Tram 28 route. Rooftop terrace with sweepi
     ],
     views: ["Tagus River", "City Views"],
     highlights: ["Historic District", "Rooftop Terrace", "River Views"],
-    videoUrl: null,
-    pdfAssetPath: null,
     additionalCosts: [
       { label: "Cleaning fee", amount: 6000, per: "stay" },
       { label: "Tourist tax", amount: 200, per: "night_per_guest", maxNights: 7 },
@@ -417,8 +405,6 @@ Hand-crafted timber interiors, a private outdoor hot tub, and ski-in/ski-out acc
     ],
     views: ["Matterhorn", "Alpine Peaks", "Village Views"],
     highlights: ["Matterhorn View", "Ski-In/Ski-Out", "Hot Tub", "Cinema"],
-    videoUrl: null,
-    pdfAssetPath: null,
     additionalCosts: [
       { label: "Cleaning fee", amount: 20000, per: "stay" },
     ],
@@ -457,8 +443,6 @@ Enjoy the morning light flooding through large French windows while sipping coff
     ],
     views: ["Mediterranean Sea", "Promenade"],
     highlights: ["Seafront", "Beach Access", "French Riviera"],
-    videoUrl: null,
-    pdfAssetPath: null,
     additionalCosts: [
       { label: "Cleaning fee", amount: 7000, per: "stay" },
       { label: "Tourist tax", amount: 150, per: "night_per_guest" },
@@ -499,8 +483,6 @@ Traditional Cycladic architecture meets contemporary luxury, with a private chef
     ],
     views: ["Aegean Sea", "Sunset Views", "Island Panorama"],
     highlights: ["Infinity Pool", "Private Cove", "Sunset Views", "Chef Kitchen"],
-    videoUrl: null,
-    pdfAssetPath: null,
     additionalCosts: [
       { label: "Cleaning fee", amount: 25000, per: "stay" },
       { label: "Tourist tax", amount: 400, per: "night_per_guest", maxNights: 7 },
@@ -539,8 +521,6 @@ High ceilings, original parquet floors, and curated period furniture blend seaml
     ],
     views: ["Ringstrasse", "City Views"],
     highlights: ["Historic Center", "Opera District", "Art Nouveau"],
-    videoUrl: null,
-    pdfAssetPath: null,
     additionalCosts: [
       { label: "Cleaning fee", amount: 5000, per: "stay" },
       { label: "City tax", amount: 380, per: "night_per_guest", maxNights: 10 },
@@ -579,8 +559,6 @@ The ground floor features an open-plan living area with exposed stone walls; the
     ],
     views: ["Douro River", "Dom Luís Bridge"],
     highlights: ["UNESCO District", "River Views", "Historic Charm"],
-    videoUrl: null,
-    pdfAssetPath: null,
     additionalCosts: [
       { label: "Cleaning fee", amount: 5500, per: "stay" },
       { label: "Tourist tax", amount: 200, per: "night_per_guest", maxNights: 7 },
@@ -620,8 +598,6 @@ Walking distance to the English Garden and excellent public transport connection
     ],
     views: ["Courtyard"],
     highlights: ["English Garden", "Creative Quarter", "Industrial Design"],
-    videoUrl: null,
-    pdfAssetPath: null,
     additionalCosts: [
       { label: "Cleaning fee", amount: 6000, per: "stay" },
     ],

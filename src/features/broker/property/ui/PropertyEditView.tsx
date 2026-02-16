@@ -329,31 +329,6 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
         />
       </section>
 
-      {/* Media Links */}
-      <section className="bg-card border border-border p-6 rounded-xl">
-        <h2 className="text-xl font-semibold text-foreground mb-6">
-          Additional Media
-        </h2>
-
-        <div className="space-y-6">
-          <EditableTextField
-            label="Video URL"
-            value={property.videoUrl ?? ""}
-            onSave={(v) => saveField("videoUrl", v || null)}
-            description="Optional video URL for elite properties"
-            placeholder="https://vimeo.com/..."
-          />
-
-          <EditableTextField
-            label="PDF Flyer Path"
-            value={property.pdfAssetPath ?? ""}
-            onSave={(v) => saveField("pdfAssetPath", v || null)}
-            description="Path to manually uploaded PDF flyer"
-            placeholder="/flyers/mallorca-villa.pdf"
-          />
-        </div>
-      </section>
-
       {/* Booking Options */}
       <section className="bg-card border border-border p-6 rounded-xl">
         <h2 className="text-xl font-semibold text-foreground mb-6">
