@@ -1,6 +1,7 @@
 import { useCreateExperience } from "@/features/broker/experience/queries/useCreateExperience";
 import { CreateExperienceForm } from "@/features/broker/experience/ui/CreateExperienceForm";
 import { rootRoute } from "@/features/broker/property/routes/BackofficeRoot";
+import { BackofficePageHeader } from "@/features/broker/ui/BackofficePageHeader";
 import { getErrorMessages } from "@/modules/utils/errors";
 import type { CreateExperienceInput } from "@/schemas/experience";
 import { createRoute, useNavigate } from "@tanstack/react-router";
@@ -19,9 +20,11 @@ function CreateExperiencePage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-3xl font-bold text-foreground mb-8">
-        Create New Experience
-      </h1>
+      <BackofficePageHeader
+        title="Create New Experience"
+        backTo="/experiences"
+        backLabel="Back to Experiences"
+      />
 
       <CreateExperienceForm
         onSubmit={handleSubmit}

@@ -6,6 +6,7 @@
 import { useProperty } from "@/features/broker/property/queries/useProperty";
 import { rootRoute } from "@/features/broker/property/routes/BackofficeRoot";
 import { PropertyEditView } from "@/features/broker/property/ui/PropertyEditView";
+import { BackofficePageHeader } from "@/features/broker/ui/BackofficePageHeader";
 import { createRoute, useParams } from "@tanstack/react-router";
 import { ExternalLink } from "lucide-react";
 
@@ -18,8 +19,11 @@ function EditPropertyPage() {
 
   return (
     <div className="p-8">
-      <div className="max-w-4xl mx-auto mb-6 flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-foreground">Edit Property</h1>
+      <BackofficePageHeader
+        title="Edit Property"
+        backTo="/properties"
+        backLabel="Back to Properties"
+      >
         <a
           href={viewUrl}
           target="_blank"
@@ -29,7 +33,7 @@ function EditPropertyPage() {
           View Property
           <ExternalLink size={16} />
         </a>
-      </div>
+      </BackofficePageHeader>
       <PropertyEditView propertyId={id} />
     </div>
   );

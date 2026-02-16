@@ -21,6 +21,7 @@ import { Select } from "@/modules/ui/Select";
 import { showError } from "@/modules/ui/react/stores/notificationStore";
 import { getErrorMessages } from "@/modules/utils/errors";
 import { Link, createRoute, useNavigate } from "@tanstack/react-router";
+import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 
 // =============================================================================
@@ -163,7 +164,14 @@ function CreatePropertyPage() {
   // No integration
   if (!isIntegrated) {
     return (
-      <div className="max-w-xl">
+      <div className="max-w-4xl mx-auto">
+        <Link
+          to="/properties"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+        >
+          <ArrowLeft size={16} />
+          Back to Properties
+        </Link>
         <h1 className="text-3xl font-bold text-foreground mb-6">
           Create New Property
         </h1>
@@ -186,7 +194,14 @@ function CreatePropertyPage() {
   // Step 1: Tier selection
   if (!selectedTier) {
     return (
-      <div className="max-w-xl">
+      <div className="max-w-4xl mx-auto">
+        <Link
+          to="/properties"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+        >
+          <ArrowLeft size={16} />
+          Back to Properties
+        </Link>
         <h1 className="text-3xl font-bold text-foreground mb-2">
           Create New Property
         </h1>
@@ -194,7 +209,7 @@ function CreatePropertyPage() {
           Choose the property tier to get started.
         </p>
 
-        <div className="grid gap-4">
+        <div className="grid gap-4 max-w-xl">
           <TierCard
             tier="elite"
             title="Elite"
@@ -217,7 +232,14 @@ function CreatePropertyPage() {
   // Step 2: Smoobu property selection
   if (!selectedListing) {
     return (
-      <div className="max-w-xl">
+      <div className="max-w-4xl mx-auto">
+        <Link
+          to="/properties"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
+        >
+          <ArrowLeft size={16} />
+          Back to Properties
+        </Link>
         <h1 className="text-3xl font-bold text-foreground mb-2">
           Create New Property
         </h1>
@@ -265,22 +287,31 @@ function CreatePropertyPage() {
   // Step 3: Form with per-field link buttons
   return (
     <div>
-      <h1 className="text-3xl font-bold text-foreground mb-2">
-        Create New Property
-      </h1>
-      <p className="text-muted-foreground mb-8">
-        <span className="capitalize">{selectedTier}</span> &middot;{" "}
-        {selectedListing.name}
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedListing(null);
-          }}
-          className="text-primary hover:underline ml-2"
+      <div className="max-w-4xl mx-auto mb-8">
+        <Link
+          to="/properties"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors mb-4"
         >
-          Change
-        </button>
-      </p>
+          <ArrowLeft size={16} />
+          Back to Properties
+        </Link>
+        <h1 className="text-3xl font-bold text-foreground mb-2">
+          Create New Property
+        </h1>
+        <p className="text-muted-foreground">
+          <span className="capitalize">{selectedTier}</span> &middot;{" "}
+          {selectedListing.name}
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedListing(null);
+            }}
+            className="text-primary hover:underline ml-2"
+          >
+            Change
+          </button>
+        </p>
+      </div>
 
       <CreatePropertyForm
         key={`${selectedTier}-${selectedListing.id}`}
