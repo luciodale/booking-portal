@@ -3,6 +3,7 @@ import type {
   ExperienceAdditionalCost,
   PriceLineItem,
   PropertyAdditionalCost,
+  PropertyExtra,
 } from "./pricingTypes";
 
 export function computePropertyAdditionalCosts(
@@ -85,4 +86,55 @@ export function formatPropertyCostPreview(
         };
     }
   });
+}
+
+export function computeExtrasTotal(
+  extras: PropertyExtra[],
+  selectedIndices: Set<number> | number[],
+  params: { nights: number; guests: number; currency: string }
+): PriceLineItem[] {
+  const indices =
+    selectedIndices instanceof Set
+      ? selectedIndices
+      : new Set(selectedIndices);
+  if (indices.size === 0) return [];
+
+  const items: PriceLineItem[] = [];
+  for (const idx of indices) {
+    const extra = extras[idx];
+    if (!extra) continue;
+
+    switch (extra.per) {
+      case "stay":
+        items.push({ label: extra.name, amountCents: extra.amount });
+        break;
+      case "night":
+        items.push({
+          label: extra.name,
+          amountCents: extra.amount * params.nights,
+          detail: `${formatPrice(extra.amount / 100, params.currency)}/night`,
+        });
+        break;
+      case "guest":
+        items.push({
+          label: extra.name,
+          amountCents: extra.amount * params.guests,
+          detail: `${formatPrice(extra.amount / 100, params.currency)}/guest`,
+        });
+        break;
+      case "night_per_guest": {
+        const effectiveNights =
+          extra.maxNights != null
+            ? Math.min(params.nights, extra.maxNights)
+            : params.nights;
+        items.push({
+          label: extra.name,
+          amountCents: extra.amount * effectiveNights * params.guests,
+          detail: `${formatPrice(extra.amount / 100, params.currency)}/night/guest${extra.maxNights != null ? ` (max ${extra.maxNights} nights)` : ""}`,
+        });
+        break;
+      }
+    }
+  }
+  return items;
 }

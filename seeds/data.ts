@@ -49,8 +49,6 @@ export type SeedAsset = Required<
     | "videoUrl"
     | "pdfAssetPath"
     | "instantBook"
-    | "featured"
-    | "sortOrder"
     | "additionalCosts"
     | "showFullAddress"
   >
@@ -85,7 +83,6 @@ export type SeedExperience = Required<
     | "currency"
     | "imageUrl"
     | "status"
-    | "featured"
     | "instantBook"
     | "additionalCosts"
   >
@@ -206,8 +203,6 @@ The pool area is a great place to relax. It features a saltwater infinity pool, 
       { label: "Tourist tax", amount: 350, per: "night_per_guest", maxNights: 10 },
     ],
     instantBook: false,
-    featured: true,
-    sortOrder: 1,
     showFullAddress: true,
   },
   {
@@ -263,8 +258,6 @@ There is WIFI TV in the whole house with Netflix, Amazon Prime and Apple TV+. Th
       { label: "Cleaning fee", amount: 25000, per: "stay" },
     ],
     instantBook: false,
-    featured: true,
-    sortOrder: 2,
     showFullAddress: true,
   },
   {
@@ -305,8 +298,6 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
       { label: "Tourist tax", amount: 225, per: "night_per_guest", maxNights: 7 },
     ],
     instantBook: true,
-    featured: false,
-    sortOrder: 3,
     showFullAddress: true,
   },
   {
@@ -350,8 +341,6 @@ The property features lush gardens, a private dock, and interiors designed by a 
       { label: "Tourist tax", amount: 300, per: "night_per_guest", maxNights: 14 },
     ],
     instantBook: false,
-    featured: true,
-    sortOrder: 4,
     showFullAddress: true,
   },
   {
@@ -392,8 +381,6 @@ Steps from Fado houses and the iconic Tram 28 route. Rooftop terrace with sweepi
       { label: "Tourist tax", amount: 200, per: "night_per_guest", maxNights: 7 },
     ],
     instantBook: true,
-    featured: false,
-    sortOrder: 5,
     showFullAddress: true,
   },
   {
@@ -436,8 +423,6 @@ Hand-crafted timber interiors, a private outdoor hot tub, and ski-in/ski-out acc
       { label: "Cleaning fee", amount: 20000, per: "stay" },
     ],
     instantBook: false,
-    featured: true,
-    sortOrder: 6,
     showFullAddress: true,
   },
   {
@@ -479,8 +464,6 @@ Enjoy the morning light flooding through large French windows while sipping coff
       { label: "Tourist tax", amount: 150, per: "night_per_guest" },
     ],
     instantBook: true,
-    featured: false,
-    sortOrder: 7,
     showFullAddress: true,
   },
   {
@@ -523,8 +506,6 @@ Traditional Cycladic architecture meets contemporary luxury, with a private chef
       { label: "Tourist tax", amount: 400, per: "night_per_guest", maxNights: 7 },
     ],
     instantBook: false,
-    featured: true,
-    sortOrder: 8,
     showFullAddress: true,
   },
   {
@@ -565,8 +546,6 @@ High ceilings, original parquet floors, and curated period furniture blend seaml
       { label: "City tax", amount: 380, per: "night_per_guest", maxNights: 10 },
     ],
     instantBook: true,
-    featured: false,
-    sortOrder: 9,
     showFullAddress: true,
   },
   {
@@ -607,8 +586,6 @@ The ground floor features an open-plan living area with exposed stone walls; the
       { label: "Tourist tax", amount: 200, per: "night_per_guest", maxNights: 7 },
     ],
     instantBook: true,
-    featured: false,
-    sortOrder: 10,
     showFullAddress: true,
   },
   {
@@ -649,8 +626,6 @@ Walking distance to the English Garden and excellent public transport connection
       { label: "Cleaning fee", amount: 6000, per: "stay" },
     ],
     instantBook: true,
-    featured: false,
-    sortOrder: 11,
     showFullAddress: true,
   },
 ];
@@ -1127,7 +1102,7 @@ export const experiences: SeedExperience[] = [
       { label: "Fuel surcharge", amount: 15000, per: "booking" },
     ],
     status: "published",
-    featured: true,
+
     instantBook: true,
   },
   {
@@ -1147,7 +1122,7 @@ export const experiences: SeedExperience[] = [
     imageUrl: "experiences/exp-2/main.webp",
     additionalCosts: null,
     status: "published",
-    featured: true,
+
     instantBook: true,
   },
   {
@@ -1167,7 +1142,7 @@ export const experiences: SeedExperience[] = [
     imageUrl: "experiences/exp-3/main.webp",
     additionalCosts: null,
     status: "published",
-    featured: true,
+
     instantBook: false,
   },
   {
@@ -1187,7 +1162,7 @@ export const experiences: SeedExperience[] = [
     imageUrl: "experiences/exp-4/main.webp",
     additionalCosts: null,
     status: "published",
-    featured: true,
+
     instantBook: true,
   },
   {
@@ -1207,7 +1182,7 @@ export const experiences: SeedExperience[] = [
     imageUrl: "experiences/exp-5/main.webp",
     additionalCosts: null,
     status: "published",
-    featured: false,
+
     instantBook: true,
   },
   {
@@ -1227,7 +1202,7 @@ export const experiences: SeedExperience[] = [
     imageUrl: "experiences/exp-6/main.webp",
     additionalCosts: null,
     status: "published",
-    featured: false,
+
     instantBook: false,
   },
   {
@@ -1249,7 +1224,7 @@ export const experiences: SeedExperience[] = [
       { label: "Equipment rental", amount: 8000, per: "participant" },
     ],
     status: "published",
-    featured: false,
+
     instantBook: true,
   },
   {
@@ -1269,7 +1244,7 @@ export const experiences: SeedExperience[] = [
     imageUrl: "experiences/exp-2/main.webp",
     additionalCosts: null,
     status: "published",
-    featured: true,
+
     instantBook: true,
   },
   {
@@ -1289,7 +1264,7 @@ export const experiences: SeedExperience[] = [
     imageUrl: "experiences/exp-4/main.webp",
     additionalCosts: null,
     status: "published",
-    featured: false,
+
     instantBook: false,
   },
   {
@@ -1309,7 +1284,7 @@ export const experiences: SeedExperience[] = [
     imageUrl: "experiences/exp-5/main.webp",
     additionalCosts: null,
     status: "published",
-    featured: true,
+
     instantBook: true,
   },
 ];

@@ -83,10 +83,12 @@ function formatPrice(cents: number, currency: string) {
             Up to {experience.maxParticipants} participants
           </div>
         )}
-        <div class="flex items-center gap-2 text-foreground">
-          <i data-lucide="tag" class="w-4 h-4 text-primary" />
-          {formatPrice(experience.basePrice, experience.currency)} per person
-        </div>
+        {experience.showPrice && (
+          <div class="flex items-center gap-2 text-foreground">
+            <i data-lucide="tag" class="w-4 h-4 text-primary" />
+            {formatPrice(experience.basePrice, experience.currency)} per person
+          </div>
+        )}
         <div class="flex items-center gap-2 text-foreground">
           <i data-lucide="compass" class="w-4 h-4 text-primary" />
           {categoryLabel}

@@ -29,7 +29,6 @@ export function CreateExperienceForm({
       defaultValues: {
         status: "draft",
         currency: "eur",
-        featured: false,
         instantBook: false,
         additionalCosts: [],
       },

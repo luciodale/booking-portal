@@ -10,7 +10,11 @@ import { useProperty } from "@/features/broker/property/queries/useProperty";
 import { useUpdateProperty } from "@/features/broker/property/queries/useUpdateProperty";
 import { getFacilityOptions } from "@/modules/constants";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
-import type { PropertyAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
+import { ExtrasEditor } from "@/modules/ui/react/ExtrasEditor";
+import type {
+  PropertyAdditionalCost,
+  PropertyExtra,
+} from "@/features/public/booking/domain/pricingTypes";
 import type { UpdatePropertyInput } from "@/schemas/property";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -294,6 +298,23 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
         />
       </section>
 
+      {/* Extras */}
+      <section className="bg-card border border-border p-6 rounded-xl">
+        <EditableSectionField
+          title="Extras"
+          description="Optional add-ons guests can select during booking (amounts in cents)."
+          values={{ extras: (property.extras ?? []) as PropertyExtra[] }}
+          onSave={(data) => saveField("extras", data.extras)}
+          renderFields={({ values, onChange, disabled }) => (
+            <ExtrasEditor
+              extras={values.extras}
+              onChange={(extras) => onChange({ extras })}
+              disabled={disabled}
+            />
+          )}
+        />
+      </section>
+
       {/* City Tax */}
       {property.city && property.country && (
         <CityTaxSection city={property.city} country={property.country} />
@@ -335,15 +356,38 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
 
       {/* Booking Options */}
       <section className="bg-card border border-border p-6 rounded-xl">
-        <EditableSelectField
-          label="Instant Book"
-          value={property.instantBook ? "yes" : "no"}
-          onSave={(v) => saveField("instantBook", v === "yes")}
-          options={[
-            { value: "yes", label: "Yes" },
-            { value: "no", label: "No" },
-          ]}
-        />
+        <h2 className="text-xl font-semibold text-foreground mb-6">
+          Booking Options
+        </h2>
+
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-6">
+            <EditableTextField
+              label="Check-in Time"
+              value={property.checkIn ?? ""}
+              onSave={(v) => saveField("checkIn", v || null)}
+              placeholder="16:00"
+              description="Default check-in time (HH:mm)"
+            />
+            <EditableTextField
+              label="Check-out Time"
+              value={property.checkOut ?? ""}
+              onSave={(v) => saveField("checkOut", v || null)}
+              placeholder="10:00"
+              description="Default check-out time (HH:mm)"
+            />
+          </div>
+
+          <EditableSelectField
+            label="Instant Book"
+            value={property.instantBook ? "yes" : "no"}
+            onSave={(v) => saveField("instantBook", v === "yes")}
+            options={[
+              { value: "yes", label: "Yes" },
+              { value: "no", label: "No" },
+            ]}
+          />
+        </div>
       </section>
 
       {/* Property Status */}

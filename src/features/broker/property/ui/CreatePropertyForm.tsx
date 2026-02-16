@@ -68,9 +68,10 @@ function SmoobuLinkButton({ onClick }: { onClick: () => void }) {
       type="button"
       onClick={onClick}
       title="Fill from Smoobu"
-      className="inline-flex items-center justify-center w-6 h-6 rounded-md text-primary hover:bg-primary/10 transition-colors ml-1.5 align-middle"
+      className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-primary/30 bg-primary/5 text-primary text-xs font-medium hover:bg-primary/15 transition-colors ml-1.5 align-middle"
     >
-      <Link2 className="w-3.5 h-3.5" />
+      <Link2 className="w-3 h-3" />
+      Smoobu
     </button>
   );
 }
@@ -414,6 +415,21 @@ export function CreatePropertyForm({
 
       {/* Booking Options */}
       <FormSection title="Booking Options">
+        <div className="grid grid-cols-2 gap-4">
+          <TextInput
+            name="checkIn"
+            control={control}
+            label="Check-in Time"
+            placeholder="16:00"
+          />
+          <TextInput
+            name="checkOut"
+            control={control}
+            label="Check-out Time"
+            placeholder="10:00"
+          />
+        </div>
+
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"

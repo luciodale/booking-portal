@@ -14,6 +14,7 @@ import {
 import type { ExperienceAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import type { UpdateExperienceInput } from "@/schemas/experience";
+import { PropertyLinker } from "./PropertyLinker";
 
 interface ExperienceEditViewProps {
   experienceId: string;
@@ -156,6 +157,15 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
               { value: "gbp", label: "GBP" },
             ]}
           />
+          <EditableSelectField
+            label="Show Price Publicly"
+            value={experience.showPrice ? "yes" : "no"}
+            onSave={(v) => saveField("showPrice", v === "yes")}
+            options={[
+              { value: "yes", label: "Yes" },
+              { value: "no", label: "No" },
+            ]}
+          />
         </div>
       </section>
 
@@ -189,6 +199,20 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
             { value: "yes", label: "Yes" },
             { value: "no", label: "No" },
           ]}
+        />
+      </section>
+
+      {/* Linked Properties */}
+      <section className="bg-card border border-border p-6 rounded-xl">
+        <h2 className="text-xl font-semibold text-foreground mb-4">
+          Linked Properties
+        </h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Link this experience to properties so it appears on their pages.
+        </p>
+        <PropertyLinker
+          experienceId={experienceId}
+          linkedProperties={experience.linkedProperties ?? []}
         />
       </section>
 

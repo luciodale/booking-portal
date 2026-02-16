@@ -46,8 +46,8 @@ function jsonValue(val: unknown): string {
 }
 
 function generateAssetInsert(asset: SeedAsset): string {
-  return `INSERT INTO assets (id, user_id, smoobu_property_id, tier, status, title, description, short_description, street, zip, city, country, latitude, longitude, max_occupancy, bedrooms, bathrooms, sq_meters, amenities, views, highlights, additional_costs, video_url, pdf_asset_path, instant_book, featured, sort_order, show_full_address)
-VALUES (${escapeString(asset.id)}, ${escapeString(asset.userId)}, ${asset.smoobuPropertyId ?? "NULL"}, ${escapeString(asset.tier)}, ${escapeString(asset.status)}, ${escapeString(asset.title)}, ${escapeString(asset.description)}, ${escapeString(asset.shortDescription)}, ${escapeString(asset.street)}, ${escapeString(asset.zip)}, ${escapeString(asset.city)}, ${escapeString(asset.country)}, ${escapeString(asset.latitude)}, ${escapeString(asset.longitude)}, ${asset.maxOccupancy}, ${asset.bedrooms}, ${asset.bathrooms}, ${asset.sqMeters}, ${jsonArray(asset.amenities)}, ${jsonArray(asset.views)}, ${jsonArray(asset.highlights)}, ${jsonValue(asset.additionalCosts)}, ${escapeString(asset.videoUrl)}, ${escapeString(asset.pdfAssetPath)}, ${boolToInt(asset.instantBook)}, ${boolToInt(asset.featured)}, ${asset.sortOrder}, ${boolToInt(asset.showFullAddress)});`;
+  return `INSERT INTO assets (id, user_id, smoobu_property_id, tier, status, title, description, short_description, street, zip, city, country, latitude, longitude, max_occupancy, bedrooms, bathrooms, sq_meters, amenities, views, highlights, additional_costs, video_url, pdf_asset_path, instant_book, show_full_address)
+VALUES (${escapeString(asset.id)}, ${escapeString(asset.userId)}, ${asset.smoobuPropertyId ?? "NULL"}, ${escapeString(asset.tier)}, ${escapeString(asset.status)}, ${escapeString(asset.title)}, ${escapeString(asset.description)}, ${escapeString(asset.shortDescription)}, ${escapeString(asset.street)}, ${escapeString(asset.zip)}, ${escapeString(asset.city)}, ${escapeString(asset.country)}, ${escapeString(asset.latitude)}, ${escapeString(asset.longitude)}, ${asset.maxOccupancy}, ${asset.bedrooms}, ${asset.bathrooms}, ${asset.sqMeters}, ${jsonArray(asset.amenities)}, ${jsonArray(asset.views)}, ${jsonArray(asset.highlights)}, ${jsonValue(asset.additionalCosts)}, ${escapeString(asset.videoUrl)}, ${escapeString(asset.pdfAssetPath)}, ${boolToInt(asset.instantBook)}, ${boolToInt(asset.showFullAddress)});`;
 }
 
 function generateImageInsert(image: SeedImage): string {
@@ -56,8 +56,8 @@ VALUES (${escapeString(image.id)}, ${escapeString(image.assetId)}, ${escapeStrin
 }
 
 function generateExperienceInsert(exp: SeedExperience): string {
-  return `INSERT INTO experiences (id, user_id, title, description, short_description, city, country, category, duration, max_participants, base_price, currency, image_url, additional_costs, status, featured, instant_book)
-VALUES (${escapeString(exp.id)}, ${escapeString(exp.userId)}, ${escapeString(exp.title)}, ${escapeString(exp.description)}, ${escapeString(exp.shortDescription)}, ${escapeString(exp.city)}, ${escapeString(exp.country)}, ${escapeString(exp.category)}, ${escapeString(exp.duration)}, ${exp.maxParticipants}, ${exp.basePrice}, ${escapeString(exp.currency)}, ${escapeString(exp.imageUrl)}, ${jsonValue(exp.additionalCosts)}, ${escapeString(exp.status)}, ${boolToInt(exp.featured)}, ${boolToInt(exp.instantBook)});`;
+  return `INSERT INTO experiences (id, user_id, title, description, short_description, city, country, category, duration, max_participants, base_price, currency, image_url, additional_costs, status, instant_book)
+VALUES (${escapeString(exp.id)}, ${escapeString(exp.userId)}, ${escapeString(exp.title)}, ${escapeString(exp.description)}, ${escapeString(exp.shortDescription)}, ${escapeString(exp.city)}, ${escapeString(exp.country)}, ${escapeString(exp.category)}, ${escapeString(exp.duration)}, ${exp.maxParticipants}, ${exp.basePrice}, ${escapeString(exp.currency)}, ${escapeString(exp.imageUrl)}, ${jsonValue(exp.additionalCosts)}, ${escapeString(exp.status)}, ${boolToInt(exp.instantBook)});`;
 }
 
 function generatePmsIntegrationInsert(pms: SeedPmsIntegration): string {

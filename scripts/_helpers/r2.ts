@@ -6,7 +6,7 @@
 import { join } from "node:path";
 
 const BUCKET_NAME = "booking-portal-images";
-const MAX_CONCURRENCY = 5;
+const MAX_CONCURRENCY = 15;
 const MAX_RETRIES = 3;
 
 export type ImageManifestEntry = {

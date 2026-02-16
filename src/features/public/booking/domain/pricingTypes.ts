@@ -17,6 +17,14 @@ export type PriceLineItem = {
   detail?: string;
 };
 
+export type PropertyExtra = {
+  name: string;
+  icon: string;
+  amount: number;
+  per: "stay" | "night" | "guest" | "night_per_guest";
+  maxNights?: number;
+};
+
 export type CityTax = {
   amount: number;
   maxNights: number | null;

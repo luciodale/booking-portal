@@ -2,7 +2,10 @@ import { getDb } from "@/db";
 import { assets, cityTaxDefaults, pmsIntegrations } from "@/db/schema";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
-import { computePropertyAdditionalCosts } from "@/features/public/booking/domain/computeAdditionalCosts";
+import {
+  computeExtrasTotal,
+  computePropertyAdditionalCosts,
+} from "@/features/public/booking/domain/computeAdditionalCosts";
 import { toCents } from "@/features/public/booking/domain/computeStayPrice";
 import { requireAuth } from "@/modules/auth/auth";
 import { createEventLogger } from "@/modules/logging/eventLogger";
@@ -20,6 +23,7 @@ const checkoutBodySchema = z.object({
   currency: z.string().min(1),
   nightPriceCents: z.record(z.string(), z.number().int().nonnegative()),
   cityTaxCents: z.number().int().nonnegative(),
+  selectedExtraIndices: z.array(z.number().int().min(0)).default([]),
   guestInfo: z.object({
     firstName: z.string().min(1),
     lastName: z.string().min(1),
@@ -68,6 +72,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       currency,
       nightPriceCents,
       cityTaxCents,
+      selectedExtraIndices,
       guestInfo,
     } = body.data;
     const db = getDb(D1Database);
@@ -220,6 +225,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
       0
     );
 
+    // Compute extras server-side
+    const extrasItems =
+      asset.extras && selectedExtraIndices.length > 0
+        ? computeExtrasTotal(asset.extras, selectedExtraIndices, {
+            nights,
+            guests,
+            currency: currency.toLowerCase(),
+          })
+        : [];
+    const extrasTotalCents = extrasItems.reduce(
+      (sum, item) => sum + item.amountCents,
+      0
+    );
+
     // Compute city tax server-side
     const [cityTaxRow] = await db
       .select()
@@ -252,7 +271,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
 
     const grandTotalCents =
-      serverPriceCents + additionalTotalCents + serverCityTaxCents;
+      serverPriceCents + additionalTotalCents + extrasTotalCents + serverCityTaxCents;
 
     const origin = new URL(request.url).origin;
 
@@ -323,6 +342,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
           unit_amount: item.amountCents,
           product_data: {
             name: item.label,
+            ...(item.detail ? { description: item.detail } : {}),
+          },
+        },
+        quantity: 1,
+      })),
+      ...extrasItems.map((item) => ({
+        price_data: {
+          currency: currency.toLowerCase(),
+          unit_amount: item.amountCents,
+          product_data: {
+            name: `Extra: ${item.label}`,
             ...(item.detail ? { description: item.detail } : {}),
           },
         },

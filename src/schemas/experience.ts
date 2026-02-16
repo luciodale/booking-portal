@@ -66,6 +66,7 @@ const experienceFieldsSchema = baseExperienceInsertSchema
       .optional()
       .nullable(),
     instantBook: z.boolean().optional(),
+    showPrice: z.boolean().optional(),
   });
 
 /**
@@ -92,10 +93,21 @@ export type UpdateExperienceInput = z.infer<typeof updateExperienceSchema>;
 // ============================================================================
 
 /**
+ * Linked property summary — returned inside ExperienceWithDetails
+ */
+export const linkedPropertySchema = z.object({
+  assetId: z.string(),
+  title: z.string(),
+});
+
+export type LinkedProperty = z.infer<typeof linkedPropertySchema>;
+
+/**
  * Full experience with images for detailed view
  */
 export const experienceResponseSchema = experienceSelectSchema.extend({
   images: z.array(experienceImageSelectSchema),
+  linkedProperties: z.array(linkedPropertySchema).optional(),
 });
 
 export type ExperienceWithDetails = z.infer<typeof experienceResponseSchema>;
@@ -116,7 +128,7 @@ export const experienceListItemSchema = experienceSelectSchema
     basePrice: true,
     currency: true,
     maxParticipants: true,
-    featured: true,
+    showPrice: true,
     createdAt: true,
     updatedAt: true,
   })

@@ -6,6 +6,7 @@ type CheckoutSessionParams = {
   currency: string;
   nightPriceCents: Record<string, number>;
   cityTaxCents: number;
+  selectedExtraIndices: number[];
   guestInfo: {
     firstName: string;
     lastName: string;

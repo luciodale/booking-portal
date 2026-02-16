@@ -1,5 +1,5 @@
 import { getDb } from "@/db";
-import { experienceImages, experiences } from "@/db/schema";
+import { assets, assetExperiences, experienceImages, experiences } from "@/db/schema";
 import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type { ExperienceWithDetails } from "@/schemas/experience";
@@ -44,9 +44,19 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .from(experienceImages)
       .where(eq(experienceImages.experienceId, id));
 
+    const linkedRows = await db
+      .select({
+        assetId: assetExperiences.assetId,
+        title: assets.title,
+      })
+      .from(assetExperiences)
+      .innerJoin(assets, eq(assets.id, assetExperiences.assetId))
+      .where(eq(assetExperiences.experienceId, id));
+
     const response: ExperienceWithDetails = {
       ...experience,
       images: imgs,
+      linkedProperties: linkedRows,
     };
 
     return jsonSuccess(response);

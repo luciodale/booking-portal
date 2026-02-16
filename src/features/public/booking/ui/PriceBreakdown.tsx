@@ -18,7 +18,7 @@ export function PriceBreakdown({
         <div key={item.label}>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">{item.label}</span>
-            <span className="text-foreground">
+            <span className="text-foreground whitespace-nowrap">
               {item.amountCents > 0
                 ? formatPrice(item.amountCents / 100, currency)
                 : "—"}

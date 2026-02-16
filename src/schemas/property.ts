@@ -36,8 +36,6 @@ const propertyFieldsSchema = baseAssetInsertSchema
     userId: true,
     createdAt: true,
     updatedAt: true,
-    sortOrder: true,
-    featured: true,
     smoobuPropertyId: true, // Set separately after Smoobu selection
   })
   .extend({
@@ -76,6 +74,17 @@ const propertyFieldsSchema = baseAssetInsertSchema
     pdfAssetPath: z
       .string()
       .regex(/^\/flyers\/[a-z0-9-]+\.pdf$/, "Invalid PDF path format")
+      .optional()
+      .nullable(),
+
+    checkIn: z
+      .string()
+      .regex(/^\d{2}:\d{2}$/, "Use HH:mm format")
+      .optional()
+      .nullable(),
+    checkOut: z
+      .string()
+      .regex(/^\d{2}:\d{2}$/, "Use HH:mm format")
       .optional()
       .nullable(),
 
@@ -138,7 +147,6 @@ export const propertyListItemSchema = assetSelectSchema
     maxOccupancy: true,
     bedrooms: true,
     bathrooms: true,
-    featured: true,
     createdAt: true,
     updatedAt: true,
   })

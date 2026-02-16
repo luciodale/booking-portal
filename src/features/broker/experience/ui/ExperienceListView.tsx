@@ -171,6 +171,14 @@ export function ExperienceListView() {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <a
+                      href={`/experiences/${exp.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:text-primary-hover mr-4 transition-colors"
+                    >
+                      View
+                    </a>
                     <Link
                       to="/experiences/$id/edit"
                       params={{ id: exp.id }}

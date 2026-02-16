@@ -1,26 +1,23 @@
 ---
 import { getDb } from "@/db";
-import {
-  assetExperiences,
-  assets,
-  cityTaxDefaults,
-  experienceImages,
-  experiences,
-  images,
-} from "@/db/schema";
-import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
+import { assets, images } from "@/db/schema";
 import { kebabToDisplay } from "@/features/broker/property/domain/sync-features";
 import { BookingWidget } from "@/features/public/booking/ui/BookingWidget";
+import {
+  fetchCityTax,
+  fetchLinkedExperiences,
+  fetchOwnerWhatsapp,
+} from "@/features/public/browse/property-detail-queries";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { getFacilityIconName } from "@/modules/constants";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import Badge from "@/modules/ui/astro/Badge.astro";
-import Button from "@/modules/ui/astro/Button.astro";
+import ExperienceCard from "@/modules/ui/astro/ExperienceCard.astro";
+import ExtrasSection from "@/modules/ui/astro/ExtrasSection.astro";
 import ImageGallery from "@/modules/ui/astro/ImageGallery.astro";
 import PropertyMap from "@/modules/ui/astro/PropertyMap.astro";
 import { formatAddress, formatLocation } from "@/utils/formatLocation";
-import { and, asc, eq } from "drizzle-orm";
-import type { CityTax } from "@/features/public/booking/domain/pricingTypes";
+import { asc, eq } from "drizzle-orm";
 
 export const prerender = false;
 
@@ -63,74 +60,11 @@ const property = {
   views: asset.views ?? [],
 };
 
-// Linked experiences from DB
-const links = await db
-  .select({
-    experienceId: assetExperiences.experienceId,
-    discountPercent: assetExperiences.discountPercent,
-  })
-  .from(assetExperiences)
-  .where(eq(assetExperiences.assetId, asset.id));
-
-const linkedExperiences = await Promise.all(
-  links.map(async (link) => {
-    const [exp] = await db
-      .select()
-      .from(experiences)
-      .where(eq(experiences.id, link.experienceId))
-      .limit(1);
-    if (!exp) return null;
-
-    const [primaryImg] = await db
-      .select()
-      .from(experienceImages)
-      .where(
-        and(
-          eq(experienceImages.experienceId, exp.id),
-          eq(experienceImages.isPrimary, true)
-        )
-      )
-      .limit(1);
-
-    const imageUrl = primaryImg
-      ? generateImageUrl(primaryImg.r2Key)
-      : (exp.imageUrl ?? "");
-
-    return {
-      id: exp.id,
-      title: exp.title,
-      location: formatLocation(exp),
-      imageUrl,
-      duration: exp.duration ?? "",
-      category: exp.category
-        ? (experienceCategoryLabels[exp.category] ?? exp.category)
-        : "Other",
-      discountPercent: link.discountPercent ?? 0,
-    };
-  })
-);
-
-const linkedExperiencesFiltered = linkedExperiences.filter(
-  (e): e is NonNullable<typeof e> => e !== null
-);
-
-const [cityTaxRow] = asset.city && asset.country
-  ? await db
-      .select({ amount: cityTaxDefaults.amount, maxNights: cityTaxDefaults.maxNights })
-      .from(cityTaxDefaults)
-      .where(
-        and(
-          eq(cityTaxDefaults.userId, asset.userId),
-          eq(cityTaxDefaults.city, asset.city),
-          eq(cityTaxDefaults.country, asset.country)
-        )
-      )
-      .limit(1)
-  : [];
-
-const cityTax: CityTax | null = cityTaxRow
-  ? { amount: cityTaxRow.amount, maxNights: cityTaxRow.maxNights }
-  : null;
+const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
+  fetchLinkedExperiences(db, asset.id),
+  fetchOwnerWhatsapp(db, asset.userId),
+  fetchCityTax(db, asset.userId, asset.city, asset.country),
+]);
 ---
 
 <PageLayout
@@ -288,6 +222,13 @@ const cityTax: CityTax | null = cityTaxRow
               </div>
             </>
           )}
+
+          {(asset.extras ?? []).length > 0 && (
+            <>
+              <div class="divider-elegant" />
+              <ExtrasSection extras={asset.extras!} variant="elite" />
+            </>
+          )}
         </div>
 
         <!-- Sidebar (1/3) -->
@@ -300,6 +241,7 @@ const cityTax: CityTax | null = cityTaxRow
               maxGuests={property.maxGuests}
               instantBook={asset.instantBook}
               additionalCosts={asset.additionalCosts ?? null}
+              extras={asset.extras ?? null}
               cityTax={cityTax}
             />
           </div>
@@ -308,7 +250,7 @@ const cityTax: CityTax | null = cityTaxRow
     </div>
   </section>
 
-  {linkedExperiencesFiltered.length > 0 && (
+  {linkedExperiences.length > 0 && (
     <section class="py-20 px-6 bg-card/50">
       <div class="container mx-auto">
         <div class="text-center mb-12">
@@ -319,50 +261,14 @@ const cityTax: CityTax | null = cityTaxRow
           </p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-          {linkedExperiencesFiltered.map((exp) => (
-            <div class="group rounded-2xl overflow-hidden bg-card card-hover border border-border">
-              <div class="relative aspect-16/10 overflow-hidden">
-                <img
-                  src={exp.imageUrl}
-                  alt={exp.title}
-                  class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div class="absolute inset-0 bg-linear-to-t from-black/70 via-black/20 to-transparent" />
-                {exp.discountPercent > 0 && (
-                  <div class="absolute top-4 right-4">
-                    <span class="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold shadow-lg">
-                      {exp.discountPercent}% OFF
-                    </span>
-                  </div>
-                )}
-                <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-                  <span class="badge-elite">{exp.category}</span>
-                  <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm">
-                    {exp.duration}
-                  </span>
-                </div>
-              </div>
-              <div class="p-6">
-                <h3 class="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                  {exp.title}
-                </h3>
-                <p class="text-muted-foreground text-sm mb-5 flex items-center gap-2">
-                  <i data-lucide="map-pin" class="w-4 h-4"></i>
-                  {exp.location}
-                </p>
-                <div class="flex items-center justify-between">
-                  <span class="text-sm text-muted-foreground">Available as add-on</span>
-                  <Button variant="secondary">View Details</Button>
-                </div>
-              </div>
-            </div>
+          {linkedExperiences.map((exp) => (
+            <ExperienceCard
+              experience={exp}
+              propertyTitle={property.title}
+              ownerWhatsapp={ownerWhatsapp}
+              variant="elite"
+            />
           ))}
-        </div>
-        <div class="text-center mt-10">
-          <a href="/experiences" class="text-primary hover:text-primary-hover transition-colors font-medium inline-flex items-center gap-2">
-            Explore all experiences
-            <i data-lucide="arrow-right" class="w-4 h-4"></i>
-          </a>
         </div>
       </div>
     </section>

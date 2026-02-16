@@ -1,0 +1,103 @@
+---
+type Extra = {
+  name: string;
+  icon: string;
+  amount: number;
+  per: "stay" | "night" | "guest" | "night_per_guest";
+  maxNights?: number;
+};
+
+interface Props {
+  extras: Extra[];
+  variant?: "standard" | "elite";
+}
+
+const { extras, variant = "standard" } = Astro.props;
+
+const isElite = variant === "elite";
+
+function formatPrice(cents: number) {
+  return `\u20AC${(cents / 100).toLocaleString()}`;
+}
+
+const perLabels: Record<Extra["per"], string> = {
+  stay: "per stay",
+  night: "per night",
+  guest: "per guest",
+  night_per_guest: "per night/guest",
+};
+---
+
+{extras.length > 0 && (
+  <div>
+    <h2 class:list={[
+      "font-bold text-foreground mb-6",
+      isElite ? "section-title text-2xl" : "text-xl font-semibold",
+    ]}>
+      Optional Extras
+    </h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {extras.map((extra, index) => (
+        <div class:list={[
+          "group relative overflow-hidden rounded-xl border border-border/50 bg-card transition-colors",
+          isElite && "hover:border-primary/30",
+        ]}>
+          <div class="flex items-center gap-3 px-5 pt-5 pb-3">
+            <div class="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 shrink-0">
+              <i data-lucide={extra.icon || "plus"} class="w-5 h-5 text-primary" />
+            </div>
+            <span class="text-foreground font-medium text-base">{extra.name}</span>
+          </div>
+          <div class="flex items-center justify-between px-5 pb-5">
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-xl font-bold text-foreground">
+                {formatPrice(extra.amount)}
+              </span>
+              <span class="text-sm text-muted-foreground">
+                {perLabels[extra.per]}
+              </span>
+            </div>
+            <button
+              type="button"
+              data-extra-add={index}
+              class="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
+            >
+              <i data-lucide="plus" class="w-3.5 h-3.5" />
+              Add
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+<script>
+  const addButtons = document.querySelectorAll<HTMLButtonElement>("[data-extra-add]");
+
+  addButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const index = Number(btn.dataset.extraAdd);
+      window.dispatchEvent(new CustomEvent("extras:add", { detail: index }));
+    });
+  });
+
+  window.addEventListener("extras:selection", (e) => {
+    const selected = new Set((e as CustomEvent<number[]>).detail);
+    addButtons.forEach((btn) => {
+      const index = Number(btn.dataset.extraAdd);
+      const isAdded = selected.has(index);
+      if (isAdded) {
+        btn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i> Added';
+        btn.classList.remove("bg-primary", "text-primary-foreground", "hover:bg-primary/90");
+        btn.classList.add("bg-green-500/15", "text-green-400");
+      } else {
+        btn.innerHTML = '<i data-lucide="plus" class="w-3.5 h-3.5"></i> Add';
+        btn.classList.add("bg-primary", "text-primary-foreground", "hover:bg-primary/90");
+        btn.classList.remove("bg-green-500/15", "text-green-400");
+      }
+      // Re-init lucide for the new icon
+      if (window.lucide) window.lucide.createIcons({ nodes: [btn] });
+    });
+  });
+</script>

@@ -89,6 +89,10 @@ export const assets = sqliteTable(
     kingSizeBeds: integer("king_size_beds"),
     sqMeters: integer("sq_meters"),
 
+    // Check-in / Check-out defaults (HH:mm)
+    checkIn: text("check_in"),
+    checkOut: text("check_out"),
+
     // Features (JSON arrays - auto-parsed by Drizzle)
     amenities: text("amenities", { mode: "json" }).$type<string[]>(),
     views: text("views", { mode: "json" }).$type<string[]>(),
@@ -113,9 +117,16 @@ export const assets = sqliteTable(
       }>
     >(),
 
-    // Display
-    featured: integer("featured", { mode: "boolean" }).notNull().default(false),
-    sortOrder: integer("sort_order").default(0),
+    // Extras (guest-selectable add-ons)
+    extras: text("extras", { mode: "json" }).$type<
+      Array<{
+        name: string;
+        icon: string;
+        amount: number;
+        per: "stay" | "night" | "guest" | "night_per_guest";
+        maxNights?: number;
+      }>
+    >(),
 
     // Timestamps
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
@@ -125,7 +136,6 @@ export const assets = sqliteTable(
     index("idx_assets_user").on(table.userId),
     index("idx_assets_tier").on(table.tier),
     index("idx_assets_status").on(table.status),
-    index("idx_assets_featured").on(table.featured),
     index("idx_assets_city").on(table.city),
   ]
 );
@@ -338,7 +348,11 @@ export const experiences = sqliteTable(
       .$type<"draft" | "published" | "archived">()
       .notNull()
       .default("draft"),
-    featured: integer("featured", { mode: "boolean" }).notNull().default(false),
+
+    // Pricing visibility
+    showPrice: integer("show_price", { mode: "boolean" })
+      .notNull()
+      .default(true),
 
     // Additional Costs
     additionalCosts: text("additional_costs", { mode: "json" }).$type<
@@ -402,8 +416,6 @@ export const assetExperiences = sqliteTable(
 
     // Package options
     discountPercent: integer("discount_percent").default(0), // Bundle discount
-    featured: integer("featured", { mode: "boolean" }).notNull().default(false), // Show prominently on property page
-    sortOrder: integer("sort_order").default(0),
     createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   },
   (table) => [
