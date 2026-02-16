@@ -71,6 +71,12 @@ function BackofficeLayout() {
                 Experiences
               </Link>
               <Link
+                to="/bookings"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Bookings
+              </Link>
+              <Link
                 to="/create/properties/new"
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >

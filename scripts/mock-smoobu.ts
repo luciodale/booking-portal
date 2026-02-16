@@ -467,6 +467,72 @@ const server = Bun.serve({
       return jsonResponse(result, triggerRes.status);
     }
 
+    // POST /mock/trigger-refund-webhook — fire a charge.refunded event
+    if (req.method === "POST" && pathname === "/mock/trigger-refund-webhook") {
+      const body = (await req.json()) as {
+        paymentIntentId?: string;
+        amount?: number;
+      };
+      const paymentIntentId =
+        body.paymentIntentId ?? `pi_test_mock_${Date.now()}`;
+
+      const fakeEvent = {
+        id: `evt_test_refund_${Date.now()}`,
+        object: "event",
+        type: "charge.refunded",
+        data: {
+          object: {
+            payment_intent: paymentIntentId,
+            refunded: true,
+            amount_refunded: body.amount ?? 10000,
+          },
+        },
+      };
+
+      log(
+        "POST",
+        pathname,
+        `firing charge.refunded → ${ASTRO_ORIGIN}/api/stripe-webhook`
+      );
+
+      try {
+        const res = await fetch(`${ASTRO_ORIGIN}/api/stripe-webhook`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(fakeEvent),
+        });
+
+        const resBody = await res.text();
+        log("POST", pathname, `webhook responded ${res.status}`);
+        return jsonResponse({
+          webhookStatus: res.status,
+          webhookBody: resBody,
+        });
+      } catch (err) {
+        log("POST", pathname, `webhook fetch failed: ${err}`);
+        return jsonResponse(
+          { error: "Failed to reach Astro dev server", detail: String(err) },
+          502
+        );
+      }
+    }
+
+    // DELETE /api/reservations/:id — mock Smoobu reservation cancellation
+    const reservationDeleteMatch = pathname.match(
+      /^\/api\/reservations\/(\d+)$/
+    );
+    if (req.method === "DELETE" && reservationDeleteMatch) {
+      const resId = Number(reservationDeleteMatch[1]);
+      const idx = bookings.findIndex((b) => b.id === resId);
+      if (idx !== -1) {
+        bookings.splice(idx, 1);
+        log("DELETE", pathname, `reservation #${resId} removed`);
+      } else {
+        log("DELETE", pathname, `reservation #${resId} not found (OK)`);
+      }
+      return jsonResponse({ success: true });
+    }
+
     // POST /mock/complete-experience — convenience: simplified experience booking
     if (req.method === "POST" && pathname === "/mock/complete-experience") {
       const body = (await req.json()) as {
@@ -531,6 +597,7 @@ console.log(`  POST http://localhost:${PORT}/booking/checkApartmentAvailability 
 console.log(`  POST http://localhost:${PORT}/api/reservations                         — create booking`);
 console.log();
 console.log("Mock helper endpoints:");
-console.log(`  POST http://localhost:${PORT}/mock/trigger-webhook     — raw metadata`);
-console.log(`  POST http://localhost:${PORT}/mock/complete-booking    — property booking`);
-console.log(`  POST http://localhost:${PORT}/mock/complete-experience — experience booking`);
+console.log(`  POST http://localhost:${PORT}/mock/trigger-webhook         — raw metadata`);
+console.log(`  POST http://localhost:${PORT}/mock/complete-booking        — property booking`);
+console.log(`  POST http://localhost:${PORT}/mock/complete-experience     — experience booking`);
+console.log(`  POST http://localhost:${PORT}/mock/trigger-refund-webhook  — charge.refunded`);

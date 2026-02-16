@@ -1,4 +1,5 @@
 import { eventsRoute } from "@/features/admin/events/routes/events";
+import { bookingsRoute } from "@/features/broker/bookings/routes/bookings";
 import { experiencesRoute } from "@/features/broker/experience/routes/experiences";
 import { editExperienceRoute } from "@/features/broker/experience/routes/experiences.$id.edit";
 import { createExperienceRoute } from "@/features/broker/experience/routes/experiences.new";
@@ -20,6 +21,7 @@ const routeTree = rootRoute.addChildren([
   editExperienceRoute,
   createExperienceRoute,
   eventsRoute,
+  bookingsRoute,
 ]);
 
 const router = createRouter({

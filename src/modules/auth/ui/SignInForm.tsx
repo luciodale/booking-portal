@@ -63,7 +63,8 @@ function useHandleSignIn() {
     password,
     setPassword,
     error,
-    loading: loading || !isLoaded,
+    submitting: loading,
+    disabled: loading || !isLoaded,
     handleSubmit,
     handleOAuth,
   };
@@ -76,7 +77,8 @@ function SignInFormInner() {
     password,
     setPassword,
     error,
-    loading,
+    submitting,
+    disabled,
     handleSubmit,
     handleOAuth,
   } = useHandleSignIn();
@@ -93,7 +95,7 @@ function SignInFormInner() {
           </p>
         </div>
 
-        <OAuthButtons onOAuth={handleOAuth} disabled={loading} />
+        <OAuthButtons onOAuth={handleOAuth} disabled={disabled} />
 
         <div className="flex items-center gap-4 my-6">
           <div className="flex-1 h-px bg-border" />
@@ -119,7 +121,7 @@ function SignInFormInner() {
               placeholder="you@example.com"
               required
               className="input"
-              disabled={loading}
+              disabled={disabled}
               data-testid="signin-email"
             />
           </div>
@@ -139,7 +141,7 @@ function SignInFormInner() {
               placeholder="Enter your password"
               required
               className="input"
-              disabled={loading}
+              disabled={disabled}
               data-testid="signin-password"
             />
           </div>
@@ -152,11 +154,11 @@ function SignInFormInner() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={disabled}
             className="btn-primary w-full mt-2"
             data-testid="signin-submit"
           >
-            {loading ? "Signing in..." : "Sign In"}
+            {submitting ? "Signing in..." : "Sign In"}
           </button>
         </form>
 

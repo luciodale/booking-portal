@@ -34,6 +34,13 @@ const [asset] = await db
 
 if (!asset || asset.tier !== "elite") return Astro.redirect("/elite");
 
+if (asset.status !== "published") {
+  const auth = Astro.locals.auth();
+  if (!auth.userId || auth.userId !== asset.userId) {
+    return Astro.redirect("/elite");
+  }
+}
+
 const assetImagesList = await db
   .select()
   .from(images)

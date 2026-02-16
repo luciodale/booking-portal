@@ -2,6 +2,7 @@ import { $clerkStore, $isLoadedStore, $signUpStore } from "@clerk/astro/client";
 import type { OAuthStrategy } from "@clerk/types";
 import { useStore } from "@nanostores/react";
 import { useState } from "react";
+import { CodeInput } from "./CodeInput";
 import { OAuthButtons } from "./OAuthButtons";
 
 type Step = "form" | "verify";
@@ -87,7 +88,8 @@ function useHandleSignUp() {
     setCode,
     step,
     error,
-    loading: loading || !isLoaded,
+    submitting: loading,
+    disabled: loading || !isLoaded,
     handleSubmit,
     handleVerify,
     handleOAuth,
@@ -104,7 +106,8 @@ function SignUpFormInner() {
     setCode,
     step,
     error,
-    loading,
+    submitting,
+    disabled,
     handleSubmit,
     handleVerify,
     handleOAuth,
@@ -126,7 +129,7 @@ function SignUpFormInner() {
 
         {step === "form" ? (
           <>
-            <OAuthButtons onOAuth={handleOAuth} disabled={loading} />
+            <OAuthButtons onOAuth={handleOAuth} disabled={disabled} />
 
             <div className="flex items-center gap-4 my-6">
               <div className="flex-1 h-px bg-border" />
@@ -152,7 +155,7 @@ function SignUpFormInner() {
                   placeholder="you@example.com"
                   required
                   className="input"
-                  disabled={loading}
+                  disabled={disabled}
                   data-testid="signup-email"
                 />
               </div>
@@ -172,7 +175,7 @@ function SignUpFormInner() {
                   placeholder="Create a password"
                   required
                   className="input"
-                  disabled={loading}
+                  disabled={disabled}
                   data-testid="signup-password"
                 />
               </div>
@@ -181,45 +184,32 @@ function SignUpFormInner() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={disabled}
                 className="btn-primary w-full mt-2"
                 data-testid="signup-submit"
               >
-                {loading ? "Creating account..." : "Create Account"}
+                {submitting ? "Creating account..." : "Create Account"}
               </button>
             </form>
           </>
         ) : (
           <form onSubmit={handleVerify} className="flex flex-col gap-4">
             <div>
-              <label
-                htmlFor="code"
-                className="block text-sm font-medium text-foreground mb-1"
-              >
+              <label className="block text-sm font-medium text-foreground mb-3 text-center">
                 Verification code
               </label>
-              <input
-                id="code"
-                type="text"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                placeholder="Enter the 6-digit code"
-                required
-                className="input text-center tracking-widest"
-                disabled={loading}
-                data-testid="signup-code"
-              />
+              <CodeInput value={code} onChange={setCode} disabled={disabled} />
             </div>
 
             {error && <p className="text-sm text-error">{error}</p>}
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={disabled}
               className="btn-primary w-full mt-2"
               data-testid="signup-verify"
             >
-              {loading ? "Verifying..." : "Verify Email"}
+              {submitting ? "Verifying..." : "Verify Email"}
             </button>
           </form>
         )}

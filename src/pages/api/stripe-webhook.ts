@@ -57,6 +57,42 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
   }
 
+  // ── charge.refunded fallback ──────────────────────────────────────────
+  if (event.type === "charge.refunded") {
+    const charge = event.data.object as Stripe.Charge;
+    const paymentIntentId =
+      typeof charge.payment_intent === "string"
+        ? charge.payment_intent
+        : charge.payment_intent?.id;
+
+    if (paymentIntentId) {
+      const db = getDb(D1Database);
+      const [booking] = await db
+        .select({ id: bookings.id, status: bookings.status })
+        .from(bookings)
+        .where(eq(bookings.stripePaymentIntentId, paymentIntentId))
+        .limit(1);
+
+      if (booking && booking.status !== "cancelled") {
+        await db
+          .update(bookings)
+          .set({
+            status: "cancelled",
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(bookings.id, booking.id));
+
+        log.info({
+          source: "stripe-webhook",
+          message: `Booking ${booking.id} marked cancelled via charge.refunded`,
+          metadata: { bookingId: booking.id, paymentIntentId },
+        });
+      }
+    }
+
+    return new Response("OK", { status: 200 });
+  }
+
   if (
     event.type !== "checkout.session.completed" &&
     event.type !== "checkout.session.async_payment_succeeded"
