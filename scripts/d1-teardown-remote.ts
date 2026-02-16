@@ -1,8 +1,7 @@
 #!/usr/bin/env bun
 /**
  * D1 Teardown Remote Script
- * Clears all data from remote D1 database
- * Tables deleted in order respecting foreign key constraints
+ * Drops all tables from remote D1 database so migrations re-apply from scratch
  */
 
 import { unlinkSync, writeFileSync } from "node:fs";
@@ -11,20 +10,25 @@ import { join } from "node:path";
 const DB_NAME = "booking-portal-db";
 const ROOT_DIR = join(import.meta.dir, "..");
 
-// Tables in deletion order (children first, parents last)
+// Tables in drop order (children first, parents last)
 // Must match current schema in src/db/schema.ts
-const TABLES_IN_DELETE_ORDER = [
+const TABLES_IN_DROP_ORDER = [
   "reviews",
   "favorites",
   "bookings",
+  "experience_bookings",
   "asset_experiences",
   "experience_images",
   "images",
   "broker_logs",
+  "event_logs",
+  "city_tax_defaults",
   "assets",
   "experiences",
   "pms_integrations",
   "users",
+  // Wrangler migration tracking table — drop so migrations re-apply from scratch
+  "d1_migrations",
 ];
 
 function main() {
@@ -33,11 +37,11 @@ function main() {
   console.log("\n🧹 Tearing down remote D1 database...");
 
   const sqlPath = join(ROOT_DIR, ".remote-teardown.sql");
-  const deleteStatements = TABLES_IN_DELETE_ORDER.map(
-    (table) => `DELETE FROM ${table};`
+  const dropStatements = TABLES_IN_DROP_ORDER.map(
+    (table) => `DROP TABLE IF EXISTS ${table};`
   ).join("\n");
 
-  writeFileSync(sqlPath, deleteStatements);
+  writeFileSync(sqlPath, dropStatements);
 
   try {
     const result = Bun.spawnSync(
@@ -52,17 +56,18 @@ function main() {
       ],
       {
         cwd: ROOT_DIR,
-        stdout: "pipe",
-        stderr: "pipe",
+        stdout: "inherit",
+        stderr: "inherit",
         stdin: "inherit",
       }
     );
 
     if (result.exitCode === 0) {
-      console.log(`  ✅ Cleared ${TABLES_IN_DELETE_ORDER.length} tables`);
+      console.log(
+        `  ✅ Dropped ${TABLES_IN_DROP_ORDER.length} tables (if they existed)`
+      );
     } else {
-      // Some tables may not exist yet
-      console.log("  ⚠️  Some tables may not exist (ignored)");
+      console.log("  ⚠️  Some drop statements failed (ignored)");
     }
   } finally {
     try {

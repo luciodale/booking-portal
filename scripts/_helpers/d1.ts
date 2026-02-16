@@ -122,29 +122,24 @@ export async function checkExistingData(mode: Mode): Promise<boolean> {
 }
 
 export async function generateSql(rootDir: string): Promise<void> {
+  console.log("\n🔄 Regenerating .seed.sql...");
+  const result = Bun.spawnSync(
+    ["bun", "run", join(rootDir, "scripts/generate-sql.ts")],
+    {
+      cwd: rootDir,
+      stdout: "inherit",
+      stderr: "inherit",
+      stdin: "inherit",
+    }
+  );
+
+  if (result.exitCode !== 0) {
+    throw new Error("generate-sql failed");
+  }
+
   const sqlPath = join(rootDir, ".seed.sql");
-  const sqlFile = Bun.file(sqlPath);
-  const exists = await sqlFile.exists();
-
-  if (!exists) {
-    console.log("\n⚠️  No SQL file found, running generate-sql first...");
-    const result = Bun.spawnSync(
-      ["bun", "run", join(rootDir, "scripts/generate-sql.ts")],
-      {
-        cwd: rootDir,
-        stdout: "inherit",
-        stderr: "inherit",
-        stdin: "inherit",
-      }
-    );
-
-    if (result.exitCode !== 0) {
-      throw new Error("generate-sql failed");
-    }
-
-    const afterGenerate = await Bun.file(sqlPath).exists();
-    if (!afterGenerate) {
-      throw new Error("generate-sql did not produce .seed.sql");
-    }
+  const afterGenerate = await Bun.file(sqlPath).exists();
+  if (!afterGenerate) {
+    throw new Error("generate-sql did not produce .seed.sql");
   }
 }

@@ -23,7 +23,7 @@
     "db:seed-d1:local": "bun run scripts/d1-seed-local.ts",
     "db:seed-d1:remote": "bun run scripts/d1-seed-remote.ts",
     "db:reset-all:local": "bun run scripts/all-teardown-local.ts && bun run scripts/r2-seed-local.ts && bun run scripts/d1-seed-local.ts",
-    "db:reset-all:remote": "bun run scripts/r2-teardown-remote.ts && bun run scripts/d1-teardown-remote.ts && bun run scripts/r2-seed-remote.ts && bun run scripts/d1-seed-remote.ts",
+    "db:reset-all:remote": "bun run scripts/r2-teardown-remote.ts && bun run scripts/d1-teardown-remote.ts && bun run db:migrate:remote && bun run scripts/r2-seed-remote.ts && bun run scripts/d1-seed-remote.ts",
     "test:e2e": "bunx playwright test",
     "type-check": "tsc --noEmit",
     "lint": "biome lint .",

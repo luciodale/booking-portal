@@ -72,10 +72,9 @@ VALUES (${escapeString(ctx.id)}, ${escapeString(ctx.userId)}, ${escapeString(ctx
 
 function generateDeleteStatements(): string {
   // Only delete from tables we seed (children first)
-  // Other tables (reviews, bookings, etc.) are not seeded
+  // Other tables (reviews, bookings, experience_bookings, etc.) are cleared by teardown
   return `-- Clean existing data
 DELETE FROM images;
-DELETE FROM experience_bookings;
 DELETE FROM city_tax_defaults;
 DELETE FROM pms_integrations;
 DELETE FROM experiences;
