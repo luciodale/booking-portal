@@ -9,6 +9,7 @@
 const PORT = 4200;
 const ASTRO_ORIGIN = "http://localhost:4321";
 const PRICE_PER_NIGHT = 150; // EUR
+const MIN_LENGTH_OF_STAY = 3; // nights
 
 // ── In-memory booking store ────────────────────────────────────────────────
 type Booking = {
@@ -56,10 +57,34 @@ const MOCK_APARTMENTS: MockApartment[] = [
   {
     id: 100001,
     name: "Modern Downtown Penthouse",
-    location: { street: "Carrer de Mallorca 123", zip: "08008", city: "Barcelona", country: "Spain", latitude: "41.3874", longitude: "2.1686" },
+    location: {
+      street: "Carrer de Mallorca 123",
+      zip: "08008",
+      city: "Barcelona",
+      country: "Spain",
+      latitude: "41.3874",
+      longitude: "2.1686",
+    },
     timeZone: "Europe/Madrid",
-    rooms: { maxOccupancy: 4, bedrooms: 2, bathrooms: 2, doubleBeds: 1, singleBeds: 0, sofaBeds: 0, couches: 0, childBeds: 0, queenSizeBeds: 1, kingSizeBeds: 0 },
-    equipments: ["WiFi", "Kitchen", "Air Conditioning", "Washing Machine", "Balcony"],
+    rooms: {
+      maxOccupancy: 4,
+      bedrooms: 2,
+      bathrooms: 2,
+      doubleBeds: 1,
+      singleBeds: 0,
+      sofaBeds: 0,
+      couches: 0,
+      childBeds: 0,
+      queenSizeBeds: 1,
+      kingSizeBeds: 0,
+    },
+    equipments: [
+      "WiFi",
+      "Kitchen",
+      "Air Conditioning",
+      "Washing Machine",
+      "Balcony",
+    ],
     currency: "EUR",
     price: { minimal: "120", maximal: "200" },
     type: { id: 1, name: "apartment" },
@@ -67,10 +92,34 @@ const MOCK_APARTMENTS: MockApartment[] = [
   {
     id: 100002,
     name: "Alfama District Art Loft",
-    location: { street: "Rua de São Miguel 18", zip: "1100-544", city: "Lisbon", country: "Portugal", latitude: "38.7110", longitude: "-9.1304" },
+    location: {
+      street: "Rua de São Miguel 18",
+      zip: "1100-544",
+      city: "Lisbon",
+      country: "Portugal",
+      latitude: "38.7110",
+      longitude: "-9.1304",
+    },
     timeZone: "Europe/Lisbon",
-    rooms: { maxOccupancy: 3, bedrooms: 1, bathrooms: 1, doubleBeds: 1, singleBeds: 0, sofaBeds: 0, couches: 0, childBeds: 0, queenSizeBeds: 0, kingSizeBeds: 0 },
-    equipments: ["WiFi", "Kitchen", "Rooftop Terrace", "Air Conditioning", "Washing Machine"],
+    rooms: {
+      maxOccupancy: 3,
+      bedrooms: 1,
+      bathrooms: 1,
+      doubleBeds: 1,
+      singleBeds: 0,
+      sofaBeds: 0,
+      couches: 0,
+      childBeds: 0,
+      queenSizeBeds: 0,
+      kingSizeBeds: 0,
+    },
+    equipments: [
+      "WiFi",
+      "Kitchen",
+      "Rooftop Terrace",
+      "Air Conditioning",
+      "Washing Machine",
+    ],
     currency: "EUR",
     price: { minimal: "100", maximal: "180" },
     type: { id: 1, name: "apartment" },
@@ -78,10 +127,35 @@ const MOCK_APARTMENTS: MockApartment[] = [
   {
     id: 100003,
     name: "Promenade des Anglais Apartment",
-    location: { street: "Promenade des Anglais 84", zip: "06000", city: "Nice", country: "France", latitude: "43.6947", longitude: "7.2653" },
+    location: {
+      street: "Promenade des Anglais 84",
+      zip: "06000",
+      city: "Nice",
+      country: "France",
+      latitude: "43.6947",
+      longitude: "7.2653",
+    },
     timeZone: "Europe/Paris",
-    rooms: { maxOccupancy: 4, bedrooms: 2, bathrooms: 1, doubleBeds: 1, singleBeds: 0, sofaBeds: 0, couches: 0, childBeds: 0, queenSizeBeds: 1, kingSizeBeds: 0 },
-    equipments: ["WiFi", "Kitchen", "Air Conditioning", "Balcony", "Beach Access", "Elevator"],
+    rooms: {
+      maxOccupancy: 4,
+      bedrooms: 2,
+      bathrooms: 1,
+      doubleBeds: 1,
+      singleBeds: 0,
+      sofaBeds: 0,
+      couches: 0,
+      childBeds: 0,
+      queenSizeBeds: 1,
+      kingSizeBeds: 0,
+    },
+    equipments: [
+      "WiFi",
+      "Kitchen",
+      "Air Conditioning",
+      "Balcony",
+      "Beach Access",
+      "Elevator",
+    ],
     currency: "EUR",
     price: { minimal: "130", maximal: "220" },
     type: { id: 1, name: "apartment" },
@@ -89,10 +163,34 @@ const MOCK_APARTMENTS: MockApartment[] = [
   {
     id: 100004,
     name: "Ringstrasse Art Nouveau Studio",
-    location: { street: "Opernring 11", zip: "1010", city: "Vienna", country: "Austria", latitude: "48.2030", longitude: "16.3689" },
+    location: {
+      street: "Opernring 11",
+      zip: "1010",
+      city: "Vienna",
+      country: "Austria",
+      latitude: "48.2030",
+      longitude: "16.3689",
+    },
     timeZone: "Europe/Vienna",
-    rooms: { maxOccupancy: 2, bedrooms: 1, bathrooms: 1, doubleBeds: 1, singleBeds: 0, sofaBeds: 0, couches: 0, childBeds: 0, queenSizeBeds: 0, kingSizeBeds: 0 },
-    equipments: ["WiFi", "Kitchenette", "Air Conditioning", "Elevator", "Washing Machine"],
+    rooms: {
+      maxOccupancy: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      doubleBeds: 1,
+      singleBeds: 0,
+      sofaBeds: 0,
+      couches: 0,
+      childBeds: 0,
+      queenSizeBeds: 0,
+      kingSizeBeds: 0,
+    },
+    equipments: [
+      "WiFi",
+      "Kitchenette",
+      "Air Conditioning",
+      "Elevator",
+      "Washing Machine",
+    ],
     currency: "EUR",
     price: { minimal: "90", maximal: "160" },
     type: { id: 1, name: "apartment" },
@@ -100,10 +198,34 @@ const MOCK_APARTMENTS: MockApartment[] = [
   {
     id: 100005,
     name: "Ribeira Townhouse Duplex",
-    location: { street: "Rua da Lada 26", zip: "4050-060", city: "Porto", country: "Portugal", latitude: "41.1406", longitude: "-8.6132" },
+    location: {
+      street: "Rua da Lada 26",
+      zip: "4050-060",
+      city: "Porto",
+      country: "Portugal",
+      latitude: "41.1406",
+      longitude: "-8.6132",
+    },
     timeZone: "Europe/Lisbon",
-    rooms: { maxOccupancy: 4, bedrooms: 2, bathrooms: 1, doubleBeds: 1, singleBeds: 0, sofaBeds: 0, couches: 0, childBeds: 0, queenSizeBeds: 1, kingSizeBeds: 0 },
-    equipments: ["WiFi", "Kitchen", "Washing Machine", "River Views", "Heating"],
+    rooms: {
+      maxOccupancy: 4,
+      bedrooms: 2,
+      bathrooms: 1,
+      doubleBeds: 1,
+      singleBeds: 0,
+      sofaBeds: 0,
+      couches: 0,
+      childBeds: 0,
+      queenSizeBeds: 1,
+      kingSizeBeds: 0,
+    },
+    equipments: [
+      "WiFi",
+      "Kitchen",
+      "Washing Machine",
+      "River Views",
+      "Heating",
+    ],
     currency: "EUR",
     price: { minimal: "100", maximal: "170" },
     type: { id: 1, name: "apartment" },
@@ -111,10 +233,35 @@ const MOCK_APARTMENTS: MockApartment[] = [
   {
     id: 100006,
     name: "Schwabing Industrial Loft",
-    location: { street: "Leopoldstrasse 77", zip: "80802", city: "Munich", country: "Germany", latitude: "48.1620", longitude: "11.5854" },
+    location: {
+      street: "Leopoldstrasse 77",
+      zip: "80802",
+      city: "Munich",
+      country: "Germany",
+      latitude: "48.1620",
+      longitude: "11.5854",
+    },
     timeZone: "Europe/Berlin",
-    rooms: { maxOccupancy: 3, bedrooms: 1, bathrooms: 1, doubleBeds: 1, singleBeds: 0, sofaBeds: 0, couches: 0, childBeds: 0, queenSizeBeds: 0, kingSizeBeds: 0 },
-    equipments: ["WiFi", "Kitchen", "Washing Machine", "Dishwasher", "Heating", "Bike Storage"],
+    rooms: {
+      maxOccupancy: 3,
+      bedrooms: 1,
+      bathrooms: 1,
+      doubleBeds: 1,
+      singleBeds: 0,
+      sofaBeds: 0,
+      couches: 0,
+      childBeds: 0,
+      queenSizeBeds: 0,
+      kingSizeBeds: 0,
+    },
+    equipments: [
+      "WiFi",
+      "Kitchen",
+      "Washing Machine",
+      "Dishwasher",
+      "Heating",
+      "Bike Storage",
+    ],
     currency: "EUR",
     price: { minimal: "110", maximal: "180" },
     type: { id: 1, name: "apartment" },
@@ -122,10 +269,34 @@ const MOCK_APARTMENTS: MockApartment[] = [
   {
     id: 200001,
     name: "Trastevere Rooftop Terrace",
-    location: { street: "Via della Lungaretta 42", zip: "00153", city: "Rome", country: "Italy", latitude: "41.8892", longitude: "12.4704" },
+    location: {
+      street: "Via della Lungaretta 42",
+      zip: "00153",
+      city: "Rome",
+      country: "Italy",
+      latitude: "41.8892",
+      longitude: "12.4704",
+    },
     timeZone: "Europe/Rome",
-    rooms: { maxOccupancy: 4, bedrooms: 2, bathrooms: 1, doubleBeds: 1, singleBeds: 0, sofaBeds: 1, couches: 0, childBeds: 0, queenSizeBeds: 0, kingSizeBeds: 1 },
-    equipments: ["WiFi", "Kitchen", "Air Conditioning", "Rooftop Terrace", "Washing Machine"],
+    rooms: {
+      maxOccupancy: 4,
+      bedrooms: 2,
+      bathrooms: 1,
+      doubleBeds: 1,
+      singleBeds: 0,
+      sofaBeds: 1,
+      couches: 0,
+      childBeds: 0,
+      queenSizeBeds: 0,
+      kingSizeBeds: 1,
+    },
+    equipments: [
+      "WiFi",
+      "Kitchen",
+      "Air Conditioning",
+      "Rooftop Terrace",
+      "Washing Machine",
+    ],
     currency: "EUR",
     price: { minimal: "140", maximal: "240" },
     type: { id: 1, name: "apartment" },
@@ -133,10 +304,35 @@ const MOCK_APARTMENTS: MockApartment[] = [
   {
     id: 200002,
     name: "Jordaan Canal House",
-    location: { street: "Prinsengracht 310", zip: "1016 HX", city: "Amsterdam", country: "Netherlands", latitude: "52.3728", longitude: "4.8832" },
+    location: {
+      street: "Prinsengracht 310",
+      zip: "1016 HX",
+      city: "Amsterdam",
+      country: "Netherlands",
+      latitude: "52.3728",
+      longitude: "4.8832",
+    },
     timeZone: "Europe/Amsterdam",
-    rooms: { maxOccupancy: 3, bedrooms: 1, bathrooms: 1, doubleBeds: 0, singleBeds: 0, sofaBeds: 1, couches: 0, childBeds: 0, queenSizeBeds: 1, kingSizeBeds: 0 },
-    equipments: ["WiFi", "Kitchen", "Heating", "Canal Views", "Bike Rental", "Washing Machine"],
+    rooms: {
+      maxOccupancy: 3,
+      bedrooms: 1,
+      bathrooms: 1,
+      doubleBeds: 0,
+      singleBeds: 0,
+      sofaBeds: 1,
+      couches: 0,
+      childBeds: 0,
+      queenSizeBeds: 1,
+      kingSizeBeds: 0,
+    },
+    equipments: [
+      "WiFi",
+      "Kitchen",
+      "Heating",
+      "Canal Views",
+      "Bike Rental",
+      "Washing Machine",
+    ],
     currency: "EUR",
     price: { minimal: "160", maximal: "280" },
     type: { id: 1, name: "apartment" },
@@ -144,9 +340,27 @@ const MOCK_APARTMENTS: MockApartment[] = [
   {
     id: 200003,
     name: "Gothic Quarter Hideaway",
-    location: { street: "Carrer d'Avinyó 15", zip: "08002", city: "Barcelona", country: "Spain", latitude: "41.3807", longitude: "2.1764" },
+    location: {
+      street: "Carrer d'Avinyó 15",
+      zip: "08002",
+      city: "Barcelona",
+      country: "Spain",
+      latitude: "41.3807",
+      longitude: "2.1764",
+    },
     timeZone: "Europe/Madrid",
-    rooms: { maxOccupancy: 2, bedrooms: 1, bathrooms: 1, doubleBeds: 1, singleBeds: 0, sofaBeds: 0, couches: 0, childBeds: 0, queenSizeBeds: 0, kingSizeBeds: 0 },
+    rooms: {
+      maxOccupancy: 2,
+      bedrooms: 1,
+      bathrooms: 1,
+      doubleBeds: 1,
+      singleBeds: 0,
+      sofaBeds: 0,
+      couches: 0,
+      childBeds: 0,
+      queenSizeBeds: 0,
+      kingSizeBeds: 0,
+    },
     equipments: ["WiFi", "Kitchen", "Air Conditioning", "Washing Machine"],
     currency: "EUR",
     price: { minimal: "95", maximal: "170" },
@@ -217,7 +431,11 @@ const server = Bun.serve({
       if (!apiKey) {
         log("GET", pathname, "missing Api-Key header");
         return jsonResponse(
-          { status: 401, title: "Unauthorized", detail: "Missing Api-Key header" },
+          {
+            status: 401,
+            title: "Unauthorized",
+            detail: "Missing Api-Key header",
+          },
           401
         );
       }
@@ -256,8 +474,14 @@ const server = Bun.serve({
       const prices: Record<string, { price: number; currency: string }> = {};
       const errorMessages: Record<
         string,
-        { errorCode: number; message: string }
+        {
+          errorCode: number;
+          message: string;
+          minimumLengthOfStay?: number;
+        }
       > = {};
+
+      const nights = dateRange(arrival, departure).length;
 
       for (const id of apartments) {
         if (hasOverlap(id, arrival, departure)) {
@@ -265,9 +489,14 @@ const server = Bun.serve({
             errorCode: 0,
             message: "Not available for selected dates",
           };
+        } else if (nights < MIN_LENGTH_OF_STAY) {
+          errorMessages[String(id)] = {
+            errorCode: 1,
+            message: `Minimum length of stay is ${MIN_LENGTH_OF_STAY} nights`,
+            minimumLengthOfStay: MIN_LENGTH_OF_STAY,
+          };
         } else {
           available.push(id);
-          const nights = dateRange(arrival, departure).length;
           prices[String(id)] = {
             price: PRICE_PER_NIGHT * nights,
             currency: "EUR",
@@ -275,7 +504,11 @@ const server = Bun.serve({
         }
       }
 
-      log("POST", pathname, `apartments=${apartments} → available=${available}`);
+      log(
+        "POST",
+        pathname,
+        `apartments=${apartments} → available=${available}`
+      );
       return jsonResponse({
         availableApartments: available,
         prices,
@@ -307,7 +540,7 @@ const server = Bun.serve({
         for (const d of dates) {
           rateMap[d] = {
             price: PRICE_PER_NIGHT,
-            min_length_of_stay: 1,
+            min_length_of_stay: MIN_LENGTH_OF_STAY,
             available: booked.has(d) ? 0 : 1,
           };
         }
@@ -332,9 +565,27 @@ const server = Bun.serve({
 
       // Fallback for unknown IDs
       return jsonResponse({
-        location: { street: "Mock Street 1", zip: "00000", city: "Mock City", country: "Mock Country", latitude: "0", longitude: "0" },
+        location: {
+          street: "Mock Street 1",
+          zip: "00000",
+          city: "Mock City",
+          country: "Mock Country",
+          latitude: "0",
+          longitude: "0",
+        },
         timeZone: "Europe/Berlin",
-        rooms: { maxOccupancy: 4, bedrooms: 2, bathrooms: 1, doubleBeds: 1, singleBeds: 0, sofaBeds: 0, couches: 0, childBeds: 0, queenSizeBeds: 0, kingSizeBeds: 0 },
+        rooms: {
+          maxOccupancy: 4,
+          bedrooms: 2,
+          bathrooms: 1,
+          doubleBeds: 1,
+          singleBeds: 0,
+          sofaBeds: 0,
+          couches: 0,
+          childBeds: 0,
+          queenSizeBeds: 0,
+          kingSizeBeds: 0,
+        },
         equipments: ["WiFi", "Kitchen"],
         currency: "EUR",
         price: { minimal: "150", maximal: "150" },
@@ -370,7 +621,10 @@ const server = Bun.serve({
 
     // POST /mock/trigger-webhook — raw: accepts { metadata, sessionId } and fires webhook
     if (req.method === "POST" && pathname === "/mock/trigger-webhook") {
-      const body = (await req.json()) as { metadata?: Record<string, string>; sessionId?: string };
+      const body = (await req.json()) as {
+        metadata?: Record<string, string>;
+        sessionId?: string;
+      };
       const metadata = body.metadata ?? {};
       const sessionId = body.sessionId ?? `cs_test_mock_${Date.now()}`;
 
@@ -387,7 +641,11 @@ const server = Bun.serve({
         },
       };
 
-      log("POST", pathname, `firing webhook → ${ASTRO_ORIGIN}/api/stripe-webhook`);
+      log(
+        "POST",
+        pathname,
+        `firing webhook → ${ASTRO_ORIGIN}/api/stripe-webhook`
+      );
 
       try {
         const res = await fetch(`${ASTRO_ORIGIN}/api/stripe-webhook`, {
@@ -398,7 +656,10 @@ const server = Bun.serve({
 
         const resBody = await res.text();
         log("POST", pathname, `webhook responded ${res.status}`);
-        return jsonResponse({ webhookStatus: res.status, webhookBody: resBody });
+        return jsonResponse({
+          webhookStatus: res.status,
+          webhookBody: resBody,
+        });
       } catch (err) {
         log("POST", pathname, `webhook fetch failed: ${err}`);
         return jsonResponse(
@@ -574,7 +835,11 @@ const server = Bun.serve({
       );
 
       const result = await triggerRes.json();
-      log("POST", pathname, `experience booking → webhook ${triggerRes.status}`);
+      log(
+        "POST",
+        pathname,
+        `experience booking → webhook ${triggerRes.status}`
+      );
       return jsonResponse(result, triggerRes.status);
     }
 
@@ -584,20 +849,42 @@ const server = Bun.serve({
 });
 
 console.log(`Mock Smoobu API running on http://localhost:${server.port}`);
-console.log(`  Price: ${PRICE_PER_NIGHT} EUR/night`);
+console.log(`  Price: ${PRICE_PER_NIGHT} EUR/night (min stay: ${MIN_LENGTH_OF_STAY} nights)`);
 console.log(`  Bookings in memory: ${bookings.length}`);
-console.log(`  Apartments: ${MOCK_APARTMENTS.map((a) => `${a.id} (${a.name})`).join(", ")}`);
+console.log(
+  `  Apartments: ${MOCK_APARTMENTS.map((a) => `${a.id} (${a.name})`).join(", ")}`
+);
 console.log();
 console.log("Smoobu API endpoints:");
-console.log(`  GET  http://localhost:${PORT}/api/me                                  — verify API key`);
-console.log(`  GET  http://localhost:${PORT}/api/apartments                           — list apartments`);
-console.log(`  GET  http://localhost:${PORT}/api/apartments/:id                       — apartment details`);
-console.log(`  GET  http://localhost:${PORT}/api/rates                                — rates`);
-console.log(`  POST http://localhost:${PORT}/booking/checkApartmentAvailability       — availability`);
-console.log(`  POST http://localhost:${PORT}/api/reservations                         — create booking`);
+console.log(
+  `  GET  http://localhost:${PORT}/api/me                                  — verify API key`
+);
+console.log(
+  `  GET  http://localhost:${PORT}/api/apartments                           — list apartments`
+);
+console.log(
+  `  GET  http://localhost:${PORT}/api/apartments/:id                       — apartment details`
+);
+console.log(
+  `  GET  http://localhost:${PORT}/api/rates                                — rates`
+);
+console.log(
+  `  POST http://localhost:${PORT}/booking/checkApartmentAvailability       — availability`
+);
+console.log(
+  `  POST http://localhost:${PORT}/api/reservations                         — create booking`
+);
 console.log();
 console.log("Mock helper endpoints:");
-console.log(`  POST http://localhost:${PORT}/mock/trigger-webhook         — raw metadata`);
-console.log(`  POST http://localhost:${PORT}/mock/complete-booking        — property booking`);
-console.log(`  POST http://localhost:${PORT}/mock/complete-experience     — experience booking`);
-console.log(`  POST http://localhost:${PORT}/mock/trigger-refund-webhook  — charge.refunded`);
+console.log(
+  `  POST http://localhost:${PORT}/mock/trigger-webhook         — raw metadata`
+);
+console.log(
+  `  POST http://localhost:${PORT}/mock/complete-booking        — property booking`
+);
+console.log(
+  `  POST http://localhost:${PORT}/mock/complete-experience     — experience booking`
+);
+console.log(
+  `  POST http://localhost:${PORT}/mock/trigger-refund-webhook  — charge.refunded`
+);

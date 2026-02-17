@@ -6,8 +6,10 @@ import type {
 } from "@/features/public/booking/domain/pricingTypes";
 import { useBookingCalendar } from "@/features/public/booking/hooks/useBookingCalendar";
 import { useBookingCheckout } from "@/features/public/booking/hooks/useBookingCheckout";
+import { useMinStayNotice } from "@/features/public/booking/hooks/useMinStayNotice";
 import { BookingForm } from "@/features/public/booking/ui/BookingForm";
 import { CalendarPopover } from "@/features/public/booking/ui/CalendarPopover";
+import { MinStayNotice } from "@/features/public/booking/ui/MinStayNotice";
 import { PriceDisplay } from "@/features/public/booking/ui/PriceDisplay";
 import { cn } from "@/modules/utils/cn";
 import { useAuth } from "@clerk/astro/react";
@@ -47,6 +49,7 @@ function BookingWidgetInner({
   cityTax,
 }: BookingWidgetProps) {
   const calendar = useBookingCalendar(propertyId, smoobuPropertyId);
+  const { minStayNights } = useMinStayNotice(calendar.rateMap, calendar.checkIn);
   const { isSignedIn } = useAuth();
   const [guestCount, setGuestCount] = useState<number | null>(null);
   const [selectedExtras, setSelectedExtras] = useState<Set<number>>(new Set());
@@ -141,6 +144,8 @@ function BookingWidgetInner({
           onNextMonth={calendar.goNextMonth}
           onConfirm={calendar.confirmCalendar}
         />
+
+        <MinStayNotice minStayNights={minStayNights} />
 
         <PriceDisplay
           checkIn={calendar.checkIn}

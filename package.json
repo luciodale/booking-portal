@@ -2,7 +2,7 @@
   "name": "booking-portal",
   "scripts": {
     "dev": "bun run mock:smoobu & astro dev",
-    "build": "tsc --noEmit && astro build",
+    "build": "tsc --noEmit && bun run test && astro build",
     "preview": "astro build && wrangler dev",
     "deploy": "wrangler deploy",
     "test": "bun test src/",

@@ -186,6 +186,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
           400
         );
       }
+    } else {
+      log.warn({
+        source: "checkout",
+        message: `All min_length_of_stay values are null for property ${propertyId} (${checkIn} - ${checkOut})`,
+        metadata: { propertyId, checkIn, checkOut },
+      });
     }
 
     let serverPriceCents = 0;
