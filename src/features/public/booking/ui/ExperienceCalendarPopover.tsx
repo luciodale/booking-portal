@@ -1,5 +1,6 @@
 import type { ExperienceAvailabilityMap } from "@/features/public/booking/api/fetchExperienceAvailability";
 import { ExperienceCalendarGrid } from "@/features/public/booking/ui/ExperienceCalendarGrid";
+import { ExperienceDateTrigger } from "@/features/public/booking/ui/ExperienceDateTrigger";
 import {
   FloatingFocusManager,
   FloatingPortal,
@@ -13,7 +14,7 @@ import {
   useInteractions,
 } from "@floating-ui/react";
 
-type ExperienceCalendarPopoverProps = {
+export type ExperienceCalendarPopoverProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   currentMonth: Date;
@@ -62,7 +63,7 @@ export function ExperienceCalendarPopover({
         className="w-full text-left"
         {...getReferenceProps()}
       >
-        <DateTrigger selectedDate={selectedDate} />
+        <ExperienceDateTrigger selectedDate={selectedDate} />
       </button>
 
       {isOpen && (
@@ -104,38 +105,5 @@ export function ExperienceCalendarPopover({
         </FloatingPortal>
       )}
     </>
-  );
-}
-
-function DateTrigger({ selectedDate }: { selectedDate: string | null }) {
-  return (
-    <div className="flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/50 transition-colors cursor-pointer">
-      <svg
-        aria-hidden="true"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="text-muted-foreground shrink-0"
-      >
-        <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-        <line x1="16" x2="16" y1="2" y2="6" />
-        <line x1="8" x2="8" y1="2" y2="6" />
-        <line x1="3" x2="21" y1="10" y2="10" />
-      </svg>
-
-      <div className="flex-1">
-        <div className="text-[10px] text-muted-foreground">Date</div>
-        <div
-          className={`text-sm truncate ${selectedDate ? "text-foreground font-medium" : "text-muted-foreground/60"}`}
-        >
-          {selectedDate ?? "Select date"}
-        </div>
-      </div>
-    </div>
   );
 }

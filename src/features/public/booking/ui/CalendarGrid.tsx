@@ -12,7 +12,7 @@ import type { SmoobuRateDay } from "@/schemas/smoobu";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-type CalendarGridProps = {
+export type CalendarGridProps = {
   currentMonth: Date;
   checkIn: string | null;
   checkOut: string | null;
@@ -20,8 +20,10 @@ type CalendarGridProps = {
   ratesLoading: boolean;
   currency: string | null;
   onDateClick: (dateStr: string) => void;
-  onPrevMonth: () => void;
-  onNextMonth: () => void;
+  onPrevMonth?: () => void;
+  onNextMonth?: () => void;
+  vertical?: boolean;
+  monthCount?: number;
 };
 
 export function CalendarGrid({
@@ -34,33 +36,40 @@ export function CalendarGrid({
   onDateClick,
   onPrevMonth,
   onNextMonth,
+  vertical,
+  monthCount = 2,
 }: CalendarGridProps) {
-  const months = [currentMonth, addMonths(currentMonth, 1)];
+  const months = Array.from({ length: monthCount }, (_, i) =>
+    addMonths(currentMonth, i)
+  );
+  const showNavigation = onPrevMonth != null && onNextMonth != null;
 
   return (
     <div data-testid="calendar-grid" className="space-y-4">
-      <div className="flex items-center justify-between">
-        <button
-          data-testid="calendar-prev"
-          type="button"
-          onClick={onPrevMonth}
-          className="p-2 rounded-lg hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
-          aria-label="Previous month"
-        >
-          <ChevronLeft />
-        </button>
-        <button
-          data-testid="calendar-next"
-          type="button"
-          onClick={onNextMonth}
-          className="p-2 rounded-lg hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
-          aria-label="Next month"
-        >
-          <ChevronRight />
-        </button>
-      </div>
+      {showNavigation && (
+        <div className="flex items-center justify-between">
+          <button
+            data-testid="calendar-prev"
+            type="button"
+            onClick={onPrevMonth}
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Previous month"
+          >
+            <ChevronLeft />
+          </button>
+          <button
+            data-testid="calendar-next"
+            type="button"
+            onClick={onNextMonth}
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Next month"
+          >
+            <ChevronRight />
+          </button>
+        </div>
+      )}
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className={vertical ? "grid grid-cols-1 gap-4" : "grid grid-cols-2 gap-6"}>
         {months.map((month) => (
           <MonthGrid
             key={formatDate(month)}

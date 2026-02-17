@@ -10,9 +10,12 @@ import { useMinStayNotice } from "@/features/public/booking/hooks/useMinStayNoti
 import { BookingForm } from "@/features/public/booking/ui/BookingForm";
 import { CalendarPopover } from "@/features/public/booking/ui/CalendarPopover";
 import { MinStayNotice } from "@/features/public/booking/ui/MinStayNotice";
+import { MobileCalendarSheet } from "@/features/public/booking/ui/mobile/MobileCalendarSheet";
+import { useIsMobile } from "@/modules/ui/useIsMobile";
 import { PriceDisplay } from "@/features/public/booking/ui/PriceDisplay";
 import { cn } from "@/modules/utils/cn";
 import { useAuth } from "@clerk/astro/react";
+import { SwipeBarProvider } from "@luciodale/swipe-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { icons } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -34,7 +37,9 @@ type BookingWidgetProps = {
 export function BookingWidget(props: BookingWidgetProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <BookingWidgetInner {...props} />
+      <SwipeBarProvider>
+        <BookingWidgetInner {...props} />
+      </SwipeBarProvider>
     </QueryClientProvider>
   );
 }
@@ -48,6 +53,7 @@ function BookingWidgetInner({
   extras,
   cityTax,
 }: BookingWidgetProps) {
+  const isMobile = useIsMobile();
   const calendar = useBookingCalendar(propertyId, smoobuPropertyId);
   const { minStayNights } = useMinStayNotice(calendar.rateMap, calendar.checkIn);
   const { isSignedIn } = useAuth();
@@ -130,20 +136,37 @@ function BookingWidgetInner({
   return (
     <div data-testid="booking-widget" className="space-y-5">
       <div className="p-5 rounded-2xl bg-card border border-border space-y-4">
-        <CalendarPopover
-          isOpen={calendar.isCalendarOpen}
-          onOpenChange={calendar.setCalendarOpen}
-          currentMonth={calendar.currentMonth}
-          checkIn={calendar.checkIn}
-          checkOut={calendar.checkOut}
-          rateMap={calendar.rateMap}
-          ratesLoading={calendar.ratesLoading}
-          currency={calendar.currency}
-          onDateClick={calendar.handleDateClick}
-          onPrevMonth={calendar.goPrevMonth}
-          onNextMonth={calendar.goNextMonth}
-          onConfirm={calendar.confirmCalendar}
-        />
+        {isMobile ? (
+          <MobileCalendarSheet
+            isOpen={calendar.isCalendarOpen}
+            onOpenChange={calendar.setCalendarOpen}
+            currentMonth={calendar.currentMonth}
+            checkIn={calendar.checkIn}
+            checkOut={calendar.checkOut}
+            rateMap={calendar.rateMap}
+            ratesLoading={calendar.ratesLoading}
+            currency={calendar.currency}
+            onDateClick={calendar.handleDateClick}
+            onPrevMonth={calendar.goPrevMonth}
+            onNextMonth={calendar.goNextMonth}
+            onConfirm={calendar.confirmCalendar}
+          />
+        ) : (
+          <CalendarPopover
+            isOpen={calendar.isCalendarOpen}
+            onOpenChange={calendar.setCalendarOpen}
+            currentMonth={calendar.currentMonth}
+            checkIn={calendar.checkIn}
+            checkOut={calendar.checkOut}
+            rateMap={calendar.rateMap}
+            ratesLoading={calendar.ratesLoading}
+            currency={calendar.currency}
+            onDateClick={calendar.handleDateClick}
+            onPrevMonth={calendar.goPrevMonth}
+            onNextMonth={calendar.goNextMonth}
+            onConfirm={calendar.confirmCalendar}
+          />
+        )}
 
         <MinStayNotice minStayNights={minStayNights} />
 

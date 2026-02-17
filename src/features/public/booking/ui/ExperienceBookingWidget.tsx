@@ -4,8 +4,11 @@ import { useExperienceBooking } from "@/features/public/booking/hooks/useExperie
 import { useExperienceCheckout } from "@/features/public/booking/hooks/useExperienceCheckout";
 import { ExperienceCalendarPopover } from "@/features/public/booking/ui/ExperienceCalendarPopover";
 import { ExperienceGuestForm } from "@/features/public/booking/ui/ExperienceGuestForm";
+import { MobileExperienceCalendarSheet } from "@/features/public/booking/ui/mobile/MobileExperienceCalendarSheet";
+import { useIsMobile } from "@/modules/ui/useIsMobile";
 import { PriceBreakdown } from "@/features/public/booking/ui/PriceBreakdown";
 import { useAuth } from "@clerk/astro/react";
+import { SwipeBarProvider } from "@luciodale/swipe-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient({
@@ -28,7 +31,9 @@ export function ExperienceBookingWidget(props: ExperienceBookingWidgetProps) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <BookingFlow {...props} />
+      <SwipeBarProvider>
+        <BookingFlow {...props} />
+      </SwipeBarProvider>
     </QueryClientProvider>
   );
 }
@@ -72,6 +77,7 @@ function BookingFlow({
   maxParticipants,
   additionalCosts,
 }: ExperienceBookingWidgetProps) {
+  const isMobile = useIsMobile();
   const { isSignedIn } = useAuth();
   const booking = useExperienceBooking({
     experienceId,
@@ -111,18 +117,33 @@ function BookingFlow({
         </div>
 
         {/* Date Picker */}
-        <ExperienceCalendarPopover
-          isOpen={booking.isCalendarOpen}
-          onOpenChange={booking.setCalendarOpen}
-          currentMonth={booking.currentMonth}
-          selectedDate={booking.selectedDate}
-          availabilityMap={booking.availabilityMap}
-          maxParticipants={maxParticipants}
-          onDateClick={booking.handleDateClick}
-          onPrevMonth={booking.goPrevMonth}
-          onNextMonth={booking.goNextMonth}
-          onClear={booking.clearDate}
-        />
+        {isMobile ? (
+          <MobileExperienceCalendarSheet
+            isOpen={booking.isCalendarOpen}
+            onOpenChange={booking.setCalendarOpen}
+            currentMonth={booking.currentMonth}
+            selectedDate={booking.selectedDate}
+            availabilityMap={booking.availabilityMap}
+            maxParticipants={maxParticipants}
+            onDateClick={booking.handleDateClick}
+            onPrevMonth={booking.goPrevMonth}
+            onNextMonth={booking.goNextMonth}
+            onClear={booking.clearDate}
+          />
+        ) : (
+          <ExperienceCalendarPopover
+            isOpen={booking.isCalendarOpen}
+            onOpenChange={booking.setCalendarOpen}
+            currentMonth={booking.currentMonth}
+            selectedDate={booking.selectedDate}
+            availabilityMap={booking.availabilityMap}
+            maxParticipants={maxParticipants}
+            onDateClick={booking.handleDateClick}
+            onPrevMonth={booking.goPrevMonth}
+            onNextMonth={booking.goNextMonth}
+            onClear={booking.clearDate}
+          />
+        )}
 
         {/* Participants */}
         <div>

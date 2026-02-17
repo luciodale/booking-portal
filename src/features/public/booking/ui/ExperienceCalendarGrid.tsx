@@ -10,14 +10,16 @@ import {
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-type ExperienceCalendarGridProps = {
+export type ExperienceCalendarGridProps = {
   currentMonth: Date;
   selectedDate: string | null;
   availabilityMap: ExperienceAvailabilityMap;
   maxParticipants: number;
   onDateClick: (dateStr: string) => void;
-  onPrevMonth: () => void;
-  onNextMonth: () => void;
+  onPrevMonth?: () => void;
+  onNextMonth?: () => void;
+  vertical?: boolean;
+  monthCount?: number;
 };
 
 export function ExperienceCalendarGrid({
@@ -28,31 +30,38 @@ export function ExperienceCalendarGrid({
   onDateClick,
   onPrevMonth,
   onNextMonth,
+  vertical,
+  monthCount = 2,
 }: ExperienceCalendarGridProps) {
-  const months = [currentMonth, addMonths(currentMonth, 1)];
+  const months = Array.from({ length: monthCount }, (_, i) =>
+    addMonths(currentMonth, i)
+  );
+  const showNavigation = onPrevMonth != null && onNextMonth != null;
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={onPrevMonth}
-          className="p-2 rounded-lg hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
-          aria-label="Previous month"
-        >
-          <ChevronLeft />
-        </button>
-        <button
-          type="button"
-          onClick={onNextMonth}
-          className="p-2 rounded-lg hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
-          aria-label="Next month"
-        >
-          <ChevronRight />
-        </button>
-      </div>
+      {showNavigation && (
+        <div className="flex items-center justify-between">
+          <button
+            type="button"
+            onClick={onPrevMonth}
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Previous month"
+          >
+            <ChevronLeft />
+          </button>
+          <button
+            type="button"
+            onClick={onNextMonth}
+            className="p-2 rounded-lg hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Next month"
+          >
+            <ChevronRight />
+          </button>
+        </div>
+      )}
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className={vertical ? "grid grid-cols-1 gap-4" : "grid grid-cols-2 gap-6"}>
         {months.map((month) => (
           <MonthGrid
             key={formatDate(month)}
