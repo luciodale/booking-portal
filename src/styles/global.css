@@ -1,60 +1,187 @@
 @import "tailwindcss";
 
-/* Elite Theme - Premium Luxury Design System */
+/* ===== Light / Dark Color Tokens ===== */
+
+:root {
+  /* Base */
+  --background: oklch(0.985 0.002 85);
+  --foreground: oklch(0.15 0.005 285);
+
+  /* Cards */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0.005 285);
+  --card-hover: oklch(0.97 0.002 85);
+
+  /* Primary - Champagne Gold */
+  --primary: oklch(0.55 0.15 85);
+  --primary-foreground: oklch(1 0 0);
+  --primary-hover: oklch(0.6 0.17 85);
+
+  /* Secondary */
+  --secondary: oklch(0.95 0.003 260);
+  --secondary-foreground: oklch(0.3 0.01 260);
+
+  /* Accent */
+  --accent: oklch(0.55 0.12 85);
+  --accent-foreground: oklch(1 0 0);
+
+  /* Muted */
+  --muted: oklch(0.95 0.003 260);
+  --muted-foreground: oklch(0.55 0.01 260);
+
+  /* Border */
+  --border: oklch(0.88 0.005 260);
+  --border-accent: oklch(0.7 0.1 85);
+
+  /* Status */
+  --success: oklch(0.65 0.15 145);
+  --warning: oklch(0.75 0.15 85);
+  --error: oklch(0.6 0.2 25);
+
+  /* Elite tier */
+  --elite: oklch(0.55 0.15 85);
+  --elite-glow: oklch(0.55 0.15 85 / 0.3);
+
+  /* Standard tier */
+  --standard: oklch(0.7 0.01 260);
+
+  /* Marble tones */
+  --marble-light: oklch(0.92 0.008 85);
+  --marble-mid: oklch(0.85 0.012 75);
+  --marble-dark: oklch(0.78 0.015 70);
+  --marble-vein: oklch(0.65 0.02 85 / 0.4);
+
+  /* Shadows — lighter for light mode */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.08);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.08);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.12), 0 4px 6px -4px rgb(0 0 0 / 0.08);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.12), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+  --shadow-elite: 0 0 40px -10px oklch(0.55 0.15 85 / 0.3);
+
+  /* Glass */
+  --glass-bg: oklch(1 0 0 / 0.7);
+  --glass-border: oklch(0 0 0 / 0.08);
+
+  /* Badge / button gradient end-stop */
+  --badge-elite-end: oklch(0.45 0.1 65);
+  --btn-primary-end: oklch(0.5 0.1 75);
+
+  /* Calendar range middle */
+  --calendar-range-bg: oklch(0.55 0.15 85 / 0.15);
+}
+
+.dark {
+  /* Base */
+  --background: oklch(0.13 0.005 285);
+  --foreground: oklch(0.98 0.005 85);
+
+  /* Cards */
+  --card: oklch(0.16 0.005 285);
+  --card-foreground: oklch(0.98 0.005 85);
+  --card-hover: oklch(0.19 0.005 285);
+
+  /* Primary - Champagne Gold */
+  --primary: oklch(0.75 0.12 85);
+  --primary-foreground: oklch(0.13 0.005 285);
+  --primary-hover: oklch(0.8 0.14 85);
+
+  /* Secondary */
+  --secondary: oklch(0.22 0.005 285);
+  --secondary-foreground: oklch(0.85 0.01 85);
+
+  /* Accent */
+  --accent: oklch(0.7 0.1 85);
+  --accent-foreground: oklch(0.13 0.005 285);
+
+  /* Muted */
+  --muted: oklch(0.2 0.005 285);
+  --muted-foreground: oklch(0.6 0.01 260);
+
+  /* Border */
+  --border: oklch(0.25 0.005 285);
+  --border-accent: oklch(0.4 0.08 85);
+
+  /* Status */
+  --success: oklch(0.65 0.15 145);
+  --warning: oklch(0.75 0.15 85);
+  --error: oklch(0.6 0.2 25);
+
+  /* Elite tier */
+  --elite: oklch(0.75 0.12 85);
+  --elite-glow: oklch(0.75 0.12 85 / 0.3);
+
+  /* Standard tier */
+  --standard: oklch(0.7 0.01 260);
+
+  /* Marble tones */
+  --marble-light: oklch(0.92 0.008 85);
+  --marble-mid: oklch(0.85 0.012 75);
+  --marble-dark: oklch(0.78 0.015 70);
+  --marble-vein: oklch(0.65 0.02 85 / 0.4);
+
+  /* Shadows — heavier for dark mode */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  --shadow-elite: 0 0 40px -10px oklch(0.75 0.12 85 / 0.4);
+
+  /* Glass */
+  --glass-bg: oklch(0.13 0.005 285 / 0.7);
+  --glass-border: oklch(1 0 0 / 0.1);
+
+  /* Badge / button gradient end-stop */
+  --badge-elite-end: oklch(0.65 0.1 65);
+  --btn-primary-end: oklch(0.7 0.1 75);
+
+  /* Calendar range middle */
+  --calendar-range-bg: oklch(0.75 0.12 85 / 0.15);
+}
+
+/* ===== Tailwind Theme — references CSS variables ===== */
 @theme inline {
   /* Typography */
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 
-  /* ===== Base Colors ===== */
-  /* Background - Deep charcoal for luxury feel */
-  --color-background: oklch(0.13 0.005 285);
-  --color-foreground: oklch(0.98 0.005 85);
+  /* Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
 
-  /* Cards - Elevated dark surfaces */
-  --color-card: oklch(0.16 0.005 285);
-  --color-card-foreground: oklch(0.98 0.005 85);
-  --color-card-hover: oklch(0.19 0.005 285);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-hover: var(--card-hover);
 
-  /* Primary - Champagne Gold */
-  --color-primary: oklch(0.75 0.12 85);
-  --color-primary-foreground: oklch(0.13 0.005 285);
-  --color-primary-hover: oklch(0.8 0.14 85);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
 
-  /* Secondary - Warm gray */
-  --color-secondary: oklch(0.22 0.005 285);
-  --color-secondary-foreground: oklch(0.85 0.01 85);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
 
-  /* Accent - Soft gold glow */
-  --color-accent: oklch(0.7 0.1 85);
-  --color-accent-foreground: oklch(0.13 0.005 285);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
 
-  /* Muted - For secondary text */
-  --color-muted: oklch(0.2 0.005 285);
-  --color-muted-foreground: oklch(0.6 0.01 260);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
 
-  /* Border - Subtle warm gray */
-  --color-border: oklch(0.25 0.005 285);
-  --color-border-accent: oklch(0.4 0.08 85);
+  --color-border: var(--border);
+  --color-border-accent: var(--border-accent);
 
-  /* Status Colors */
-  --color-success: oklch(0.65 0.15 145);
-  --color-warning: oklch(0.75 0.15 85);
-  --color-error: oklch(0.6 0.2 25);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
 
-  /* Elite tier specific */
-  --color-elite: oklch(0.75 0.12 85);
-  --color-elite-glow: oklch(0.75 0.12 85 / 0.3);
+  --color-elite: var(--elite);
+  --color-elite-glow: var(--elite-glow);
 
-  /* Standard tier */
-  --color-standard: oklch(0.7 0.01 260);
+  --color-standard: var(--standard);
 
-  /* Marble tones - subtle warm grays with veining hints */
-  --color-marble-light: oklch(0.92 0.008 85);
-  --color-marble-mid: oklch(0.85 0.012 75);
-  --color-marble-dark: oklch(0.78 0.015 70);
-  --color-marble-vein: oklch(0.65 0.02 85 / 0.4);
+  --color-marble-light: var(--marble-light);
+  --color-marble-mid: var(--marble-mid);
+  --color-marble-dark: var(--marble-dark);
+  --color-marble-vein: var(--marble-vein);
 
-  /* ===== Spacing & Sizing ===== */
+  /* Spacing & Sizing */
   --spacing-header-height: 70px;
   --spacing-subheader-height: 90px;
   --spacing-sticky-offset: calc(var(--spacing-header-height) + var(--spacing-subheader-height));
@@ -66,40 +193,18 @@
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
 
-  /* Shadows with gold tint for Elite */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5), 0 4px 6px -4px
-    rgb(0 0 0 / 0.4);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px
-    rgb(0 0 0 / 0.4);
-  --shadow-elite: 0 0 40px -10px oklch(0.75 0.12 85 / 0.4);
+  /* Shadows */
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-elite: var(--shadow-elite);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-spring: 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* CSS Variables fallback for custom properties */
-:root {
-  --background: var(--color-background);
-  --foreground: var(--color-foreground);
-  --card: var(--color-card);
-  --card-foreground: var(--color-card-foreground);
-  --primary: var(--color-primary);
-  --primary-foreground: var(--color-primary-foreground);
-  --secondary: var(--color-secondary);
-  --secondary-foreground: var(--color-secondary-foreground);
-  --muted: var(--color-muted);
-  --muted-foreground: var(--color-muted-foreground);
-  --accent: var(--color-accent);
-  --accent-foreground: var(--color-accent-foreground);
-  --border: var(--color-border);
-
-  --header-height: var(--spacing-header-height);
-  --content-fit-height: calc(100vh - var(--header-height));
 }
 
 @layer base {
@@ -133,25 +238,25 @@
     @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full;
     background: linear-gradient(
       135deg,
-      var(--color-elite) 0%,
-      oklch(0.65 0.1 65) 100%
+      var(--elite) 0%,
+      var(--badge-elite-end) 100%
     );
-    color: var(--color-primary-foreground);
-    box-shadow: 0 0 20px var(--color-elite-glow);
+    color: var(--primary-foreground);
+    box-shadow: 0 0 20px var(--elite-glow);
   }
 
   /* Standard Badge */
   .badge-standard {
     @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full;
-    background: var(--color-standard);
-    color: var(--color-foreground);
+    background: var(--standard);
+    color: var(--foreground);
   }
 
   /* Glass effect for overlays */
   .glass {
     @apply backdrop-blur-xl;
-    background: oklch(0.13 0.005 285 / 0.7);
-    border: 1px solid oklch(1 0 0 / 0.1);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
   }
 
   /* Primary button */
@@ -160,16 +265,16 @@
     @apply transition-all duration-200 ease-out;
     background: linear-gradient(
       135deg,
-      var(--color-primary) 0%,
-      oklch(0.7 0.1 75) 100%
+      var(--primary) 0%,
+      var(--btn-primary-end) 100%
     );
-    color: var(--color-primary-foreground);
-    box-shadow: var(--shadow-md), 0 0 20px var(--color-elite-glow);
+    color: var(--primary-foreground);
+    box-shadow: var(--shadow-md), 0 0 20px var(--elite-glow);
   }
 
   .btn-primary:hover {
     @apply translate-y-[-2px];
-    box-shadow: var(--shadow-lg), 0 0 30px var(--color-elite-glow);
+    box-shadow: var(--shadow-lg), 0 0 30px var(--elite-glow);
   }
 
   .btn-primary:active {
@@ -207,7 +312,7 @@
     @apply absolute inset-0 opacity-0 transition-opacity duration-300;
     background: linear-gradient(
       135deg,
-      var(--color-elite-glow) 0%,
+      var(--elite-glow) 0%,
       transparent 50%
     );
     pointer-events: none;
@@ -221,8 +326,8 @@
   .text-gradient {
     background: linear-gradient(
       135deg,
-      var(--color-foreground) 0%,
-      var(--color-primary) 100%
+      var(--foreground) 0%,
+      var(--primary) 100%
     );
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -261,29 +366,29 @@
     pointer-events: none;
     background-image: radial-gradient(
         ellipse 80% 50% at 20% 30%,
-        var(--color-marble-vein),
+        var(--marble-vein),
         transparent
       ),
       radial-gradient(
         ellipse 60% 40% at 70% 60%,
-        var(--color-marble-vein),
+        var(--marble-vein),
         transparent
       ),
       radial-gradient(
         ellipse 50% 80% at 40% 80%,
-        var(--color-marble-vein),
+        var(--marble-vein),
         transparent
       ),
       linear-gradient(
         135deg,
         transparent 40%,
-        var(--color-marble-light) 45%,
+        var(--marble-light) 45%,
         transparent 50%
       ),
       linear-gradient(
         -45deg,
         transparent 40%,
-        var(--color-marble-mid) 45%,
+        var(--marble-mid) 45%,
         transparent 50%
       );
     background-size: 100% 100%, 100% 100%, 100% 100%, 200% 200%, 200% 200%;
@@ -292,13 +397,13 @@
   /* Marble border accent */
   .marble-border {
     border: 1px solid transparent;
-    background: linear-gradient(var(--color-card), var(--color-card))
+    background: linear-gradient(var(--card), var(--card))
       padding-box,
       linear-gradient(
         135deg,
-        var(--color-marble-light) 0%,
-        var(--color-marble-vein) 50%,
-        var(--color-marble-dark) 100%
+        var(--marble-light) 0%,
+        var(--marble-vein) 50%,
+        var(--marble-dark) 100%
       )
       border-box;
   }
@@ -313,8 +418,8 @@
     @apply absolute bottom-0 left-0 h-0.5 w-16;
     background: linear-gradient(
       90deg,
-      var(--color-primary),
-      var(--color-marble-mid)
+      var(--primary),
+      var(--marble-mid)
     );
   }
 
@@ -324,9 +429,9 @@
     background: linear-gradient(
       90deg,
       transparent,
-      var(--color-border),
-      var(--color-marble-vein),
-      var(--color-border),
+      var(--border),
+      var(--marble-vein),
+      var(--border),
       transparent
     );
   }
@@ -432,119 +537,118 @@
   }
 }
 
-/* Dark theme for react-day-picker in backoffice */
-.pricing-calendar-dark .rdp {
-  /* Core RDP variables - override all defaults */
+/* Theme-aware calendar for react-day-picker */
+.pricing-calendar .rdp {
   --rdp-cell-size: 40px;
-  --rdp-accent-color: var(--color-primary);
-  --rdp-accent-background-color: var(--color-primary);
-  --rdp-range_middle-background-color: oklch(0.75 0.12 85 / 0.15);
-  --rdp-range_middle-color: var(--color-card-foreground);
+  --rdp-accent-color: var(--primary);
+  --rdp-accent-background-color: var(--primary);
+  --rdp-range_middle-background-color: var(--calendar-range-bg);
+  --rdp-range_middle-color: var(--card-foreground);
   --rdp-day_button-background-color: transparent;
   --rdp-day_button-border-radius: 0.5rem;
   --rdp-selected-font: inherit;
   --rdp-outside-opacity: 0.4;
-  --rdp-today-color: var(--color-primary);
-  color: var(--color-card-foreground);
+  --rdp-today-color: var(--primary);
+  color: var(--card-foreground);
 }
 
-.pricing-calendar-dark .rdp-months {
+.pricing-calendar .rdp-months {
   justify-content: center;
   gap: 2rem;
 }
 
-.pricing-calendar-dark .rdp-month {
-  background: var(--color-secondary);
+.pricing-calendar .rdp-month {
+  background: var(--secondary);
   border-radius: 0.75rem;
   padding: 1rem;
 }
 
-.pricing-calendar-dark .rdp-month_caption {
-  color: var(--color-card-foreground);
+.pricing-calendar .rdp-month_caption {
+  color: var(--card-foreground);
   font-weight: 600;
   padding-bottom: 0.75rem;
 }
 
-.pricing-calendar-dark .rdp-weekday {
-  color: var(--color-muted-foreground);
+.pricing-calendar .rdp-weekday {
+  color: var(--muted-foreground);
   font-size: 0.75rem;
   font-weight: 500;
 }
 
-.pricing-calendar-dark .rdp-day {
-  color: var(--color-card-foreground);
+.pricing-calendar .rdp-day {
+  color: var(--card-foreground);
   border-radius: 0.5rem;
 }
 
-.pricing-calendar-dark .rdp-day_button {
-  color: var(--color-card-foreground);
+.pricing-calendar .rdp-day_button {
+  color: var(--card-foreground);
   border-radius: 0.5rem;
   transition: all 0.15s ease;
 }
 
-.pricing-calendar-dark .rdp-day_button:hover {
-  background-color: var(--color-card-hover);
+.pricing-calendar .rdp-day_button:hover {
+  background-color: var(--card-hover);
 }
 
-.pricing-calendar-dark .rdp-selected .rdp-day_button,
-.pricing-calendar-dark .rdp-range_start .rdp-day_button,
-.pricing-calendar-dark .rdp-range_end .rdp-day_button {
-  background-color: var(--color-primary) !important;
-  color: var(--color-primary-foreground) !important;
+.pricing-calendar .rdp-selected .rdp-day_button,
+.pricing-calendar .rdp-range_start .rdp-day_button,
+.pricing-calendar .rdp-range_end .rdp-day_button {
+  background-color: var(--primary) !important;
+  color: var(--primary-foreground) !important;
 }
 
-.pricing-calendar-dark .rdp-range_middle .rdp-day_button {
-  background-color: oklch(0.75 0.12 85 / 0.15);
-  color: var(--color-card-foreground);
+.pricing-calendar .rdp-range_middle .rdp-day_button {
+  background-color: var(--calendar-range-bg);
+  color: var(--card-foreground);
   border-radius: 0;
 }
 
-.pricing-calendar-dark .rdp-outside .rdp-day_button {
-  color: var(--color-muted-foreground);
+.pricing-calendar .rdp-outside .rdp-day_button {
+  color: var(--muted-foreground);
   opacity: 0.5;
 }
 
-.pricing-calendar-dark .rdp-today .rdp-day_button {
-  border: 2px solid var(--color-primary);
+.pricing-calendar .rdp-today .rdp-day_button {
+  border: 2px solid var(--primary);
 }
 
-.pricing-calendar-dark .rdp-button:focus-visible {
-  outline: 2px solid var(--color-primary);
+.pricing-calendar .rdp-button:focus-visible {
+  outline: 2px solid var(--primary);
   outline-offset: 2px;
 }
 
-.pricing-calendar-dark .rdp-button_previous,
-.pricing-calendar-dark .rdp-button_next {
-  color: var(--color-card-foreground);
-  border: 1px solid var(--color-border);
+.pricing-calendar .rdp-button_previous,
+.pricing-calendar .rdp-button_next {
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
   border-radius: 0.5rem;
-  background: var(--color-secondary);
+  background: var(--secondary);
 }
 
-.pricing-calendar-dark .rdp-button_previous:hover,
-.pricing-calendar-dark .rdp-button_next:hover {
-  background-color: var(--color-card-hover);
+.pricing-calendar .rdp-button_previous:hover,
+.pricing-calendar .rdp-button_next:hover {
+  background-color: var(--card-hover);
 }
 
-.pricing-calendar-dark .rdp-chevron {
-  fill: var(--color-card-foreground);
+.pricing-calendar .rdp-chevron {
+  fill: var(--card-foreground);
 }
 
 /* Year view grid layout */
-.pricing-calendar-dark.year-view .rdp-months {
+.pricing-calendar.year-view .rdp-months {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
 }
 
 @media (max-width: 1024px) {
-  .pricing-calendar-dark.year-view .rdp-months {
+  .pricing-calendar.year-view .rdp-months {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 640px) {
-  .pricing-calendar-dark.year-view .rdp-months {
+  .pricing-calendar.year-view .rdp-months {
     grid-template-columns: 1fr;
   }
 }

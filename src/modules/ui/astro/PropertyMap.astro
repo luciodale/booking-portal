@@ -35,11 +35,31 @@ const { latitude, longitude } = Astro.props;
       zoomControl: true,
     }).setView([lat, lng], 14);
 
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
+    function tileUrl(dark: boolean) {
+      const variant = dark ? "dark_all" : "light_all";
+      return `https://{s}.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}{r}.png`;
+    }
+
+    const isDark = document.documentElement.classList.contains("dark");
+    let tileLayer = L.tileLayer(tileUrl(isDark), {
       subdomains: "abcd",
       maxZoom: 19,
     }).addTo(map);
 
     L.marker([lat, lng]).addTo(map);
+
+    // Swap tiles when theme changes
+    const observer = new MutationObserver(() => {
+      const dark = document.documentElement.classList.contains("dark");
+      map.removeLayer(tileLayer);
+      tileLayer = L.tileLayer(tileUrl(dark), {
+        subdomains: "abcd",
+        maxZoom: 19,
+      }).addTo(map);
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
   }
 </script>

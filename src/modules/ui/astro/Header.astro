@@ -1,5 +1,6 @@
 ---
 import { HeaderAuthSection } from "@/modules/auth/ui/HeaderAuthSection";
+import { ThemeToggle } from "@/modules/ui/react/ThemeToggle";
 
 const currentPath = Astro.url.pathname;
 
@@ -54,7 +55,10 @@ const navLinks = [
         }
       </div>
 
-      <!-- Auth Buttons -->
-      <HeaderAuthSection client:load />
+      <!-- Theme Toggle & Auth -->
+      <div class="flex items-center gap-2">
+        <ThemeToggle client:load />
+        <HeaderAuthSection client:load />
+      </div>
   </nav>
 </header>
