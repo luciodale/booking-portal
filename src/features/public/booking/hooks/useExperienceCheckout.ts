@@ -1,4 +1,5 @@
 import { createExperienceCheckoutSession } from "@/features/public/booking/api/createExperienceCheckoutSession";
+import { buildSignInRedirect } from "@/modules/auth/redirect";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -21,7 +22,7 @@ export function useExperienceCheckout(params: {
 
   async function submitBooking(data: ExperienceGuestInput) {
     if (!params.isSignedIn) {
-      window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.pathname)}`;
+      window.location.href = buildSignInRedirect();
       return;
     }
 

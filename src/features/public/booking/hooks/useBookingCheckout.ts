@@ -3,6 +3,7 @@ import type {
   CityTax,
   PropertyExtra,
 } from "@/features/public/booking/domain/pricingTypes";
+import { buildSignInRedirect } from "@/modules/auth/redirect";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -31,7 +32,7 @@ export function useBookingCheckout(params: {
 
   async function submitBooking(data: BookingGuestInput) {
     if (!params.isSignedIn) {
-      window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.pathname)}`;
+      window.location.href = buildSignInRedirect();
       return;
     }
 

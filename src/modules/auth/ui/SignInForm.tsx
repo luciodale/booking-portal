@@ -2,6 +2,7 @@ import { $clerkStore, $isLoadedStore, $signInStore } from "@clerk/astro/client";
 import type { OAuthStrategy } from "@clerk/types";
 import { useStore } from "@nanostores/react";
 import { useState } from "react";
+import { buildAuthCrossLink, getRedirectFromUrl } from "../redirect";
 import { OAuthButtons } from "./OAuthButtons";
 
 function useHandleSignIn() {
@@ -28,7 +29,7 @@ function useHandleSignIn() {
 
       if (result.status === "complete" && clerk) {
         await clerk.setActive({ session: result.createdSessionId });
-        window.location.href = "/";
+        window.location.href = getRedirectFromUrl();
       }
     } catch (err) {
       const message =
@@ -48,7 +49,7 @@ function useHandleSignIn() {
       await signIn.authenticateWithRedirect({
         strategy,
         redirectUrl: "/sign-in/sso-callback",
-        redirectUrlComplete: "/",
+        redirectUrlComplete: getRedirectFromUrl(),
       });
     } catch (err) {
       const message =
@@ -56,6 +57,8 @@ function useHandleSignIn() {
       setError(message);
     }
   }
+
+  const signUpHref = buildAuthCrossLink("/sign-up");
 
   return {
     email,
@@ -67,6 +70,7 @@ function useHandleSignIn() {
     disabled: loading || !isLoaded,
     handleSubmit,
     handleOAuth,
+    signUpHref,
   };
 }
 
@@ -81,6 +85,7 @@ function SignInFormInner() {
     disabled,
     handleSubmit,
     handleOAuth,
+    signUpHref,
   } = useHandleSignIn();
 
   return (
@@ -165,7 +170,7 @@ function SignInFormInner() {
         <p className="text-center text-sm text-muted-foreground mt-6">
           Don&apos;t have an account?{" "}
           <a
-            href="/sign-up"
+            href={signUpHref}
             className="text-primary hover:text-primary-hover transition-colors font-medium"
           >
             Sign up

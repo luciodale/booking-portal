@@ -22,7 +22,10 @@ export const onRequest = clerkMiddleware((auth, context, next) => {
     const { userId, redirectToSignIn } = auth();
 
     if (!userId) {
-      return redirectToSignIn();
+      const url = new URL(context.request.url);
+      return redirectToSignIn({
+        returnBackUrl: url.pathname + url.search,
+      });
     }
   }
 
