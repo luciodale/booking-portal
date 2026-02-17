@@ -4,6 +4,7 @@
  */
 
 import { usePhotonAddressSearch } from "@/features/broker/property/hooks/usePhotonAddressSearch";
+import { cn } from "@/modules/utils/cn";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
 import { TextInput } from "@/modules/ui/react/form-inputs/TextInput";
 import type { CreatePropertyInput } from "@/schemas/property";
@@ -133,7 +134,7 @@ export function LocationSection({
           classNameSearchableDropdownContainer="relative"
           DropdownIcon={({ toggled }: { toggled: boolean }) => (
             <ChevronDown
-              className={`w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform ${toggled ? "rotate-180" : ""}`}
+              className={cn("w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform", toggled && "rotate-180")}
             />
           )}
           classNameSearchQueryInput="input pr-9"

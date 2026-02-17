@@ -19,6 +19,7 @@ import {
 } from "@/features/broker/property/ui/CreatePropertyForm";
 import { BackofficePageHeader } from "@/features/broker/ui/BackofficePageHeader";
 import { Select } from "@/modules/ui/Select";
+import { cn } from "@/modules/utils/cn";
 import { showError } from "@/modules/ui/react/stores/notificationStore";
 import { getErrorMessages } from "@/modules/utils/errors";
 import { Link, createRoute, useNavigate } from "@tanstack/react-router";
@@ -45,17 +46,11 @@ function TierCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`text-left p-6 rounded-xl border-2 transition-all ${
-        selected
-          ? "border-primary bg-primary/5"
-          : "border-border hover:border-primary/40 bg-card"
-      }`}
+      className={cn("text-left p-6 rounded-xl border-2 transition-all", selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40 bg-card")}
     >
       <div className="flex items-center gap-3 mb-2">
         <div
-          className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-            selected ? "border-primary" : "border-muted-foreground"
-          }`}
+          className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", selected ? "border-primary" : "border-muted-foreground")}
         >
           {selected && <div className="w-2 h-2 rounded-full bg-primary" />}
         </div>

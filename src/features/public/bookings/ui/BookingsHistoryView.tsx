@@ -1,5 +1,6 @@
 import { fetchBookings } from "@/features/public/bookings/api/fetchBookings";
 import type { BookingListItem } from "@/features/public/bookings/api/fetchBookings";
+import { cn } from "@/modules/utils/cn";
 import {
   QueryClient,
   QueryClientProvider,
@@ -122,7 +123,7 @@ function BookingCard({ booking }: { booking: BookingListItem }) {
             {booking.currency.toUpperCase()}
           </div>
           <span
-            className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[booking.status] ?? ""}`}
+            className={cn("inline-block px-2 py-0.5 rounded-full text-xs font-medium", statusColors[booking.status])}
           >
             {booking.status}
           </span>

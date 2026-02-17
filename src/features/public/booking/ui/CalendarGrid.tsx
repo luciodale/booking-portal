@@ -8,6 +8,7 @@ import {
   getStartPadding,
   todayStr,
 } from "@/features/public/booking/domain/dateUtils";
+import { cn } from "@/modules/utils/cn";
 import type { SmoobuRateDay } from "@/schemas/smoobu";
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -69,7 +70,7 @@ export function CalendarGrid({
         </div>
       )}
 
-      <div className={vertical ? "grid grid-cols-1 gap-4" : "grid grid-cols-2 gap-6"}>
+      <div className={cn(vertical ? "grid grid-cols-1 gap-4" : "grid grid-cols-2 gap-6")}>
         {months.map((month) => (
           <MonthGrid
             key={formatDate(month)}
@@ -144,14 +145,13 @@ function MonthGrid({
               type="button"
               disabled={ds.unavailable}
               onClick={() => onDateClick(dateStr)}
-              className={`
-                relative flex flex-col items-center justify-center py-1.5 rounded-lg text-xs
-                transition-colors min-h-[44px]
-                ${ds.unavailable ? "text-muted-foreground/40 cursor-not-allowed line-through" : "hover:bg-primary/20 cursor-pointer"}
-                ${ds.isCheckIn ? "bg-primary text-primary-foreground rounded-r-none" : ""}
-                ${ds.isCheckOut ? "bg-primary text-primary-foreground rounded-l-none" : ""}
-                ${ds.inRange ? "bg-primary/10" : ""}
-              `}
+              className={cn(
+                "relative flex flex-col items-center justify-center py-1.5 rounded-lg text-xs transition-colors min-h-[44px]",
+                ds.unavailable ? "text-muted-foreground/40 cursor-not-allowed line-through" : "hover:bg-primary/20 cursor-pointer",
+                ds.isCheckIn && "bg-primary text-primary-foreground rounded-r-none",
+                ds.isCheckOut && "bg-primary text-primary-foreground rounded-l-none",
+                ds.inRange && "bg-primary/10"
+              )}
             >
               <span className="font-medium">{day.getDate()}</span>
               {ds.showPrice && ds.price != null && currency && (

@@ -1,3 +1,5 @@
+import { cn } from "@/modules/utils/cn";
+
 export function ExperienceDateTrigger({
   selectedDate,
 }: {
@@ -28,7 +30,7 @@ export function ExperienceDateTrigger({
           Date
         </div>
         <div
-          className={`text-sm truncate ${selectedDate ? "text-foreground font-semibold" : "text-amber-400/50"}`}
+          className={cn("text-sm truncate", selectedDate ? "text-foreground font-semibold" : "text-amber-400/50")}
         >
           {selectedDate ?? "Select date"}
         </div>

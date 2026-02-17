@@ -140,7 +140,7 @@ export function BookingsList() {
             classNameDropdownOptionNoMatch="px-3 py-2 text-sm text-muted-foreground"
             DropdownIcon={({ toggled }: { toggled: boolean }) => (
               <ChevronDown
-                className={`w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform ${toggled ? "rotate-180" : ""}`}
+                className={cn("w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform", toggled && "rotate-180")}
               />
             )}
           />

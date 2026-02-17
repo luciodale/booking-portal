@@ -1,3 +1,4 @@
+import { cn } from "@/modules/utils/cn";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
@@ -185,14 +186,7 @@ export function BookingForm({
         data-testid="booking-submit"
         type="submit"
         disabled={!isAvailable || isSubmitting}
-        className={`
-          w-full py-3 rounded-xl text-sm font-semibold transition-all
-          ${
-            isAvailable && !isSubmitting
-              ? "bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
-              : "bg-muted text-muted-foreground cursor-not-allowed"
-          }
-        `}
+        className={cn("w-full py-3 rounded-xl text-sm font-semibold transition-all", isAvailable && !isSubmitting ? "bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer" : "bg-muted text-muted-foreground cursor-not-allowed")}
       >
         {isSubmitting ? (
           <span className="flex items-center justify-center gap-2">
