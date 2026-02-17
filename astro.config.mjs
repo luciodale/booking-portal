@@ -24,13 +24,13 @@ export default defineConfig({
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
+        ...(process.env.NODE_ENV === "production"
+          ? { "react-dom/server": "react-dom/server.edge" }
+          : {}),
       },
     },
     ssr: {
       external: ["node:async_hooks"],
-      optimizeDeps: {
-        include: ["react-dom/server"],
-      },
     },
   },
   adapter: cloudflare({ imageService: "cloudflare" }),
