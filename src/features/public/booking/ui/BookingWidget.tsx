@@ -1,5 +1,3 @@
-import type { Locale } from "@/i18n/types";
-import { t } from "@/i18n/t";
 import { formatPrice } from "@/features/public/booking/domain/dateUtils";
 import type {
   CityTax,
@@ -9,14 +7,16 @@ import type {
 import { useBookingCalendar } from "@/features/public/booking/hooks/useBookingCalendar";
 import { useBookingCheckout } from "@/features/public/booking/hooks/useBookingCheckout";
 import { useMinStayNotice } from "@/features/public/booking/hooks/useMinStayNotice";
+import type { BookingGuestInput } from "@/features/public/booking/ui/BookingForm";
 import { BookingForm } from "@/features/public/booking/ui/BookingForm";
 import { CalendarPopover } from "@/features/public/booking/ui/CalendarPopover";
 import { MinStayNotice } from "@/features/public/booking/ui/MinStayNotice";
-import { MobileCalendarSheet } from "@/features/public/booking/ui/mobile/MobileCalendarSheet";
-import { useIsMobile } from "@/modules/ui/useIsMobile";
 import { PriceDisplay } from "@/features/public/booking/ui/PriceDisplay";
+import { MobileCalendarSheet } from "@/features/public/booking/ui/mobile/MobileCalendarSheet";
+import { t } from "@/i18n/t";
+import type { Locale } from "@/i18n/types";
+import { useIsMobile } from "@/modules/ui/useIsMobile";
 import { cn } from "@/modules/utils/cn";
-import type { BookingGuestInput } from "@/features/public/booking/ui/BookingForm";
 import { useAuth } from "@clerk/astro/react";
 import { SwipeBarProvider } from "@luciodale/swipe-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -60,7 +60,10 @@ function BookingWidgetInner({
 }: BookingWidgetProps) {
   const isMobile = useIsMobile();
   const calendar = useBookingCalendar(propertyId, smoobuPropertyId);
-  const { minStayNights } = useMinStayNotice(calendar.rateMap, calendar.checkIn);
+  const { minStayNights } = useMinStayNotice(
+    calendar.rateMap,
+    calendar.checkIn
+  );
   const { isSignedIn } = useAuth();
   const [guestCount, setGuestCount] = useState<number | null>(null);
   const [selectedExtras, setSelectedExtras] = useState<Set<number>>(new Set());
@@ -146,7 +149,7 @@ function BookingWidgetInner({
   }
 
   return (
-    <div data-testid="booking-widget" className="space-y-5">
+    <div data-testid="booking-widget" className="space-y-5 z-20">
       <div className="p-5 rounded-2xl bg-card border border-border space-y-4">
         {isMobile ? (
           <MobileCalendarSheet
@@ -244,7 +247,10 @@ function BookingWidgetInner({
                       </span>
                     </div>
                     <span className="text-sm font-semibold text-foreground whitespace-nowrap">
-                      {formatPrice(extra.amount / 100, calendar.currency ?? "EUR")}
+                      {formatPrice(
+                        extra.amount / 100,
+                        calendar.currency ?? "EUR"
+                      )}
                       {perLabel}
                     </span>
                     {isSelected && (
