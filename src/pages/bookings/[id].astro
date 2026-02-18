@@ -2,24 +2,30 @@
 import { getDb } from "@/db";
 import { fetchBookingById } from "@/features/public/bookings/queries";
 import { fetchExperiencesByCity } from "@/features/public/browse/experience-queries";
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { requireAuth } from "@/modules/auth/auth";
 
 export const prerender = false;
 
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
+
 let authContext: ReturnType<typeof requireAuth>;
 try {
   authContext = requireAuth(Astro.locals);
 } catch {
-  return Astro.redirect("/bookings");
+  return Astro.redirect(localePath(locale, "/bookings"));
 }
 
 const { id } = Astro.params;
-if (!id) return Astro.redirect("/bookings");
+if (!id) return Astro.redirect(localePath(locale, "/bookings"));
 
 const db = getDb(Astro.locals.runtime.env.DB);
 const booking = await fetchBookingById(db, id, authContext.userId);
-if (!booking) return Astro.redirect("/bookings");
+if (!booking) return Astro.redirect(localePath(locale, "/bookings"));
 
 const today = new Date().toISOString().split("T")[0];
 const isFuture = booking.checkIn >= today;
@@ -36,9 +42,9 @@ const statusColors: Record<string, string> = {
   completed: "bg-blue-500/10 text-blue-400 border-blue-500/20",
 };
 
-const propertyHref = booking.property.tier === "elite"
+const propertyHref = localePath(locale, booking.property.tier === "elite"
   ? `/elite/${booking.property.id}`
-  : `/property/${booking.property.id}`;
+  : `/property/${booking.property.id}`);
 
 function formatCents(cents: number, currency: string) {
   return `${(cents / 100).toFixed(2)} ${currency.toUpperCase()}`;
@@ -51,11 +57,11 @@ function formatCents(cents: number, currency: string) {
 
       <!-- Back nav -->
       <a
-        href="/bookings"
+        href={localePath(locale, "/bookings")}
         class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
         <i data-lucide="arrow-left" class="w-4 h-4"></i>
-        My Bookings
+        {t(locale, "bookings.myBookings")}
       </a>
 
       <!-- Confirmation banner -->
@@ -66,7 +72,7 @@ function formatCents(cents: number, currency: string) {
               <path d="M20 6 9 17l-5-5" />
             </svg>
           </div>
-          <p class="text-green-400 text-sm font-medium">Booking confirmed! Your reservation has been secured.</p>
+          <p class="text-green-400 text-sm font-medium">{t(locale, "bookings.bookingConfirmedBanner")}</p>
         </div>
       )}
 
@@ -95,44 +101,44 @@ function formatCents(cents: number, currency: string) {
       <!-- Status badge -->
       <div>
         <span class={`inline-block px-3 py-1 rounded-full text-xs font-medium border ${statusColors[booking.status] ?? ""}`}>
-          {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+          {t(locale, `bookings.${booking.status}` as "bookings.pending" | "bookings.confirmed" | "bookings.cancelled" | "bookings.completed")}
         </span>
       </div>
 
       <!-- Details card -->
       <div class="p-5 rounded-xl bg-card border border-border space-y-3">
         <div class="flex justify-between text-sm">
-          <span class="text-muted-foreground">Check-in</span>
+          <span class="text-muted-foreground">{t(locale, "bookings.checkIn")}</span>
           <span class="text-foreground font-medium">{booking.checkIn}</span>
         </div>
         <div class="flex justify-between text-sm">
-          <span class="text-muted-foreground">Check-out</span>
+          <span class="text-muted-foreground">{t(locale, "bookings.checkOut")}</span>
           <span class="text-foreground font-medium">{booking.checkOut}</span>
         </div>
         <div class="flex justify-between text-sm">
-          <span class="text-muted-foreground">Nights</span>
+          <span class="text-muted-foreground">{t(locale, "bookings.nightsLabel")}</span>
           <span class="text-foreground font-medium">{booking.nights}</span>
         </div>
         <div class="flex justify-between text-sm">
-          <span class="text-muted-foreground">Guests</span>
+          <span class="text-muted-foreground">{t(locale, "bookings.guestsLabel")}</span>
           <span class="text-foreground font-medium">{booking.guests}</span>
         </div>
 
         <div class="border-t border-border my-2"></div>
 
         <div class="flex justify-between text-sm">
-          <span class="text-muted-foreground">Accommodation</span>
+          <span class="text-muted-foreground">{t(locale, "bookings.accommodation")}</span>
           <span class="text-foreground">{formatCents(booking.baseTotal, booking.currency)}</span>
         </div>
         {booking.cleaningFee > 0 && (
           <div class="flex justify-between text-sm">
-            <span class="text-muted-foreground">Cleaning fee</span>
+            <span class="text-muted-foreground">{t(locale, "bookings.cleaningFee")}</span>
             <span class="text-foreground">{formatCents(booking.cleaningFee, booking.currency)}</span>
           </div>
         )}
         {booking.serviceFee > 0 && (
           <div class="flex justify-between text-sm">
-            <span class="text-muted-foreground">Service fee</span>
+            <span class="text-muted-foreground">{t(locale, "bookings.serviceFee")}</span>
             <span class="text-foreground">{formatCents(booking.serviceFee, booking.currency)}</span>
           </div>
         )}
@@ -140,7 +146,7 @@ function formatCents(cents: number, currency: string) {
         <div class="border-t border-border my-2"></div>
 
         <div class="flex justify-between text-sm">
-          <span class="text-foreground font-semibold">Total</span>
+          <span class="text-foreground font-semibold">{t(locale, "bookings.total")}</span>
           <span class="text-foreground font-bold">{formatCents(booking.totalPrice, booking.currency)}</span>
         </div>
 
@@ -148,7 +154,7 @@ function formatCents(cents: number, currency: string) {
           <>
             <div class="border-t border-border my-2"></div>
             <div>
-              <span class="text-xs text-muted-foreground uppercase tracking-wide">Your note</span>
+              <span class="text-xs text-muted-foreground uppercase tracking-wide">{t(locale, "bookings.yourNote")}</span>
               <p class="text-sm text-foreground mt-1">{booking.guestNote}</p>
             </div>
           </>
@@ -160,7 +166,7 @@ function formatCents(cents: number, currency: string) {
         <div class="flex items-start gap-3 p-4 rounded-xl bg-card border border-border">
           <i data-lucide="info" class="w-5 h-5 text-muted-foreground shrink-0 mt-0.5"></i>
           <p class="text-sm text-muted-foreground">
-            To cancel this booking, please contact the property directly.
+            {t(locale, "bookings.cancellationNotice")}
           </p>
         </div>
       )}
@@ -169,15 +175,15 @@ function formatCents(cents: number, currency: string) {
       {isFuture && cityExperiences.length > 0 && (
         <div class="pt-4">
           <h2 class="text-xl font-bold text-foreground mb-2">
-            Experiences in {booking.property.city}
+            {t(locale, "bookings.experiencesIn", { city: booking.property.city! })}
           </h2>
           <p class="text-sm text-muted-foreground mb-6">
-            Enhance your stay with curated local experiences.
+            {t(locale, "bookings.enhanceYourStay")}
           </p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {cityExperiences.map((exp) => (
               <a
-                href={`/experiences/${exp.id}`}
+                href={localePath(locale, `/experiences/${exp.id}`)}
                 class="group block rounded-2xl overflow-hidden bg-card border border-border hover:border-primary/30 transition-colors"
               >
                 <div class="relative aspect-[4/3] overflow-hidden">
@@ -213,10 +219,10 @@ function formatCents(cents: number, currency: string) {
           </div>
           <div class="mt-6 text-center">
             <a
-              href={`/experiences?city=${encodeURIComponent(booking.property.city!)}`}
+              href={localePath(locale, `/experiences?city=${encodeURIComponent(booking.property.city!)}`)}
               class="text-primary hover:text-primary-hover transition-colors text-sm font-medium inline-flex items-center gap-2"
             >
-              View all experiences
+              {t(locale, "bookings.viewAllExperiences")}
               <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
           </div>

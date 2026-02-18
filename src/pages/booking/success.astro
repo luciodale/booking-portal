@@ -1,11 +1,17 @@
 ---
 import { getDb } from "@/db";
 import { bookings } from "@/db/schema";
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Header from "@/modules/ui/astro/Header.astro";
 import { eq } from "drizzle-orm";
 
 export const prerender = false;
+
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 
 const sessionId = Astro.url.searchParams.get("session_id");
 
@@ -20,26 +26,26 @@ if (sessionId) {
       .limit(1);
 
     if (found) {
-      return Astro.redirect(`/bookings/${found.id}?new=true`);
+      return Astro.redirect(localePath(locale, `/bookings/${found.id}?new=true`));
     }
   }
 }
 ---
 
-<BaseLayout title="Booking Confirmed">
+<BaseLayout title={t(locale, "bookings.bookingConfirmed")}>
   <Header />
   <main class="min-h-content-fit flex items-center justify-center px-6 py-16">
     <div class="w-full max-w-md">
       <div class="p-8 rounded-2xl bg-card border border-border text-center space-y-4">
-        <h1 class="text-xl font-bold text-foreground">Booking Not Found</h1>
+        <h1 class="text-xl font-bold text-foreground">{t(locale, "bookings.bookingNotFound")}</h1>
         <p class="text-muted-foreground text-sm">
-          We couldn't find a booking for this session. If you just completed payment, it may take a moment to process.
+          {t(locale, "bookings.bookingNotFoundDesc")}
         </p>
         <a
-          href="/bookings"
+          href={localePath(locale, "/bookings")}
           class="inline-block py-2 px-6 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
         >
-          View My Bookings
+          {t(locale, "bookings.viewMyBookings")}
         </a>
       </div>
     </div>

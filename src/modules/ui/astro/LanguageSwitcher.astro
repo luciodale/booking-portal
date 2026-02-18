@@ -1,0 +1,33 @@
+---
+import type { Locale } from "@/i18n/types";
+import { locales } from "@/i18n/types";
+import { switchLocale } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const currentPath = Astro.url.pathname;
+const search = Astro.url.search;
+---
+
+<div class="flex items-center gap-2 text-sm text-muted-foreground">
+  {locales.map((targetLocale) => {
+    const href = switchLocale(currentPath, targetLocale) + search;
+    const isActive = targetLocale === locale;
+    return (
+      <a
+        href={href}
+        class:list={[
+          "transition-colors",
+          isActive ? "text-foreground font-medium" : "hover:text-foreground",
+        ]}
+        aria-current={isActive ? "true" : undefined}
+      >
+        {targetLocale.toUpperCase()}
+      </a>
+    );
+  })}
+</div>

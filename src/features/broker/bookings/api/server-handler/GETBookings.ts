@@ -7,14 +7,17 @@ import {
   mapErrorToStatus,
   safeErrorMessage,
 } from "@/features/broker/property/api/server-handler/responseHelpers";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import type { APIRoute } from "astro";
 import { and, desc, eq } from "drizzle-orm";
 
-export const GET: APIRoute = async ({ locals, url }) => {
+export const GET: APIRoute = async ({ request, locals, url }) => {
+  const locale = getRequestLocale(request);
   try {
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return jsonError("Database not available", 503);
+      return jsonError(t(locale, "error.dbNotAvailable"), 503);
     }
 
     const db = getDb(D1Database);
@@ -60,7 +63,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
   } catch (error) {
     console.error("Error listing bookings:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to list bookings"),
+      safeErrorMessage(error, t(locale, "error.failedToListBookings"), locale),
       mapErrorToStatus(error)
     );
   }

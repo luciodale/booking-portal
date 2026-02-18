@@ -3,6 +3,8 @@ import { pmsIntegrations } from "@/db/schema";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type { TGetIntegrationListingDetailResponse } from "@/features/broker/pms/api/types";
 import { fetchApartmentById } from "@/features/broker/pms/integrations/smoobu/server-service/GETApartmentById";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import {
   mapErrorToStatus,
   safeErrorMessage,
@@ -11,24 +13,25 @@ import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
-export const GET: APIRoute = async ({ params, locals }) => {
+export const GET: APIRoute = async ({ params, locals, request }) => {
   try {
+    const locale = getRequestLocale(request);
     const idParam = params?.id;
     const id = idParam ? Number(idParam) : Number.NaN;
     if (!Number.isInteger(id) || id < 1) {
-      return jsonError("Invalid listing id", 400);
+      return jsonError(t(locale, "error.invalidRequest"), 400);
     }
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return jsonError("Database not available", 503);
+      return jsonError(t(locale, "error.dbNotAvailable"), 503);
     }
 
     const db = getDb(D1Database);
     const ctx = await resolveBrokerContext(locals, db);
 
     if (!ctx.userId) {
-      return jsonError("Forbidden: No broker account", 403);
+      return jsonError(t(locale, "error.forbidden"), 403);
     }
 
     const [integration] = await db
@@ -38,7 +41,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       .limit(1);
 
     if (!integration || integration.provider !== "smoobu") {
-      return jsonError("No Smoobu integration found", 404);
+      return jsonError(t(locale, "error.noPmsIntegration"), 404);
     }
 
     const detail = await fetchApartmentById(integration.apiKey, id);
@@ -46,7 +49,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
   } catch (error) {
     console.error("Error fetching integration listing:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to fetch integration listing"),
+      safeErrorMessage(error, "Failed to fetch integration listing", locale),
       mapErrorToStatus(error)
     );
   }

@@ -1,4 +1,8 @@
 ---
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import { getDb } from "@/db";
 import { assets, images } from "@/db/schema";
 import PageLayout from "@/layouts/PageLayout.astro";
@@ -11,6 +15,7 @@ import { and, desc, eq } from "drizzle-orm";
 
 export const prerender = false;
 
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 const db = getDb(Astro.locals.runtime.env.DB);
 
 async function fetchProperties(tier: "elite" | "standard", limit: number) {
@@ -43,12 +48,12 @@ const [eliteProperties, standardProperties] = await Promise.all([
 ]);
 ---
 
-<PageLayout title="Home">
+<PageLayout title={t(locale, "home.pageTitle")}>
   <Hero
-    badge="Premium Collection"
-    title="Discover Extraordinary Places to Stay"
-    titleGradient="Extraordinary"
-    subtitle="Direct access to the world's most exclusive properties. No intermediaries, just you and your perfect escape."
+    badge={t(locale, "home.badge")}
+    title={t(locale, "home.title")}
+    titleGradient={t(locale, "home.titleGradient")}
+    subtitle={t(locale, "home.subtitle")}
     backgroundImage="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80"
   />
 
@@ -57,24 +62,24 @@ const [eliteProperties, standardProperties] = await Promise.all([
       <div class="flex items-center justify-between mb-12">
         <div>
           <Heading level={2}>
-            <span class="text-gradient">Elite</span> Collection
+            <span class="text-gradient">{t(locale, "home.eliteGradient")}</span> {t(locale, "home.eliteHeading", { gradient: "" }).trim()}
           </Heading>
           <p class="text-muted-foreground mt-2">
-            Curated luxury properties for the discerning traveler
+            {t(locale, "home.eliteDescription")}
           </p>
         </div>
         <a
-          href="/elite"
+          href={localePath(locale, "/elite")}
           class="hidden md:flex items-center gap-2 text-primary hover:text-primary-hover transition-colors group"
         >
-          View all
+          {t(locale, "common.viewAll")}
           <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
         </a>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {eliteProperties.map((property) => (
-          <PropertyCard {...property} />
+          <PropertyCard {...property} locale={locale} />
         ))}
       </div>
     </div>
@@ -84,23 +89,23 @@ const [eliteProperties, standardProperties] = await Promise.all([
     <div class="container mx-auto">
       <div class="flex items-center justify-between mb-12">
         <div>
-          <Heading level={2}>Standard Collection</Heading>
+          <Heading level={2}>{t(locale, "home.standardHeading")}</Heading>
           <p class="text-muted-foreground mt-2">
-            Quality stays at exceptional value
+            {t(locale, "home.standardDescription")}
           </p>
         </div>
         <a
-          href="/standard"
+          href={localePath(locale, "/standard")}
           class="hidden md:flex items-center gap-2 text-primary hover:text-primary-hover transition-colors group"
         >
-          View all
+          {t(locale, "common.viewAll")}
           <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
         </a>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {standardProperties.map((property) => (
-          <PropertyCard {...property} />
+          <PropertyCard {...property} locale={locale} />
         ))}
       </div>
     </div>
@@ -120,15 +125,14 @@ const [eliteProperties, standardProperties] = await Promise.all([
 
     <div class="container mx-auto relative z-10 text-center">
       <Heading level={2} class="mb-6">
-        Ready to list your <span class="text-gradient">property?</span>
+        {t(locale, "home.ctaHeading", { gradient: "" }).trim()} <span class="text-gradient">{t(locale, "home.ctaGradient")}</span>
       </Heading>
       <p class="text-lg text-muted-foreground max-w-xl mx-auto mb-10">
-        Join our network of elite property managers and reach high-net-worth
-        travelers directly.
+        {t(locale, "home.ctaDescription")}
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button href="/backoffice">Become a Host</Button>
-        <Button variant="secondary" href="/about">Learn More</Button>
+        <Button href={localePath(locale, "/backoffice")}>{t(locale, "home.becomeHost")}</Button>
+        <Button variant="secondary" href={localePath(locale, "/about")}>{t(locale, "home.learnMore")}</Button>
       </div>
     </div>
   </section>

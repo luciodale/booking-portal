@@ -10,6 +10,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig({
   output: "server",
+  i18n: {
+    defaultLocale: "en",
+    locales: ["en", "it"],
+    fallback: {
+      it: "en",
+    },
+    routing: {
+      prefixDefaultLocale: false,
+      fallbackType: "rewrite",
+    },
+  },
   integrations: [
     react(),
     clerk({

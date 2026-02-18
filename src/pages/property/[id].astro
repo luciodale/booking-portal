@@ -8,6 +8,10 @@ import {
   fetchLinkedExperiences,
   fetchOwnerWhatsapp,
 } from "@/features/public/browse/property-detail-queries";
+import { localePath } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { getFacilityIconName } from "@/modules/constants";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
@@ -23,6 +27,8 @@ export const prerender = false;
 
 const { id } = Astro.params;
 if (!id) return Astro.redirect("/");
+
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 
 const db = getDb(Astro.locals.runtime.env.DB);
 
@@ -80,9 +86,9 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
 >
   <section class="pt-8 px-6">
     <div class="container mx-auto">
-      <a href="/" class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+      <a href={localePath(locale, "/")} class="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
         <i data-lucide="chevron-left" class="w-5 h-5"></i>
-        Back to Properties
+        {t(locale, "property.backToProperties")}
       </a>
     </div>
   </section>
@@ -108,6 +114,7 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
         additionalCosts={asset.additionalCosts ?? null}
         extras={asset.extras ?? null}
         cityTax={cityTax}
+        locale={locale}
       />
     </div>
   </section>
@@ -133,28 +140,28 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
                 <i data-lucide="bed-double" class="w-6 h-6 text-primary"></i>
               </div>
               <div class="text-2xl font-bold text-foreground mb-1">{property.bedrooms}</div>
-              <div class="text-sm text-muted-foreground">Bedrooms</div>
+              <div class="text-sm text-muted-foreground">{t(locale, "property.bedrooms")}</div>
             </div>
             <div class="text-center">
               <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
                 <i data-lucide="bath" class="w-6 h-6 text-primary"></i>
               </div>
               <div class="text-2xl font-bold text-foreground mb-1">{property.bathrooms}</div>
-              <div class="text-sm text-muted-foreground">Bathrooms</div>
+              <div class="text-sm text-muted-foreground">{t(locale, "property.bathrooms")}</div>
             </div>
             <div class="text-center">
               <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
                 <i data-lucide="users" class="w-6 h-6 text-primary"></i>
               </div>
               <div class="text-2xl font-bold text-foreground mb-1">{property.maxGuests}</div>
-              <div class="text-sm text-muted-foreground">Guests</div>
+              <div class="text-sm text-muted-foreground">{t(locale, "property.guests")}</div>
             </div>
             <div class="text-center">
               <div class="flex items-center justify-center w-14 h-14 rounded-full bg-secondary mx-auto mb-4">
                 <i data-lucide="move" class="w-6 h-6 text-primary"></i>
               </div>
               <div class="text-2xl font-bold text-foreground mb-1">{property.sqMeters}</div>
-              <div class="text-sm text-muted-foreground">m²</div>
+              <div class="text-sm text-muted-foreground">{t(locale, "property.sqMeters")}</div>
             </div>
             {asset.checkIn && (
               <div class="text-center">
@@ -162,7 +169,7 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
                   <i data-lucide="clock" class="w-6 h-6 text-primary"></i>
                 </div>
                 <div class="text-2xl font-bold text-foreground mb-1">{asset.checkIn}</div>
-                <div class="text-sm text-muted-foreground">Check-in</div>
+                <div class="text-sm text-muted-foreground">{t(locale, "property.checkIn")}</div>
               </div>
             )}
             {asset.checkOut && (
@@ -171,13 +178,13 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
                   <i data-lucide="clock" class="w-6 h-6 text-primary"></i>
                 </div>
                 <div class="text-2xl font-bold text-foreground mb-1">{asset.checkOut}</div>
-                <div class="text-sm text-muted-foreground">Check-out</div>
+                <div class="text-sm text-muted-foreground">{t(locale, "property.checkOut")}</div>
               </div>
             )}
           </div>
 
           <div>
-            <h2 class="text-xl font-semibold text-foreground mb-4">About This Property</h2>
+            <h2 class="text-xl font-semibold text-foreground mb-4">{t(locale, "property.aboutThisProperty")}</h2>
             <div class="prose prose-invert max-w-none">
               {property.description.split("\n\n").map((paragraph) => (
                 <p class="text-muted-foreground leading-relaxed mb-4">{paragraph}</p>
@@ -188,7 +195,7 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
           <div class="divider-elegant"></div>
 
           <div>
-            <h2 class="text-xl font-semibold text-foreground mb-6">Amenities</h2>
+            <h2 class="text-xl font-semibold text-foreground mb-6">{t(locale, "property.amenities")}</h2>
             <div class="grid grid-cols-2 gap-4">
               {property.amenities.map((amenity) => (
                 <div class="flex items-center gap-4 px-4 py-3.5 bg-card rounded-xl border border-border/50">
@@ -204,7 +211,7 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
           <div class="divider-elegant"></div>
 
           <div>
-            <h2 class="text-xl font-semibold text-foreground mb-4">Views</h2>
+            <h2 class="text-xl font-semibold text-foreground mb-4">{t(locale, "property.views")}</h2>
             <div class="flex flex-wrap gap-3">
               {property.views.map((view) => (
                 <span class="amenity-chip">
@@ -219,7 +226,7 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
             <>
               <div class="divider-elegant"></div>
               <div>
-                <h2 class="text-xl font-semibold text-foreground mb-6">Highlights</h2>
+                <h2 class="text-xl font-semibold text-foreground mb-6">{t(locale, "property.highlights")}</h2>
                 <div class="grid grid-cols-2 gap-4">
                   {property.highlights.map((highlight) => (
                     <div class="flex items-center gap-4 px-4 py-3.5 bg-card rounded-xl border border-border/50">
@@ -254,6 +261,7 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
               additionalCosts={asset.additionalCosts ?? null}
               extras={asset.extras ?? null}
               cityTax={cityTax}
+              locale={locale}
             />
           </div>
         </div>
@@ -265,8 +273,8 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
     <section class="py-16 px-6 bg-card/50">
       <div class="container mx-auto">
         <div class="mb-8">
-          <h2 class="text-2xl font-bold text-foreground mb-2">Enhance Your Stay</h2>
-          <p class="text-muted-foreground">Exclusive experiences available with this property</p>
+          <h2 class="text-2xl font-bold text-foreground mb-2">{t(locale, "property.enhanceYourStay")}</h2>
+          <p class="text-muted-foreground">{t(locale, "property.enhanceDescription")}</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {linkedExperiences.map((exp) => (
@@ -275,6 +283,7 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
               propertyTitle={property.title}
               ownerWhatsapp={ownerWhatsapp}
               variant="standard"
+              locale={locale}
             />
           ))}
         </div>
@@ -284,7 +293,7 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
 
   <section class="py-16 px-6">
     <div class="container mx-auto">
-      <h2 class="text-2xl font-bold text-foreground mb-6">Location</h2>
+      <h2 class="text-2xl font-bold text-foreground mb-6">{t(locale, "property.location")}</h2>
       <p class="text-muted-foreground mb-6">{property.address}</p>
       {asset.latitude && asset.longitude ? (
         <PropertyMap latitude={asset.latitude} longitude={asset.longitude} />
@@ -292,7 +301,7 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
         <div class="aspect-[2/1] rounded-2xl bg-card border border-border flex items-center justify-center">
           <div class="text-center">
             <i data-lucide="map-pin" class="w-16 h-16 text-muted-foreground mx-auto mb-4"></i>
-            <p class="text-sm text-muted-foreground">Interactive map coming soon</p>
+            <p class="text-sm text-muted-foreground">{t(locale, "property.mapComingSoon")}</p>
           </div>
         </div>
       )}

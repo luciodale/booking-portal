@@ -1,4 +1,8 @@
 ---
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+
 type Extra = {
   name: string;
   icon: string;
@@ -10,9 +14,10 @@ type Extra = {
 interface Props {
   extras: Extra[];
   variant?: "standard" | "elite";
+  locale?: Locale;
 }
 
-const { extras, variant = "standard" } = Astro.props;
+const { extras, variant = "standard", locale = (Astro.currentLocale ?? defaultLocale) as Locale } = Astro.props;
 
 const isElite = variant === "elite";
 
@@ -21,10 +26,10 @@ function formatPrice(cents: number) {
 }
 
 const perLabels: Record<Extra["per"], string> = {
-  stay: "per stay",
-  night: "per night",
-  guest: "per guest",
-  night_per_guest: "per night/guest",
+  stay: t(locale, "property.perStay"),
+  night: t(locale, "property.perNight"),
+  guest: t(locale, "property.perGuest"),
+  night_per_guest: t(locale, "property.perNightGuest"),
 };
 ---
 

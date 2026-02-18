@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/types";
+import { t } from "@/i18n/t";
 import { formatPrice } from "@/features/public/booking/domain/dateUtils";
 import type {
   CityTax,
@@ -32,6 +34,7 @@ type BookingWidgetProps = {
   additionalCosts: PropertyAdditionalCost[] | null;
   extras: PropertyExtra[] | null;
   cityTax: CityTax | null;
+  locale?: Locale;
 };
 
 export function BookingWidget(props: BookingWidgetProps) {
@@ -52,6 +55,7 @@ function BookingWidgetInner({
   additionalCosts,
   extras,
   cityTax,
+  locale = "en",
 }: BookingWidgetProps) {
   const isMobile = useIsMobile();
   const calendar = useBookingCalendar(propertyId, smoobuPropertyId);
@@ -105,10 +109,10 @@ function BookingWidgetInner({
     return (
       <div className="p-7 rounded-2xl bg-card border border-border space-y-4">
         <h3 className="text-sm font-semibold text-foreground">
-          Interested in this property?
+          {t(locale, "booking.interestedInProperty")}
         </h3>
         <p className="text-sm text-muted-foreground">
-          Contact us for availability and pricing
+          {t(locale, "booking.contactForAvailability")}
         </p>
         <button
           type="button"
@@ -127,7 +131,7 @@ function BookingWidgetInner({
           >
             <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
           </svg>
-          Contact
+          {t(locale, "common.contact")}
         </button>
       </div>
     );
@@ -192,7 +196,7 @@ function BookingWidgetInner({
           <>
             <div className="border-t border-border" />
             <h3 className="text-sm font-semibold text-foreground">
-              Optional Extras
+              {t(locale, "booking.optionalExtras")}
             </h3>
             <div className="space-y-2">
               {extras.map((extra, index) => {
@@ -202,10 +206,10 @@ function BookingWidgetInner({
                   extra.per === "stay"
                     ? ""
                     : extra.per === "night"
-                      ? "/night"
+                      ? t(locale, "booking.perNight")
                       : extra.per === "guest"
-                        ? "/guest"
-                        : "/night/guest";
+                        ? t(locale, "booking.perGuest")
+                        : t(locale, "booking.perNightGuest");
                 return (
                   <button
                     key={extra.name}
@@ -264,7 +268,7 @@ function BookingWidgetInner({
           <>
             <div className="border-t border-border" />
             <h3 className="text-sm font-semibold text-foreground">
-              Guest Information
+              {t(locale, "booking.guestInformation")}
             </h3>
             <BookingForm
               maxGuests={maxGuests}
@@ -295,7 +299,7 @@ function BookingWidgetInner({
           >
             <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
           </svg>
-          Contact Host
+          {t(locale, "common.contactHost")}
         </button>
       </div>
     </div>

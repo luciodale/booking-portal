@@ -3,6 +3,8 @@ import { assets, images } from "@/db/schema";
 import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import { displayToKebab } from "@/features/broker/property/domain/sync-features";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import type { PropertyWithDetails } from "@/schemas/property";
 import { updatePropertySchema } from "@/schemas/property";
 import type { APIRoute } from "astro";
@@ -16,21 +18,22 @@ import {
 
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
   try {
+    const locale = getRequestLocale(request);
     const { id } = params;
     if (!id) {
-      return jsonError("Property ID required", 400);
+      return jsonError(t(locale, "error.missingPropertyId"), 400);
     }
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return jsonError("Database not available", 503);
+      return jsonError(t(locale, "error.dbNotAvailable"), 503);
     }
 
     const db = getDb(D1Database);
     const ctx = await resolveBrokerContext(locals, db);
 
     if (!ctx.userId) {
-      return jsonError("Forbidden: No broker account", 403);
+      return jsonError(t(locale, "error.forbidden"), 403);
     }
 
     const [existing] = await db
@@ -40,7 +43,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       .limit(1);
 
     if (!existing) {
-      return jsonError("Property not found", 404);
+      return jsonError(t(locale, "error.propertyNotFound"), 404);
     }
 
     assertBrokerOwnership(existing, ctx);
@@ -49,7 +52,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     const validationResult = updatePropertySchema.safeParse(body);
 
     if (!validationResult.success) {
-      return jsonError("Validation failed", 400, validationResult.error.issues);
+      return jsonError(t(locale, "error.invalidRequest"), 400, validationResult.error.issues);
     }
 
     const data = validationResult.data;
@@ -84,7 +87,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   } catch (error) {
     console.error("Error updating property:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to update property"),
+      safeErrorMessage(error, "Failed to update property", locale),
       mapErrorToStatus(error)
     );
   }

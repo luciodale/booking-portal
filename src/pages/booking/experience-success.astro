@@ -1,11 +1,17 @@
 ---
 import { getDb } from "@/db";
 import { experienceBookings, experiences } from "@/db/schema";
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Header from "@/modules/ui/astro/Header.astro";
 import { eq } from "drizzle-orm";
 
 export const prerender = false;
+
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 
 const sessionId = Astro.url.searchParams.get("session_id");
 
@@ -35,7 +41,7 @@ if (sessionId) {
 }
 ---
 
-<BaseLayout title="Booking Confirmed">
+<BaseLayout title={t(locale, "bookings.bookingConfirmed")}>
   <Header />
   <main class="min-h-content-fit flex items-center justify-center px-6 py-16">
     <div class="w-full max-w-md">
@@ -48,26 +54,26 @@ if (sessionId) {
           </div>
 
           <div>
-            <h1 class="text-2xl font-bold text-foreground mb-2">Booking Confirmed</h1>
-            <p class="text-muted-foreground">Your experience has been booked.</p>
+            <h1 class="text-2xl font-bold text-foreground mb-2">{t(locale, "bookings.bookingConfirmed")}</h1>
+            <p class="text-muted-foreground">{t(locale, "bookings.experienceBooked")}</p>
           </div>
 
           <div class="space-y-3 text-left p-4 rounded-xl bg-background border border-border">
             <div class="flex justify-between text-sm">
-              <span class="text-muted-foreground">Experience</span>
+              <span class="text-muted-foreground">{t(locale, "bookings.experience")}</span>
               <span class="text-foreground font-medium">{experienceTitle}</span>
             </div>
             <div class="flex justify-between text-sm">
-              <span class="text-muted-foreground">Date</span>
+              <span class="text-muted-foreground">{t(locale, "bookings.date")}</span>
               <span class="text-foreground font-medium">{booking.bookingDate}</span>
             </div>
             <div class="flex justify-between text-sm">
-              <span class="text-muted-foreground">Participants</span>
+              <span class="text-muted-foreground">{t(locale, "bookings.participants")}</span>
               <span class="text-foreground font-medium">{booking.participants}</span>
             </div>
             <div class="border-t border-border my-2" />
             <div class="flex justify-between text-sm">
-              <span class="text-muted-foreground">Total</span>
+              <span class="text-muted-foreground">{t(locale, "bookings.total")}</span>
               <span class="text-foreground font-bold">
                 {(booking.totalPrice / 100).toFixed(2)} {booking.currency.toUpperCase()}
               </span>
@@ -76,30 +82,30 @@ if (sessionId) {
 
           <div class="flex flex-col gap-3">
             <a
-              href="/experiences"
+              href={localePath(locale, "/experiences")}
               class="w-full py-3 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors text-center"
             >
-              Browse More Experiences
+              {t(locale, "bookings.browseMoreExperiences")}
             </a>
             <a
-              href="/"
+              href={localePath(locale, "/")}
               class="text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              Back to Home
+              {t(locale, "common.backToHome")}
             </a>
           </div>
         </div>
       ) : (
         <div class="p-8 rounded-2xl bg-card border border-border text-center space-y-4">
-          <h1 class="text-xl font-bold text-foreground">Booking Not Found</h1>
+          <h1 class="text-xl font-bold text-foreground">{t(locale, "bookings.bookingNotFound")}</h1>
           <p class="text-muted-foreground text-sm">
-            We couldn't find a booking for this session. If you just completed payment, it may take a moment to process.
+            {t(locale, "bookings.bookingNotFoundDesc")}
           </p>
           <a
-            href="/"
+            href={localePath(locale, "/")}
             class="inline-block py-2 px-6 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
           >
-            Go Home
+            {t(locale, "bookings.goHome")}
           </a>
         </div>
       )}

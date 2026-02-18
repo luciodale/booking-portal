@@ -3,10 +3,13 @@ import { assets, pmsIntegrations } from "@/db/schema";
 import { fetchApartmentById } from "@/features/broker/pms/integrations/smoobu/server-service/GETApartmentById";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 
-export const GET: APIRoute = async ({ params, locals, url }) => {
+export const GET: APIRoute = async ({ params, request, locals, url }) => {
+  const locale = getRequestLocale(request);
   try {
     const { id } = params;
     const startDate = url.searchParams.get("startDate");
@@ -15,7 +18,7 @@ export const GET: APIRoute = async ({ params, locals, url }) => {
     if (!id || !startDate || !endDate) {
       return new Response(
         JSON.stringify({
-          error: "Missing required params: id, startDate, endDate",
+          error: t(locale, "error.missingRequiredParams"),
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
@@ -23,7 +26,7 @@ export const GET: APIRoute = async ({ params, locals, url }) => {
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return new Response(JSON.stringify({ error: "Database not available" }), {
+      return new Response(JSON.stringify({ error: t(locale, "error.dbNotAvailable") }), {
         status: 503,
         headers: { "Content-Type": "application/json" },
       });
@@ -39,7 +42,7 @@ export const GET: APIRoute = async ({ params, locals, url }) => {
 
     if (!asset || !asset.smoobuPropertyId) {
       return new Response(
-        JSON.stringify({ error: "Property not found or not linked to Smoobu" }),
+        JSON.stringify({ error: t(locale, "error.propertyNotFound") }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -52,7 +55,7 @@ export const GET: APIRoute = async ({ params, locals, url }) => {
 
     if (!integration || integration.provider !== "smoobu") {
       return new Response(
-        JSON.stringify({ error: "No Smoobu integration found" }),
+        JSON.stringify({ error: t(locale, "error.noPmsIntegration") }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -75,7 +78,7 @@ export const GET: APIRoute = async ({ params, locals, url }) => {
     console.error("Error fetching rates:", error);
     return new Response(
       JSON.stringify({
-        error: safeErrorMessage(error, "Failed to fetch rates"),
+        error: safeErrorMessage(error, t(locale, "error.failedToFetchRates"), locale),
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

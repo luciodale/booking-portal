@@ -2,6 +2,8 @@ import { getDb } from "@/db";
 import { assets } from "@/db/schema";
 import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import {
@@ -11,23 +13,24 @@ import {
   safeErrorMessage,
 } from "./responseHelpers";
 
-export const DELETE: APIRoute = async ({ params, locals }) => {
+export const DELETE: APIRoute = async ({ params, locals, request }) => {
   try {
+    const locale = getRequestLocale(request);
     const { id } = params;
     if (!id) {
-      return jsonError("Property ID required", 400);
+      return jsonError(t(locale, "error.missingPropertyId"), 400);
     }
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return jsonError("Database not available", 503);
+      return jsonError(t(locale, "error.dbNotAvailable"), 503);
     }
 
     const db = getDb(D1Database);
     const ctx = await resolveBrokerContext(locals, db);
 
     if (!ctx.userId) {
-      return jsonError("Forbidden: No broker account", 403);
+      return jsonError(t(locale, "error.forbidden"), 403);
     }
 
     const [existing] = await db
@@ -37,7 +40,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       .limit(1);
 
     if (!existing) {
-      return jsonError("Property not found", 404);
+      return jsonError(t(locale, "error.propertyNotFound"), 404);
     }
 
     assertBrokerOwnership(existing, ctx);
@@ -54,7 +57,7 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
   } catch (error) {
     console.error("Error deleting property:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to archive property"),
+      safeErrorMessage(error, "Failed to archive property", locale),
       mapErrorToStatus(error)
     );
   }

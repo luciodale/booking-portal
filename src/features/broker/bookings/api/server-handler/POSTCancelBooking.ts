@@ -7,17 +7,20 @@ import {
   mapErrorToStatus,
   safeErrorMessage,
 } from "@/features/broker/property/api/server-handler/responseHelpers";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
-export const POST: APIRoute = async ({ params, locals }) => {
+export const POST: APIRoute = async ({ params, request, locals }) => {
+  const locale = getRequestLocale(request);
   const D1Database = locals.runtime?.env?.DB;
   const stripeKey = locals.runtime?.env?.STRIPE_SECRET_KEY;
 
   if (!D1Database) {
-    return jsonError("Database not available", 503);
+    return jsonError(t(locale, "error.dbNotAvailable"), 503);
   }
 
   const log = createEventLogger(D1Database);
@@ -28,7 +31,7 @@ export const POST: APIRoute = async ({ params, locals }) => {
     const bookingId = params.id;
 
     if (!bookingId) {
-      return jsonError("Missing booking ID", 400);
+      return jsonError(t(locale, "error.missingBookingId"), 400);
     }
 
     // Fetch booking with asset ownership check
@@ -47,17 +50,17 @@ export const POST: APIRoute = async ({ params, locals }) => {
       .limit(1);
 
     if (!booking) {
-      return jsonError("Booking not found", 404);
+      return jsonError(t(locale, "error.bookingNotFound"), 404);
     }
 
     // Ownership check
     if (!ctx.isAdmin && booking.assetUserId !== ctx.userId) {
-      return jsonError("Forbidden: Not your property", 403);
+      return jsonError(t(locale, "error.forbiddenNotYourProperty"), 403);
     }
 
     if (booking.status !== "confirmed") {
       return jsonError(
-        `Cannot cancel booking with status "${booking.status}"`,
+        t(locale, "error.cannotCancelBooking", { status: booking.status }),
         400
       );
     }
@@ -65,7 +68,7 @@ export const POST: APIRoute = async ({ params, locals }) => {
     // Stripe refund
     if (!import.meta.env.DEV) {
       if (!stripeKey) {
-        return jsonError("Stripe not configured", 503);
+        return jsonError(t(locale, "error.stripeNotConfigured"), 503);
       }
 
       if (booking.stripePaymentIntentId) {
@@ -145,7 +148,7 @@ export const POST: APIRoute = async ({ params, locals }) => {
   } catch (error) {
     console.error("Error cancelling booking:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to cancel booking"),
+      safeErrorMessage(error, t(locale, "error.failedToCancelBooking"), locale),
       mapErrorToStatus(error)
     );
   }

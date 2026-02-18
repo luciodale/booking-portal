@@ -1,33 +1,36 @@
 ---
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import PageLayout from "@/layouts/PageLayout.astro";
 import Button from "@/modules/ui/astro/Button.astro";
 import Heading from "@/modules/ui/astro/Heading.astro";
 import Hero from "@/modules/ui/astro/Hero.astro";
 
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
+
 const stats = [
-  { value: "500+", label: "Premium Properties" },
-  { value: "45", label: "Countries" },
-  { value: "98%", label: "Guest Satisfaction" },
-  { value: "€50M+", label: "Bookings Managed" },
+  { value: t(locale, "about.stat1Value"), label: t(locale, "about.stat1Label") },
+  { value: t(locale, "about.stat2Value"), label: t(locale, "about.stat2Label") },
+  { value: t(locale, "about.stat3Value"), label: t(locale, "about.stat3Label") },
+  { value: t(locale, "about.stat4Value"), label: t(locale, "about.stat4Label") },
 ];
 
 const values = [
   {
-    title: "Direct Relationships",
-    description:
-      "We connect you directly with property owners and managers, eliminating unnecessary intermediaries and fees.",
+    title: t(locale, "about.value1Title"),
+    description: t(locale, "about.value1Description"),
     icon: "users-2",
   },
   {
-    title: "Curated Excellence",
-    description:
-      "Every property in our Elite collection is personally vetted to meet our exacting standards for luxury and service.",
+    title: t(locale, "about.value2Title"),
+    description: t(locale, "about.value2Description"),
     icon: "badge-check",
   },
   {
-    title: "Personalized Service",
-    description:
-      "Our concierge team is available around the clock to ensure every aspect of your stay exceeds expectations.",
+    title: t(locale, "about.value3Title"),
+    description: t(locale, "about.value3Description"),
     icon: "heart",
   },
 ];
@@ -35,19 +38,19 @@ const values = [
 const team = [
   {
     name: "Alessandro Romano",
-    role: "Founder & CEO",
+    role: t(locale, "about.teamRole1"),
     imageUrl:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&q=80",
   },
   {
     name: "Sofia Laurent",
-    role: "Head of Curation",
+    role: t(locale, "about.teamRole2"),
     imageUrl:
       "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&q=80",
   },
   {
     name: "Marcus Chen",
-    role: "Chief Technology Officer",
+    role: t(locale, "about.teamRole3"),
     imageUrl:
       "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&q=80",
   },
@@ -55,16 +58,16 @@ const team = [
 ---
 
 <PageLayout
-  title="About"
-  description="Learn about EliteStay's mission to revolutionize luxury travel."
+  title={t(locale, "about.pageTitle")}
+  description={t(locale, "about.description")}
   showMarble
 >
   <!-- Hero -->
   <Hero
-    badge="Our Story"
-    title="Redefining Luxury Travel"
-    titleGradient="Luxury"
-    subtitle="We believe extraordinary stays should come with direct relationships, transparent pricing, and uncompromising service."
+    badge={t(locale, "about.badge")}
+    title={t(locale, "about.title")}
+    titleGradient={t(locale, "about.titleGradient")}
+    subtitle={t(locale, "about.subtitle")}
     height="medium"
   />
 
@@ -90,22 +93,16 @@ const team = [
   <section class="py-20 px-6">
     <div class="container mx-auto max-w-4xl">
       <Heading level={2} class="text-center mb-8">
-        Our <span class="text-gradient">Mission</span>
+        {t(locale, "about.missionHeading", { gradient: "" }).trim()} <span class="text-gradient">{t(locale, "about.missionGradient")}</span>
       </Heading>
       <div
         class="text-lg text-muted-foreground leading-relaxed space-y-6 text-center"
       >
         <p>
-          EliteStay was born from a simple frustration: why do luxury travelers
-          pay premium fees to intermediaries who add little value? We set out to
-          build something different—a platform that connects discerning guests
-          directly with exceptional property managers.
+          {t(locale, "about.missionParagraph1")}
         </p>
         <p>
-          Every property in our collection has been personally inspected. Every
-          host has been vetted for their commitment to excellence. The result is
-          a curated portfolio of extraordinary places to stay, from cliff-side
-          Mediterranean villas to alpine chalets.
+          {t(locale, "about.missionParagraph2")}
         </p>
       </div>
     </div>
@@ -115,7 +112,7 @@ const team = [
   <section class="py-20 px-6 bg-card">
     <div class="container mx-auto">
       <Heading level={2} class="text-center mb-16">
-        What Sets Us Apart
+        {t(locale, "about.valuesHeading")}
       </Heading>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -137,10 +134,9 @@ const team = [
   <!-- Team -->
   <section class="py-20 px-6">
     <div class="container mx-auto">
-      <Heading level={2} class="text-center mb-4"> Leadership Team </Heading>
+      <Heading level={2} class="text-center mb-4"> {t(locale, "about.teamHeading")} </Heading>
       <p class="text-muted-foreground text-center mb-16 max-w-2xl mx-auto">
-        A team of travel enthusiasts, hospitality experts, and technology
-        innovators united by a passion for extraordinary experiences.
+        {t(locale, "about.teamDescription")}
       </p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
@@ -169,15 +165,14 @@ const team = [
   <section class="py-20 px-6 bg-card">
     <div class="container mx-auto text-center max-w-2xl">
       <Heading level={2} class="mb-4">
-        Join the <span class="text-gradient">EliteStay</span> Community
+        {t(locale, "about.ctaHeading", { gradient: "" }).trim()} <span class="text-gradient">{t(locale, "about.ctaGradient")}</span>
       </Heading>
       <p class="text-muted-foreground mb-8">
-        Whether you're a traveler seeking extraordinary stays or a property
-        owner with something special to share.
+        {t(locale, "about.ctaDescription")}
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <Button href="/elite">Explore Properties</Button>
-        <Button variant="secondary" href="/host">List Your Property</Button>
+        <Button href={localePath(locale, "/elite")}>{t(locale, "about.exploreProperties")}</Button>
+        <Button variant="secondary" href={localePath(locale, "/host")}>{t(locale, "about.listYourProperty")}</Button>
       </div>
     </div>
   </section>

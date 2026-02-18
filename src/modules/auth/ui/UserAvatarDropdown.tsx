@@ -1,3 +1,6 @@
+import type { Locale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import { $userStore } from "@clerk/astro/client";
 import { useAuth } from "@clerk/astro/react";
 import {
@@ -66,7 +69,11 @@ function useUserAvatarDropdown() {
   };
 }
 
-export function UserAvatarDropdown() {
+type UserAvatarDropdownProps = {
+  locale?: Locale;
+};
+
+export function UserAvatarDropdown({ locale = "en" }: UserAvatarDropdownProps) {
   const hydrated = useHydrated();
   const {
     user,
@@ -123,17 +130,17 @@ export function UserAvatarDropdown() {
           </div>
 
           <a
-            href="/bookings"
+            href={localePath(locale, "/bookings")}
             className="flex items-center gap-2 px-3 py-2 text-sm text-foreground rounded-lg hover:bg-secondary transition-colors"
           >
-            My Bookings
+            {t(locale, "auth.myBookings")}
           </a>
 
           <a
-            href="/backoffice"
+            href={localePath(locale, "/backoffice")}
             className="flex items-center gap-2 px-3 py-2 text-sm text-foreground rounded-lg hover:bg-secondary transition-colors"
           >
-            Backoffice
+            {t(locale, "auth.backoffice")}
           </a>
 
           <button
@@ -141,7 +148,7 @@ export function UserAvatarDropdown() {
             onClick={handleSignOut}
             className="flex items-center gap-2 w-full px-3 py-2 text-sm text-error rounded-lg hover:bg-secondary transition-colors text-left"
           >
-            Sign Out
+            {t(locale, "auth.signOut")}
           </button>
         </div>
       )}

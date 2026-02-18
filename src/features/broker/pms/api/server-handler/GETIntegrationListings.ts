@@ -3,6 +3,8 @@ import { assets, pmsIntegrations } from "@/db/schema";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type { TGetIntegrationListingsResponse } from "@/features/broker/pms/api/types";
 import { fetchListApartments } from "@/features/broker/pms/integrations/smoobu/server-service/GETListApartments";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import {
   mapErrorToStatus,
   safeErrorMessage,
@@ -11,18 +13,19 @@ import type { APIRoute } from "astro";
 import { eq, isNotNull } from "drizzle-orm";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
-export const GET: APIRoute = async ({ locals }) => {
+export const GET: APIRoute = async ({ locals, request }) => {
   try {
+    const locale = getRequestLocale(request);
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return jsonError("Database not available", 503);
+      return jsonError(t(locale, "error.dbNotAvailable"), 503);
     }
 
     const db = getDb(D1Database);
     const ctx = await resolveBrokerContext(locals, db);
 
     if (!ctx.userId) {
-      return jsonError("Forbidden: No broker account", 403);
+      return jsonError(t(locale, "error.forbidden"), 403);
     }
 
     const [integration] = await db
@@ -58,7 +61,7 @@ export const GET: APIRoute = async ({ locals }) => {
   } catch (error) {
     console.error("Error listing integration properties:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to list integration properties"),
+      safeErrorMessage(error, "Failed to list integration properties", locale),
       mapErrorToStatus(error)
     );
   }

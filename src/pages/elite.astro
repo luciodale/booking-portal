@@ -4,12 +4,17 @@ import {
   fetchCityCards,
   fetchPropertiesByCity,
 } from "@/features/public/browse/queries";
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import PageLayout from "@/layouts/PageLayout.astro";
 import Hero from "@/modules/ui/astro/Hero.astro";
 import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
 
 export const prerender = false;
 
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 const db = getDb(Astro.locals.runtime.env.DB);
 const cityParam = Astro.url.searchParams.get("city");
 const currentPage = Math.max(1, Number(Astro.url.searchParams.get("page") || "1"));
@@ -21,15 +26,15 @@ const { properties, totalCount, totalPages } = cityParam
 ---
 
 <PageLayout
-  title={cityParam ? `Elite in ${cityParam}` : "Elite Collection"}
-  description="Discover our curated selection of the world's most extraordinary luxury properties."
+  title={cityParam ? t(locale, "elite.cityTitle", { city: cityParam }) : t(locale, "elite.pageTitle")}
+  description={t(locale, "elite.description")}
   showMarble
 >
   <Hero
-    badge="Curated Excellence"
-    title="Elite Collection"
-    titleGradient="Elite"
-    subtitle="A handpicked selection of the world's most extraordinary properties. Each residence meets our rigorous standards for luxury, location, and exceptional service."
+    badge={t(locale, "elite.badge")}
+    title={t(locale, "elite.title")}
+    titleGradient={t(locale, "elite.titleGradient")}
+    subtitle={t(locale, "elite.subtitle")}
     cityName={cityParam}
     height="medium"
   />
@@ -41,7 +46,7 @@ const { properties, totalCount, totalPages } = cityParam
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {cityCards.map((card, index) => (
               <a
-                href={`/elite?city=${encodeURIComponent(card.city)}`}
+                href={`${localePath(locale, "/elite")}?city=${encodeURIComponent(card.city)}`}
                 class="group relative block rounded-2xl overflow-hidden aspect-4/3 card-hover"
                 style={`animation-delay: ${0.1 + index * 0.1}s`}
               >
@@ -55,7 +60,7 @@ const { properties, totalCount, totalPages } = cityParam
                 <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
                   <h3 class="text-3xl md:text-4xl font-bold text-white">{card.city}</h3>
                   <p class="text-white/70 text-lg mt-1">
-                    {card.count} {card.count === 1 ? "property" : "properties"}
+                    {card.count} {card.count === 1 ? t(locale, "common.property") : t(locale, "common.properties")}
                   </p>
                 </div>
               </a>
@@ -68,16 +73,16 @@ const { properties, totalCount, totalPages } = cityParam
         <div class="container mx-auto">
           <div class="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
             <a
-              href="/elite"
+              href={localePath(locale, "/elite")}
               class="hover:text-foreground transition-colors flex items-center gap-1"
             >
               <i data-lucide="arrow-left" class="w-4 h-4" />
-              All cities
+              {t(locale, "common.allCities")}
             </a>
             <span>/</span>
             <span class="text-foreground">{cityParam}</span>
             <span class="ml-auto">
-              {totalCount} {totalCount === 1 ? "property" : "properties"}
+              {totalCount} {totalCount === 1 ? t(locale, "common.property") : t(locale, "common.properties")}
             </span>
           </div>
 
@@ -87,7 +92,7 @@ const { properties, totalCount, totalPages } = cityParam
                 class="animate-slide-up opacity-0"
                 style={`animation-delay: ${0.1 + index * 0.1}s`}
               >
-                <PropertyCard {...property} target="_blank" />
+                <PropertyCard {...property} target="_blank" locale={locale} />
               </div>
             ))}
           </div>
@@ -96,16 +101,16 @@ const { properties, totalCount, totalPages } = cityParam
             <nav class="mt-12 flex justify-center items-center gap-2">
               {currentPage > 1 && (
                 <a
-                  href={`/elite?city=${encodeURIComponent(cityParam)}&page=${currentPage - 1}`}
+                  href={`${localePath(locale, "/elite")}?city=${encodeURIComponent(cityParam)}&page=${currentPage - 1}`}
                   class="px-4 py-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors text-sm"
                 >
-                  Previous
+                  {t(locale, "common.previous")}
                 </a>
               )}
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                 (page) => (
                   <a
-                    href={`/elite?city=${encodeURIComponent(cityParam)}&page=${page}`}
+                    href={`${localePath(locale, "/elite")}?city=${encodeURIComponent(cityParam)}&page=${page}`}
                     class:list={[
                       "px-4 py-2 rounded-lg text-sm transition-colors",
                       page === currentPage
@@ -119,10 +124,10 @@ const { properties, totalCount, totalPages } = cityParam
               )}
               {currentPage < totalPages && (
                 <a
-                  href={`/elite?city=${encodeURIComponent(cityParam)}&page=${currentPage + 1}`}
+                  href={`${localePath(locale, "/elite")}?city=${encodeURIComponent(cityParam)}&page=${currentPage + 1}`}
                   class="px-4 py-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors text-sm"
                 >
-                  Next
+                  {t(locale, "common.next")}
                 </a>
               )}
             </nav>

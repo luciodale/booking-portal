@@ -1,0 +1,43 @@
+export const errors = {
+  "error.dbNotAvailable": "Database not available",
+  "error.stripeNotConfigured": "Stripe not configured",
+  "error.invalidRequest": "Invalid request",
+  "error.propertyNotFound": "Property not found or not linked to PMS",
+  "error.noPmsIntegration": "No PMS integration found",
+  "error.minStay":
+    "Minimum stay is {nights} nights for the selected dates",
+  "error.propertyNotAvailable":
+    "Property is no longer available for these dates",
+  "error.unableToComputePrice": "Unable to compute price for this stay",
+  "error.priceChanged":
+    "Price has changed. Please refresh and try again.",
+  "error.cityTaxChanged":
+    "City tax has changed. Please refresh and try again.",
+  "error.mockWebhookFailed": "Mock webhook failed",
+  "error.signInRequired": "Sign in required",
+  "error.checkoutFailed": "Checkout failed",
+  "error.experienceNotFound": "Experience not found",
+  "error.experienceNotBookable":
+    "This experience does not support online booking",
+  "error.maxParticipants": "Maximum {count} participants allowed",
+  "error.failedToFetchBookings": "Failed to fetch bookings",
+  "error.recordAlreadyExists": "This record already exists",
+  "error.requiredFieldMissing": "A required field is missing",
+  "error.nightPriceMismatch":
+    "Expected {expected} night prices, received {received}",
+  "error.unauthorized": "Unauthorized",
+  "error.forbidden": "Forbidden",
+  "error.missingPropertyId": "Missing property ID",
+  "error.missingRequiredFields": "Missing required fields",
+  "error.missingRequiredParams": "Missing required parameters",
+  "error.smoobuNotConfigured": "Smoobu user ID not configured",
+  "error.failedToCheckAvailability": "Failed to check availability",
+  "error.failedToFetchProperty": "Failed to fetch property",
+  "error.failedToFetchRates": "Failed to fetch rates",
+  "error.missingBookingId": "Missing booking ID",
+  "error.bookingNotFound": "Booking not found",
+  "error.forbiddenNotYourProperty": "Forbidden: Not your property",
+  "error.cannotCancelBooking": "Cannot cancel booking with status \"{status}\"",
+  "error.failedToCancelBooking": "Failed to cancel booking",
+  "error.failedToListBookings": "Failed to list bookings",
+} as const;

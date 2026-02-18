@@ -1,6 +1,8 @@
 import { getDb } from "@/db";
 import { pmsIntegrations } from "@/db/schema";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import {
   mapErrorToStatus,
   safeErrorMessage,
@@ -10,18 +12,19 @@ import { eq } from "drizzle-orm";
 import type { TGetIntegrationsResponse } from "../types";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
-export const GET: APIRoute = async ({ locals }) => {
+export const GET: APIRoute = async ({ locals, request }) => {
   try {
+    const locale = getRequestLocale(request);
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return jsonError("Database not available", 503);
+      return jsonError(t(locale, "error.dbNotAvailable"), 503);
     }
 
     const db = getDb(D1Database);
     const ctx = await resolveBrokerContext(locals, db);
 
     if (!ctx.userId) {
-      return jsonError("Forbidden: No broker account", 403);
+      return jsonError(t(locale, "error.forbidden"), 403);
     }
 
     const [integration] = await db
@@ -42,7 +45,7 @@ export const GET: APIRoute = async ({ locals }) => {
   } catch (error) {
     console.error("Error checking integration:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to check integration"),
+      safeErrorMessage(error, "Failed to check integration", locale),
       mapErrorToStatus(error)
     );
   }

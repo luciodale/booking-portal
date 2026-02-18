@@ -1,26 +1,26 @@
 import { getDb } from "@/db";
 import { assets, pmsIntegrations } from "@/db/schema";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { jsonError, jsonSuccess, safeErrorMessage } from "./responseHelpers";
 
-export const GET: APIRoute = async ({ locals, url }) => {
+export const GET: APIRoute = async ({ locals, url, request }) => {
   try {
+    const locale = getRequestLocale(request);
     const smoobuPropertyId = url.searchParams.get("smoobuPropertyId");
     const startDate = url.searchParams.get("startDate");
     const endDate = url.searchParams.get("endDate");
 
     if (!smoobuPropertyId || !startDate || !endDate) {
-      return jsonError(
-        "Missing required parameters: smoobuPropertyId, startDate, endDate",
-        400
-      );
+      return jsonError(t(locale, "error.missingRequiredParams"), 400);
     }
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return jsonError("Database not available", 503);
+      return jsonError(t(locale, "error.dbNotAvailable"), 503);
     }
 
     const db = getDb(D1Database);
@@ -32,7 +32,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
       .limit(1);
 
     if (!asset) {
-      return jsonError("No property found for this Smoobu property ID", 404);
+      return jsonError(t(locale, "error.propertyNotFound"), 404);
     }
 
     const [integration] = await db
@@ -42,7 +42,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
       .limit(1);
 
     if (!integration || integration.provider !== "smoobu") {
-      return jsonError("No Smoobu integration found", 404);
+      return jsonError(t(locale, "error.noPmsIntegration"), 404);
     }
 
     const rates = await fetchSmoobuRates(
@@ -56,7 +56,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
   } catch (error) {
     console.error("Error fetching Smoobu rates:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to fetch rates")
+      safeErrorMessage(error, t(locale, "error.failedToFetchRates"), locale)
     );
   }
 };

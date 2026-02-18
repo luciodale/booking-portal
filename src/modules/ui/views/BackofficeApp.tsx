@@ -1,3 +1,5 @@
+import type { Locale } from "@/i18n/types";
+import { LocaleProvider } from "@/i18n/react/LocaleProvider";
 import { eventsRoute } from "@/features/admin/events/routes/events";
 import { bookingsRoute } from "@/features/broker/bookings/routes/bookings";
 import { experiencesRoute } from "@/features/broker/experience/routes/experiences";
@@ -35,10 +37,16 @@ declare module "@tanstack/react-router" {
   }
 }
 
-export default function BackofficeApp() {
+type BackofficeAppProps = {
+  locale?: Locale;
+};
+
+export default function BackofficeApp({ locale = "en" }: BackofficeAppProps) {
   return (
-    <ClerkProviderWrapper>
-      <RouterProvider router={router} />
+    <ClerkProviderWrapper locale={locale}>
+      <LocaleProvider locale={locale}>
+        <RouterProvider router={router} />
+      </LocaleProvider>
     </ClerkProviderWrapper>
   );
 }

@@ -2,14 +2,17 @@ import { getDb } from "@/db";
 import { assets, pmsIntegrations } from "@/db/schema";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
 import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 
 export const POST: APIRoute = async ({ params, request, locals }) => {
+  const locale = getRequestLocale(request);
   try {
     const { id } = params;
     if (!id) {
-      return new Response(JSON.stringify({ error: "Missing property ID" }), {
+      return new Response(JSON.stringify({ error: t(locale, "error.missingPropertyId") }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
@@ -25,7 +28,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     if (!arrivalDate || !departureDate) {
       return new Response(
         JSON.stringify({
-          error: "Missing required fields: arrivalDate, departureDate",
+          error: t(locale, "error.missingRequiredFields"),
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
@@ -33,7 +36,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return new Response(JSON.stringify({ error: "Database not available" }), {
+      return new Response(JSON.stringify({ error: t(locale, "error.dbNotAvailable") }), {
         status: 503,
         headers: { "Content-Type": "application/json" },
       });
@@ -49,7 +52,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
     if (!asset || !asset.smoobuPropertyId) {
       return new Response(
-        JSON.stringify({ error: "Property not found or not linked to Smoobu" }),
+        JSON.stringify({ error: t(locale, "error.propertyNotFound") }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -62,7 +65,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
     if (!integration || integration.provider !== "smoobu") {
       return new Response(
-        JSON.stringify({ error: "No Smoobu integration found" }),
+        JSON.stringify({ error: t(locale, "error.noPmsIntegration") }),
         { status: 404, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -70,7 +73,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     const customerId = integration.pmsUserId;
     if (!customerId) {
       return new Response(
-        JSON.stringify({ error: "Smoobu user ID not configured" }),
+        JSON.stringify({ error: t(locale, "error.smoobuNotConfigured") }),
         { status: 500, headers: { "Content-Type": "application/json" } }
       );
     }
@@ -91,7 +94,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     console.error("Error checking availability:", error);
     return new Response(
       JSON.stringify({
-        error: safeErrorMessage(error, "Failed to check availability"),
+        error: safeErrorMessage(error, t(locale, "error.failedToCheckAvailability"), locale),
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

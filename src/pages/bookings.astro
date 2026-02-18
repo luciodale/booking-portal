@@ -1,15 +1,21 @@
 ---
 import { BookingsHistoryView } from "@/features/public/bookings/ui/BookingsHistoryView";
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import PageLayout from "@/layouts/PageLayout.astro";
 
 export const prerender = false;
+
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 ---
 
-<PageLayout title="My Bookings">
+<PageLayout title={t(locale, "bookings.myBookings")}>
   <section class="py-16 px-6">
     <div class="container mx-auto max-w-3xl">
-      <h1 class="text-3xl font-bold text-foreground mb-8">My Bookings</h1>
-      <BookingsHistoryView client:load />
+      <h1 class="text-3xl font-bold text-foreground mb-8">{t(locale, "bookings.myBookings")}</h1>
+      <BookingsHistoryView client:load locale={locale} />
     </div>
   </section>
 </PageLayout>

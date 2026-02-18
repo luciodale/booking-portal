@@ -2,6 +2,10 @@
 import { getDb } from "@/db";
 import { fetchExperienceById } from "@/features/public/browse/experience-queries";
 import { ExperienceBookingWidget } from "@/features/public/booking/ui/ExperienceBookingWidget";
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import ImageGallery from "@/modules/ui/astro/ImageGallery.astro";
@@ -10,13 +14,15 @@ import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
 
 export const prerender = false;
 
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
+
 const { id } = Astro.params;
-if (!id) return Astro.redirect("/experiences");
+if (!id) return Astro.redirect(localePath(locale, "/experiences"));
 
 const db = getDb(Astro.locals.runtime.env.DB);
 const data = await fetchExperienceById(db, id);
 
-if (!data) return Astro.redirect("/experiences");
+if (!data) return Astro.redirect(localePath(locale, "/experiences"));
 
 const { experience, imageUrls, categoryLabel, linkedProperties } = data;
 
@@ -45,11 +51,11 @@ function formatPrice(cents: number, currency: string) {
 
     <div class="relative z-10 container mx-auto px-6 pb-12">
       <a
-        href="/experiences"
+        href={localePath(locale, "/experiences")}
         class="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors mb-6"
       >
         <i data-lucide="arrow-left" class="w-4 h-4" />
-        Back to Experiences
+        {t(locale, "experiences.backToExperiences")}
       </a>
 
       <div class="mb-4">
@@ -80,13 +86,13 @@ function formatPrice(cents: number, currency: string) {
         {experience.maxParticipants && (
           <div class="flex items-center gap-2 text-foreground">
             <i data-lucide="users" class="w-4 h-4 text-primary" />
-            Up to {experience.maxParticipants} participants
+            {t(locale, "experiences.upToParticipants", { count: experience.maxParticipants })}
           </div>
         )}
         {experience.showPrice && (
           <div class="flex items-center gap-2 text-foreground">
             <i data-lucide="tag" class="w-4 h-4 text-primary" />
-            {formatPrice(experience.basePrice, experience.currency)} per person
+            {formatPrice(experience.basePrice, experience.currency)} {t(locale, "experiences.perPerson")}
           </div>
         )}
         <div class="flex items-center gap-2 text-foreground">
@@ -126,7 +132,7 @@ function formatPrice(cents: number, currency: string) {
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
         <!-- Main content (2/3) -->
         <div class="lg:col-span-2">
-          <h2 class="text-2xl font-bold text-foreground mb-6">About This Experience</h2>
+          <h2 class="text-2xl font-bold text-foreground mb-6">{t(locale, "experiences.aboutThisExperience")}</h2>
           <div class="prose prose-invert max-w-none">
             {(experience.description ?? "").split("\n\n").map((paragraph) => (
               <p class="text-muted-foreground leading-relaxed mb-4">{paragraph}</p>
@@ -157,8 +163,8 @@ function formatPrice(cents: number, currency: string) {
     <section class="py-16 px-6 bg-card/50">
       <div class="container mx-auto">
         <div class="mb-8">
-          <h2 class="text-2xl font-bold text-foreground mb-2">Available at These Properties</h2>
-          <p class="text-muted-foreground">Book a stay and add this experience</p>
+          <h2 class="text-2xl font-bold text-foreground mb-2">{t(locale, "experiences.availableAtProperties")}</h2>
+          <p class="text-muted-foreground">{t(locale, "experiences.bookAndAdd")}</p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {linkedProperties.map((property, index) => (
@@ -166,7 +172,7 @@ function formatPrice(cents: number, currency: string) {
               class="animate-slide-up opacity-0"
               style={`animation-delay: ${0.1 + index * 0.1}s`}
             >
-              <PropertyCard {...property} target="_blank" />
+              <PropertyCard {...property} target="_blank" locale={locale} />
             </div>
           ))}
         </div>

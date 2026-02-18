@@ -1,16 +1,22 @@
 ---
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Footer from "@/modules/ui/astro/Footer.astro";
 import BackofficeApp from "@/modules/ui/views/BackofficeApp";
 
 export const prerender = false;
+
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 ---
 
 <BaseLayout
-  title="Booking Portal Backoffice"
-  description="Booking Portal Backoffice"
+  title={t(locale, "backoffice.title")}
+  description={t(locale, "backoffice.title")}
 >
-  <BackofficeApp client:only="react">
+  <BackofficeApp client:only="react" locale={locale}>
     <div
       slot="fallback"
       class="flex items-center justify-center min-h-[60vh] bg-linear-to-b from-background to-muted/20"
@@ -20,7 +26,7 @@ export const prerender = false;
           class="h-8 w-8 animate-spin rounded-full border-[1.5px] border-zinc-800/20 border-t-zinc-900"
         >
         </div>
-        <p class="text-sm font-light tracking-wide text-zinc-600">Loading...</p>
+        <p class="text-sm font-light tracking-wide text-zinc-600">{t(locale, "backoffice.loading")}</p>
       </div>
     </div>
   </BackofficeApp>

@@ -1,19 +1,27 @@
 ---
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
+import LanguageSwitcher from "@/modules/ui/astro/LanguageSwitcher.astro";
+
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
+
 const footerLinks = {
   company: [
-    { href: "/about", label: "About Us" },
-    { href: "/careers", label: "Careers" },
-    { href: "/press", label: "Press" },
+    { href: localePath(locale, "/about"), label: t(locale, "footer.aboutUs") },
+    { href: localePath(locale, "/careers"), label: t(locale, "footer.careers") },
+    { href: localePath(locale, "/press"), label: t(locale, "footer.press") },
   ],
   support: [
-    { href: "/help", label: "Help Center" },
-    { href: "/contact", label: "Contact" },
-    { href: "/safety", label: "Safety" },
+    { href: localePath(locale, "/help"), label: t(locale, "footer.helpCenter") },
+    { href: localePath(locale, "/contact"), label: t(locale, "footer.contact") },
+    { href: localePath(locale, "/safety"), label: t(locale, "footer.safety") },
   ],
   legal: [
-    { href: "/privacy", label: "Privacy" },
-    { href: "/terms", label: "Terms" },
-    { href: "/cookies", label: "Cookies" },
+    { href: localePath(locale, "/privacy"), label: t(locale, "footer.privacy") },
+    { href: localePath(locale, "/terms"), label: t(locale, "footer.terms") },
+    { href: localePath(locale, "/cookies"), label: t(locale, "footer.cookies") },
   ],
 };
 
@@ -25,7 +33,7 @@ const currentYear = new Date().getFullYear();
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12">
       <!-- Brand -->
       <div class="lg:col-span-2">
-        <a href="/" class="flex items-center gap-2 mb-4">
+        <a href={localePath(locale, "/")} class="flex items-center gap-2 mb-4">
           <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
             <span class="text-primary-foreground font-bold text-sm">E</span>
           </div>
@@ -35,7 +43,7 @@ const currentYear = new Date().getFullYear();
           </span>
         </a>
         <p class="text-muted-foreground max-w-xs mb-6">
-          Direct access to the world's most exclusive properties. No intermediaries, just extraordinary stays.
+          {t(locale, "footer.tagline")}
         </p>
         <div class="flex items-center gap-4">
           <a href="#" class="text-muted-foreground hover:text-foreground transition-colors" aria-label="Twitter">
@@ -52,7 +60,7 @@ const currentYear = new Date().getFullYear();
 
       <!-- Company -->
       <div>
-        <h3 class="text-sm font-semibold text-foreground mb-4">Company</h3>
+        <h3 class="text-sm font-semibold text-foreground mb-4">{t(locale, "footer.company")}</h3>
         <ul class="space-y-3">
           {footerLinks.company.map(link => (
             <li>
@@ -66,7 +74,7 @@ const currentYear = new Date().getFullYear();
 
       <!-- Support -->
       <div>
-        <h3 class="text-sm font-semibold text-foreground mb-4">Support</h3>
+        <h3 class="text-sm font-semibold text-foreground mb-4">{t(locale, "footer.support")}</h3>
         <ul class="space-y-3">
           {footerLinks.support.map(link => (
             <li>
@@ -80,7 +88,7 @@ const currentYear = new Date().getFullYear();
 
       <!-- Legal -->
       <div>
-        <h3 class="text-sm font-semibold text-foreground mb-4">Legal</h3>
+        <h3 class="text-sm font-semibold text-foreground mb-4">{t(locale, "footer.legal")}</h3>
         <ul class="space-y-3">
           {footerLinks.legal.map(link => (
             <li>
@@ -97,11 +105,11 @@ const currentYear = new Date().getFullYear();
 
     <div class="flex flex-col md:flex-row justify-between items-center gap-4">
       <p class="text-sm text-muted-foreground">
-        © {currentYear} EliteStay. All rights reserved.
+        {t(locale, "footer.copyright", { year: String(currentYear) })}
       </p>
-      <div class="flex items-center gap-6 text-sm text-muted-foreground">
-        <span>EUR €</span>
-        <span>English</span>
+      <div class="flex items-center gap-6">
+        <span class="text-sm text-muted-foreground">EUR €</span>
+        <LanguageSwitcher locale={locale} />
       </div>
     </div>
   </div>

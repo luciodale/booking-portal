@@ -1,22 +1,28 @@
 ---
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
+import { stripLocalePrefix } from "@/i18n/locale-path";
 import { HeaderAuthSection } from "@/modules/auth/ui/HeaderAuthSection";
 import { ThemeToggle } from "@/modules/ui/react/ThemeToggle";
 
-const currentPath = Astro.url.pathname;
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
+const rawPath = stripLocalePrefix(Astro.url.pathname);
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/elite", label: "Elite" },
-  { href: "/standard", label: "Standard" },
-  { href: "/experiences", label: "Experiences" },
-  { href: "/about", label: "About" },
+  { href: localePath(locale, "/"), label: t(locale, "nav.home"), matchPath: "/" },
+  { href: localePath(locale, "/elite"), label: t(locale, "nav.elite"), matchPath: "/elite" },
+  { href: localePath(locale, "/standard"), label: t(locale, "nav.standard"), matchPath: "/standard" },
+  { href: localePath(locale, "/experiences"), label: t(locale, "nav.experiences"), matchPath: "/experiences" },
+  { href: localePath(locale, "/about"), label: t(locale, "nav.about"), matchPath: "/about" },
 ];
 ---
 
 <header class="sticky top-0 left-0 right-0 z-50 h-header-height glass">
   <nav class="container mx-auto px-6 h-full flex items-center justify-between">
       <!-- Logo -->
-      <a href="/" class="flex items-center gap-2 group">
+      <a href={localePath(locale, "/")} class="flex items-center gap-2 group">
         <div
           class="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-accent flex items-center justify-center"
         >
@@ -36,7 +42,7 @@ const navLinks = [
               href={link.href}
               class:list={[
                 "relative text-sm font-medium transition-colors duration-200 group",
-                currentPath === link.href
+                rawPath === link.matchPath
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground",
               ]}
@@ -45,7 +51,7 @@ const navLinks = [
               <span
                 class:list={[
                   "absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300",
-                  currentPath === link.href
+                  rawPath === link.matchPath
                     ? "w-full"
                     : "w-0 group-hover:w-full",
                 ]}
@@ -58,7 +64,7 @@ const navLinks = [
       <!-- Theme Toggle & Auth -->
       <div class="flex items-center gap-2">
         <ThemeToggle client:load />
-        <HeaderAuthSection client:load />
+        <HeaderAuthSection locale={locale} client:load />
       </div>
   </nav>
 </header>

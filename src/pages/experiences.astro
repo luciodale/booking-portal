@@ -4,6 +4,10 @@ import {
   fetchExperienceCityCards,
   fetchExperiencesByCity,
 } from "@/features/public/browse/experience-queries";
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import PageLayout from "@/layouts/PageLayout.astro";
 import Button from "@/modules/ui/astro/Button.astro";
 import Heading from "@/modules/ui/astro/Heading.astro";
@@ -11,6 +15,7 @@ import Hero from "@/modules/ui/astro/Hero.astro";
 
 export const prerender = false;
 
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 const db = getDb(Astro.locals.runtime.env.DB);
 const cityParam = Astro.url.searchParams.get("city");
 const currentPage = Math.max(1, Number(Astro.url.searchParams.get("page") || "1"));
@@ -22,15 +27,15 @@ const { experiences, totalCount, totalPages } = cityParam
 ---
 
 <PageLayout
-  title={cityParam ? `Experiences in ${cityParam}` : "Experiences"}
-  description="Curated luxury experiences to complement your stay."
+  title={cityParam ? t(locale, "experiences.cityTitle", { city: cityParam }) : t(locale, "experiences.pageTitle")}
+  description={t(locale, "experiences.description")}
   showMarble
 >
   <Hero
-    badge="Exclusive Access"
-    title="Unforgettable Experiences"
-    titleGradient="Unforgettable"
-    subtitle="Curated luxury experiences crafted by local experts. From private yacht tours to Michelin dining, elevate your journey."
+    badge={t(locale, "experiences.badge")}
+    title={t(locale, "experiences.title")}
+    titleGradient={t(locale, "experiences.titleGradient")}
+    subtitle={t(locale, "experiences.subtitle")}
     cityName={cityParam}
     height="medium"
   />
@@ -42,7 +47,7 @@ const { experiences, totalCount, totalPages } = cityParam
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {cityCards.map((card, index) => (
               <a
-                href={`/experiences?city=${encodeURIComponent(card.city)}`}
+                href={`${localePath(locale, "/experiences")}?city=${encodeURIComponent(card.city)}`}
                 class="group relative block rounded-2xl overflow-hidden aspect-4/3 card-hover"
                 style={`animation-delay: ${0.1 + index * 0.1}s`}
               >
@@ -56,7 +61,7 @@ const { experiences, totalCount, totalPages } = cityParam
                 <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
                   <h3 class="text-3xl md:text-4xl font-bold text-white">{card.city}</h3>
                   <p class="text-white/70 text-lg mt-1">
-                    {card.count} {card.count === 1 ? "experience" : "experiences"}
+                    {card.count} {card.count === 1 ? t(locale, "common.experience") : t(locale, "common.experiences")}
                   </p>
                 </div>
               </a>
@@ -69,23 +74,23 @@ const { experiences, totalCount, totalPages } = cityParam
         <div class="container mx-auto">
           <div class="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
             <a
-              href="/experiences"
+              href={localePath(locale, "/experiences")}
               class="hover:text-foreground transition-colors flex items-center gap-1"
             >
               <i data-lucide="arrow-left" class="w-4 h-4" />
-              All cities
+              {t(locale, "common.allCities")}
             </a>
             <span>/</span>
             <span class="text-foreground">{cityParam}</span>
             <span class="ml-auto">
-              {totalCount} {totalCount === 1 ? "experience" : "experiences"}
+              {totalCount} {totalCount === 1 ? t(locale, "common.experience") : t(locale, "common.experiences")}
             </span>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {experiences.map((exp, index) => (
               <a
-                href={`/experiences/${exp.id}`}
+                href={`${localePath(locale, "/experiences")}/${exp.id}`}
                 target="_blank"
                 class="group block rounded-2xl overflow-hidden bg-card card-hover animate-slide-up opacity-0"
                 style={`animation-delay: ${0.1 + index * 0.1}s`}
@@ -124,16 +129,16 @@ const { experiences, totalCount, totalPages } = cityParam
             <nav class="mt-12 flex justify-center items-center gap-2">
               {currentPage > 1 && (
                 <a
-                  href={`/experiences?city=${encodeURIComponent(cityParam)}&page=${currentPage - 1}`}
+                  href={`${localePath(locale, "/experiences")}?city=${encodeURIComponent(cityParam)}&page=${currentPage - 1}`}
                   class="px-4 py-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors text-sm"
                 >
-                  Previous
+                  {t(locale, "common.previous")}
                 </a>
               )}
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                 (page) => (
                   <a
-                    href={`/experiences?city=${encodeURIComponent(cityParam)}&page=${page}`}
+                    href={`${localePath(locale, "/experiences")}?city=${encodeURIComponent(cityParam)}&page=${page}`}
                     class:list={[
                       "px-4 py-2 rounded-lg text-sm transition-colors",
                       page === currentPage
@@ -147,10 +152,10 @@ const { experiences, totalCount, totalPages } = cityParam
               )}
               {currentPage < totalPages && (
                 <a
-                  href={`/experiences?city=${encodeURIComponent(cityParam)}&page=${currentPage + 1}`}
+                  href={`${localePath(locale, "/experiences")}?city=${encodeURIComponent(cityParam)}&page=${currentPage + 1}`}
                   class="px-4 py-2 rounded-lg bg-card border border-border hover:bg-muted transition-colors text-sm"
                 >
-                  Next
+                  {t(locale, "common.next")}
                 </a>
               )}
             </nav>
@@ -163,12 +168,12 @@ const { experiences, totalCount, totalPages } = cityParam
   <section class="py-20 px-6 bg-card text-center">
     <div class="container mx-auto max-w-2xl">
       <Heading level={2} class="mb-4">
-        Have a unique experience to offer?
+        {t(locale, "experiences.ctaHeading")}
       </Heading>
       <p class="text-muted-foreground mb-8">
-        Partner with EliteStay to reach discerning travelers looking for extraordinary moments.
+        {t(locale, "experiences.ctaDescription")}
       </p>
-      <Button href="/partner">Become a Partner</Button>
+      <Button href={localePath(locale, "/partner")}>{t(locale, "experiences.becomePartner")}</Button>
     </div>
   </section>
 </PageLayout>

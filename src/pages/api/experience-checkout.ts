@@ -7,6 +7,10 @@ import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
+import type { Locale } from "@/i18n/types";
 import { z } from "zod";
 
 const bodySchema = z.object({
@@ -21,6 +25,7 @@ const bodySchema = z.object({
     phone: z.string().optional(),
     guestNote: z.string().optional(),
   }),
+  locale: z.string().optional(),
 });
 
 function jsonResponse(data: unknown, status = 200) {
@@ -52,8 +57,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    const { experienceId, bookingDate, participants, currency, guestInfo } =
+    const { experienceId, bookingDate, participants, currency, guestInfo, locale: bodyLocale } =
       body.data;
+    const locale: Locale = (bodyLocale as Locale) ?? getRequestLocale(request);
     const db = getDb(D1Database);
 
     // Fetch experience
@@ -64,12 +70,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .limit(1);
 
     if (!experience || experience.status !== "published") {
-      return jsonResponse({ error: "Experience not found" }, 404);
+      return jsonResponse({ error: t(locale, "error.experienceNotFound") }, 404);
     }
 
     if (!experience.instantBook) {
       return jsonResponse(
-        { error: "This experience does not support online booking" },
+        { error: t(locale, "error.experienceNotBookable") },
         400
       );
     }
@@ -80,7 +86,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     ) {
       return jsonResponse(
         {
-          error: `Maximum ${experience.maxParticipants} participants allowed`,
+          error: t(locale, "error.maxParticipants", { count: experience.maxParticipants }),
         },
         400
       );
@@ -138,7 +144,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
 
       return jsonResponse({
-        url: `${origin}/booking/experience-success?session_id=${mockSessionId}`,
+        url: `${origin}${localePath(locale, "/booking/experience-success")}?session_id=${mockSessionId}`,
       });
     }
 
@@ -175,8 +181,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       customer_email: guestInfo.email,
       line_items: lineItems,
       metadata,
-      success_url: `${origin}/booking/experience-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/experiences/${experienceId}`,
+      success_url: `${origin}${localePath(locale, "/booking/experience-success")}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}${localePath(locale, `/experiences/${experienceId}`)}`,
     });
 
     log.info({
@@ -188,8 +194,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return jsonResponse({ url: session.url });
   } catch (error) {
     console.error("Experience checkout error:", error);
+    const locale: Locale = getRequestLocale(request);
     if (error instanceof Error && error.message === "Unauthorized") {
-      return jsonResponse({ error: "Sign in required" }, 401);
+      return jsonResponse({ error: t(locale, "error.signInRequired") }, 401);
     }
     const D1 = locals.runtime?.env?.DB;
     if (D1) {
@@ -202,7 +209,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
     return jsonResponse(
-      { error: safeErrorMessage(error, "Checkout failed") },
+      { error: safeErrorMessage(error, t(locale, "error.checkoutFailed")) },
       500
     );
   }

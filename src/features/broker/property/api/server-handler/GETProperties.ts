@@ -1,6 +1,8 @@
 import { getDb } from "@/db";
 import { assets, images } from "@/db/schema";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import type { PropertyListResponse } from "@/schemas/api";
 import type { APIRoute } from "astro";
@@ -12,11 +14,12 @@ import {
   safeErrorMessage,
 } from "./responseHelpers";
 
-export const GET: APIRoute = async ({ locals, url }) => {
+export const GET: APIRoute = async ({ locals, url, request }) => {
   try {
+    const locale = getRequestLocale(request);
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return jsonError("Database not available", 503);
+      return jsonError(t(locale, "error.dbNotAvailable"), 503);
     }
 
     const db = getDb(D1Database);
@@ -86,7 +89,7 @@ export const GET: APIRoute = async ({ locals, url }) => {
   } catch (error) {
     console.error("Error listing properties:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to list properties"),
+      safeErrorMessage(error, "Failed to list properties", locale),
       mapErrorToStatus(error)
     );
   }

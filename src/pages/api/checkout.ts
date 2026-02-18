@@ -13,6 +13,10 @@ import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 import Stripe from "stripe";
 import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
+import type { Locale } from "@/i18n/types";
 import { z } from "zod";
 
 const checkoutBodySchema = z.object({
@@ -33,6 +37,7 @@ const checkoutBodySchema = z.object({
     children: z.number().int().min(0),
     guestNote: z.string().optional(),
   }),
+  locale: z.string().optional(),
 });
 
 function jsonResponse(data: unknown, status = 200) {
@@ -74,7 +79,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
       cityTaxCents,
       selectedExtraIndices,
       guestInfo,
+      locale: bodyLocale,
     } = body.data;
+    const locale: Locale = (bodyLocale as Locale) ?? getRequestLocale(request);
     const db = getDb(D1Database);
 
     // Fetch asset + integration
@@ -86,7 +93,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (!asset || !asset.smoobuPropertyId) {
       return jsonResponse(
-        { error: "Property not found or not linked to PMS" },
+        { error: t(locale, "error.propertyNotFound") },
         404
       );
     }
@@ -102,7 +109,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       integration.provider !== "smoobu" ||
       !integration.pmsUserId
     ) {
-      return jsonResponse({ error: "No PMS integration found" }, 404);
+      return jsonResponse({ error: t(locale, "error.noPmsIntegration") }, 404);
     }
 
     // Re-verify availability server-side
@@ -126,7 +133,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         });
         return jsonResponse(
           {
-            error: `Minimum stay is ${errorInfo.minimumLengthOfStay} nights for the selected dates`,
+            error: t(locale, "error.minStay", { nights: errorInfo.minimumLengthOfStay }),
           },
           400
         );
@@ -138,7 +145,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         metadata: { propertyId, checkIn, checkOut, guests },
       });
       return jsonResponse(
-        { error: "Property is no longer available for these dates" },
+        { error: t(locale, "error.propertyNotAvailable") },
         409
       );
     }
@@ -155,7 +162,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (clientDates.length !== nights) {
       return jsonResponse(
         {
-          error: `Expected ${nights} night prices, received ${clientDates.length}`,
+          error: t(locale, "error.nightPriceMismatch", { expected: nights, received: clientDates.length }),
         },
         400
       );
@@ -181,7 +188,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       if (nights < maxMinStay) {
         return jsonResponse(
           {
-            error: `Minimum stay is ${maxMinStay} nights for the selected dates`,
+            error: t(locale, "error.minStay", { nights: maxMinStay }),
           },
           400
         );
@@ -201,7 +208,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       if (serverRate?.price == null || clientCents == null) {
         return jsonResponse(
-          { error: "Unable to compute price for this stay" },
+          { error: t(locale, "error.unableToComputePrice") },
           400
         );
       }
@@ -214,7 +221,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           metadata: { propertyId, date, clientCents, serverCents },
         });
         return jsonResponse(
-          { error: "Price has changed. Please refresh and try again." },
+          { error: t(locale, "error.priceChanged") },
           409
         );
       }
@@ -271,7 +278,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         metadata: { propertyId, cityTaxCents, serverCityTaxCents },
       });
       return jsonResponse(
-        { error: "City tax has changed. Please refresh and try again." },
+        { error: t(locale, "error.cityTaxChanged") },
         409
       );
     }
@@ -323,7 +330,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
 
       return jsonResponse({
-        url: `${origin}/booking/success?session_id=${mockSessionId}`,
+        url: `${origin}${localePath(locale, "/booking/success")}?session_id=${mockSessionId}`,
       });
     }
 
@@ -385,8 +392,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       customer_email: guestInfo.email,
       line_items: lineItems,
       metadata,
-      success_url: `${origin}/booking/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${origin}/elite/${propertyId}`,
+      success_url: `${origin}${localePath(locale, "/booking/success")}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}${localePath(locale, `/elite/${propertyId}`)}`,
     });
 
     log.info({
@@ -398,8 +405,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return jsonResponse({ url: session.url });
   } catch (error) {
     console.error("Checkout error:", error);
+    const locale: Locale = getRequestLocale(request);
     if (error instanceof Error && error.message === "Unauthorized") {
-      return jsonResponse({ error: "Sign in required" }, 401);
+      return jsonResponse({ error: t(locale, "error.signInRequired") }, 401);
     }
     const D1 = locals.runtime?.env?.DB;
     if (D1) {
@@ -412,7 +420,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       });
     }
     return jsonResponse(
-      { error: safeErrorMessage(error, "Checkout failed") },
+      { error: safeErrorMessage(error, t(locale, "error.checkoutFailed")) },
       500
     );
   }

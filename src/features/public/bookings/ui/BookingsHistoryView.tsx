@@ -1,3 +1,6 @@
+import type { Locale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import { fetchBookings } from "@/features/public/bookings/api/fetchBookings";
 import type { BookingListItem } from "@/features/public/bookings/api/fetchBookings";
 import { cn } from "@/modules/utils/cn";
@@ -11,15 +14,19 @@ const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1 } },
 });
 
-export function BookingsHistoryView() {
+type BookingsHistoryViewProps = {
+  locale?: Locale;
+};
+
+export function BookingsHistoryView({ locale = "en" }: BookingsHistoryViewProps) {
   return (
     <QueryClientProvider client={queryClient}>
-      <BookingsHistoryInner />
+      <BookingsHistoryInner locale={locale} />
     </QueryClientProvider>
   );
 }
 
-function BookingsHistoryInner() {
+function BookingsHistoryInner({ locale }: { locale: Locale }) {
   const {
     data: bookings,
     isLoading,
@@ -40,7 +47,7 @@ function BookingsHistoryInner() {
   if (error) {
     return (
       <div className="text-center py-20">
-        <p className="text-red-400">Failed to load bookings</p>
+        <p className="text-red-400">{t(locale, "bookings.failedToLoad")}</p>
       </div>
     );
   }
@@ -49,16 +56,16 @@ function BookingsHistoryInner() {
     return (
       <div className="text-center py-20">
         <h2 className="text-xl font-bold text-foreground mb-2">
-          No bookings yet
+          {t(locale, "bookings.noBookingsYet")}
         </h2>
         <p className="text-muted-foreground mb-6">
-          Your booking history will appear here.
+          {t(locale, "bookings.bookingHistoryHere")}
         </p>
         <a
-          href="/elite"
+          href={localePath(locale, "/elite")}
           className="inline-block py-2 px-6 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
         >
-          Browse Properties
+          {t(locale, "bookings.browseProperties")}
         </a>
       </div>
     );
@@ -71,9 +78,9 @@ function BookingsHistoryInner() {
   return (
     <div className="space-y-10">
       {upcoming.length > 0 && (
-        <BookingSection title="Upcoming" bookings={upcoming} />
+        <BookingSection title={t(locale, "bookings.upcoming")} bookings={upcoming} locale={locale} />
       )}
-      {past.length > 0 && <BookingSection title="Past" bookings={past} />}
+      {past.length > 0 && <BookingSection title={t(locale, "bookings.past")} bookings={past} locale={locale} />}
     </div>
   );
 }
@@ -81,20 +88,21 @@ function BookingsHistoryInner() {
 function BookingSection({
   title,
   bookings,
-}: { title: string; bookings: BookingListItem[] }) {
+  locale,
+}: { title: string; bookings: BookingListItem[]; locale: Locale }) {
   return (
     <div>
       <h2 className="text-lg font-bold text-foreground mb-4">{title}</h2>
       <div className="space-y-3">
         {bookings.map((booking) => (
-          <BookingCard key={booking.id} booking={booking} />
+          <BookingCard key={booking.id} booking={booking} locale={locale} />
         ))}
       </div>
     </div>
   );
 }
 
-function BookingCard({ booking }: { booking: BookingListItem }) {
+function BookingCard({ booking, locale }: { booking: BookingListItem; locale: Locale }) {
   const statusColors: Record<string, string> = {
     pending: "bg-yellow-500/10 text-yellow-400",
     confirmed: "bg-green-500/10 text-green-400",
@@ -102,9 +110,11 @@ function BookingCard({ booking }: { booking: BookingListItem }) {
     completed: "bg-blue-500/10 text-blue-400",
   };
 
+  const statusKey = `bookings.${booking.status}` as const;
+
   return (
     <a
-      href={`/bookings/${booking.id}`}
+      href={localePath(locale, `/bookings/${booking.id}`)}
       className="block p-5 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors"
     >
       <div className="flex items-start justify-between gap-4">
@@ -114,7 +124,7 @@ function BookingCard({ booking }: { booking: BookingListItem }) {
           </h3>
           <p className="text-sm text-muted-foreground">
             {booking.checkIn} &rarr; {booking.checkOut} &middot;{" "}
-            {booking.nights} night{booking.nights !== 1 ? "s" : ""}
+            {booking.nights} {booking.nights !== 1 ? t(locale, "bookings.nights") : t(locale, "bookings.night")}
           </p>
         </div>
         <div className="text-right shrink-0 space-y-1">
@@ -125,7 +135,7 @@ function BookingCard({ booking }: { booking: BookingListItem }) {
           <span
             className={cn("inline-block px-2 py-0.5 rounded-full text-xs font-medium", statusColors[booking.status])}
           >
-            {booking.status}
+            {t(locale, statusKey)}
           </span>
         </div>
       </div>

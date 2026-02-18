@@ -1,4 +1,8 @@
 ---
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
+import { localePath } from "@/i18n/locale-path";
 import type { Asset } from "@/db/schema";
 import { formatLocation } from "@/utils/formatLocation";
 import Badge from "@/modules/ui/astro/Badge.astro";
@@ -7,12 +11,13 @@ interface Props {
   asset: Asset;
   imageUrl: string;
   target?: string;
+  locale?: Locale;
 }
 
-const { asset, imageUrl, target } = Astro.props;
+const { asset, imageUrl, target, locale = (Astro.currentLocale ?? defaultLocale) as Locale } = Astro.props;
 
 const isElite = asset.tier === "elite";
-const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
+const href = localePath(locale, isElite ? `/elite/${asset.id}` : `/property/${asset.id}`);
 ---
 
 <a
@@ -64,7 +69,7 @@ const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
         asset.bedrooms && (
           <div class="flex items-center gap-1.5">
             <i data-lucide="bed-double" class="w-4 h-4" />
-            {asset.bedrooms} bed{asset.bedrooms !== 1 ? "s" : ""}
+            {asset.bedrooms} {asset.bedrooms !== 1 ? t(locale, "common.beds") : t(locale, "common.bed")}
           </div>
         )
       }
@@ -72,7 +77,7 @@ const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
         asset.bathrooms && (
           <div class="flex items-center gap-1.5">
             <i data-lucide="bath" class="w-4 h-4" />
-            {asset.bathrooms} bath{asset.bathrooms !== 1 ? "s" : ""}
+            {asset.bathrooms} {asset.bathrooms !== 1 ? t(locale, "common.baths") : t(locale, "common.bath")}
           </div>
         )
       }
@@ -80,7 +85,7 @@ const href = isElite ? `/elite/${asset.id}` : `/property/${asset.id}`;
         asset.maxOccupancy && (
           <div class="flex items-center gap-1.5">
             <i data-lucide="users" class="w-4 h-4" />
-            {asset.maxOccupancy} guest{asset.maxOccupancy !== 1 ? "s" : ""}
+            {asset.maxOccupancy} {asset.maxOccupancy !== 1 ? t(locale, "common.guests") : t(locale, "common.guest")}
           </div>
         )
       }

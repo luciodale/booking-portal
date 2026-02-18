@@ -2,6 +2,8 @@ import { getDb } from "@/db";
 import { assets, images } from "@/db/schema";
 import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import {
   validateImageSize,
   validateImageType,
@@ -24,11 +26,12 @@ import {
 
 export const POST: APIRoute = async ({ request, locals }) => {
   try {
+    const locale = getRequestLocale(request);
     const D1Database = locals.runtime?.env?.DB;
     const R2Bucket = locals.runtime?.env?.R2_IMAGES_BUCKET;
 
     if (!D1Database || !R2Bucket) {
-      return jsonError("Required services not available", 503);
+      return jsonError(t(locale, "error.dbNotAvailable"), 503);
     }
 
     const db = getDb(D1Database);
@@ -38,7 +41,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const assetId = formData.get("assetId") as string;
 
     if (!assetId) {
-      return jsonError("Asset ID required", 400);
+      return jsonError(t(locale, "error.missingPropertyId"), 400);
     }
 
     const [asset] = await db
@@ -48,7 +51,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .limit(1);
 
     if (!asset) {
-      return jsonError("Asset not found", 404);
+      return jsonError(t(locale, "error.propertyNotFound"), 404);
     }
 
     assertBrokerOwnership(asset, ctx);
@@ -57,11 +60,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const files = formData.getAll("images") as File[];
 
     if (files.length === 0) {
-      return jsonError("No images provided", 400);
+      return jsonError(t(locale, "error.invalidRequest"), 400);
     }
 
     if (files.length > 20) {
-      return jsonError("Maximum 20 images allowed per upload", 400);
+      return jsonError(t(locale, "error.invalidRequest"), 400);
     }
 
     for (let i = 0; i < files.length; i++) {
@@ -73,14 +76,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       if (!validateImageType(arrayBuffer)) {
         return jsonError(
-          `Invalid image type for file: ${file.name}. Expected WebP.`,
+          t(locale, "error.invalidRequest"),
           400
         );
       }
 
       if (!validateImageSize(arrayBuffer)) {
         return jsonError(
-          `File too large: ${file.name}. Maximum size is 2MB`,
+          t(locale, "error.invalidRequest"),
           400
         );
       }
@@ -123,7 +126,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error uploading images:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to upload images"),
+      safeErrorMessage(error, "Failed to upload images", locale),
       mapErrorToStatus(error)
     );
   }

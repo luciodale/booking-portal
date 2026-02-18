@@ -1,0 +1,36 @@
+import type { property as en } from "../en/property";
+
+export const property: Record<keyof typeof en, string> = {
+  "property.backToProperties": "Torna alle Proprietà",
+  "property.bedrooms": "Camere",
+  "property.bathrooms": "Bagni",
+  "property.guests": "Ospiti",
+  "property.sqMeters": "m\u00B2",
+  "property.checkIn": "Check-in",
+  "property.checkOut": "Check-out",
+  "property.aboutThisProperty": "Informazioni sulla Proprietà",
+  "property.amenities": "Servizi",
+  "property.views": "Viste",
+  "property.highlights": "Punti di Forza",
+  "property.optionalExtras": "Extra Opzionali",
+  "property.enhanceYourStay": "Migliora il Tuo Soggiorno",
+  "property.enhanceDescription":
+    "Esperienze esclusive disponibili con questa proprietà",
+  "property.location": "Posizione",
+  "property.mapComingSoon": "Mappa interattiva in arrivo",
+  "property.theExperience": "L'Esperienza",
+  "property.exclusiveAmenities": "Servizi Esclusivi",
+  "property.panoramicViews": "Viste Panoramiche",
+  "property.signatureFeatures": "Caratteristiche Distintive",
+  "property.curatedForYou": "Selezionato per Te",
+  "property.exclusiveExperiences": "Esperienze Esclusive",
+  "property.exclusiveExperiencesDesc":
+    "Completa il tuo soggiorno con esperienze selezionate, disponibili esclusivamente per gli ospiti Elite",
+  "property.perStay": "per soggiorno",
+  "property.perNight": "per notte",
+  "property.perGuest": "per ospite",
+  "property.perNightGuest": "per notte/ospite",
+  "property.add": "Aggiungi",
+  "property.added": "Aggiunto",
+  "property.exceptionalLuxury": "Lusso Eccezionale Ti Attende",
+};
