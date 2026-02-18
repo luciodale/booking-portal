@@ -22,11 +22,10 @@
     }
     
     /* Prevent scrolling when lightbox is open */
-    body.lightbox-open,
-    html.lightbox-open {
-        overflow: hidden !important;
-        height: 100vh;
-        width: 100vw;
+    body.lightbox-open {
+        position: fixed;
+        width: 100%;
+        overflow-y: scroll;
     }
 </style>
 
@@ -103,6 +102,7 @@
     let currentIndex = 0;
     let touchStartX = 0;
     let touchEndX = 0;
+    let savedScrollY = 0;
 
     function updateImage() {
         if (!imgElement) return;
@@ -176,8 +176,9 @@
         if (!dialog) return;
         dialog.close();
         dialog.classList.add("hidden");
+        document.body.style.top = "";
         document.body.classList.remove("lightbox-open");
-        document.documentElement.classList.remove("lightbox-open");
+        window.scrollTo({ top: savedScrollY, behavior: "instant" });
     }
 
     function nextImage() {
@@ -215,10 +216,11 @@
         buildThumbnails();
         updateImage();
 
+        savedScrollY = window.scrollY;
+        document.body.style.top = `-${savedScrollY}px`;
+        document.body.classList.add("lightbox-open");
         dialog.classList.remove("hidden");
         dialog.showModal();
-        document.body.classList.add("lightbox-open");
-        document.documentElement.classList.add("lightbox-open");
     }) as EventListener);
 
     // Close button

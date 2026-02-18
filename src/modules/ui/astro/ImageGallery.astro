@@ -10,9 +10,29 @@ const isElite = variant === "elite";
 ---
 
 <astro-gallery class="block" data-images={JSON.stringify(images)}>
+  <!-- Mobile: single main image -->
+  <button
+    type="button"
+    class="md:hidden relative w-full aspect-4/3 rounded-2xl overflow-hidden group cursor-pointer gallery-trigger"
+    data-gallery-index="0"
+    aria-label={`View ${title} gallery (${images.length} photos)`}
+  >
+    <img
+      src={images[0]}
+      alt={`${title} - Main View`}
+      class="w-full h-full object-cover"
+    />
+    <div class="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
+    <div class="absolute bottom-4 right-4 flex items-center gap-2 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full">
+      <i data-lucide="images" class="w-4 h-4 text-white"></i>
+      <span class="text-white text-sm font-medium">{images.length}</span>
+    </div>
+  </button>
+
+  <!-- Desktop: full grid -->
   {
     isElite ? (
-      <div class="grid grid-cols-12 gap-4">
+      <div class="hidden md:grid grid-cols-12 gap-4">
         <button
           type="button"
           class="col-span-8 row-span-2 relative aspect-4/3 rounded-2xl overflow-hidden group cursor-pointer gallery-trigger"
@@ -74,7 +94,7 @@ const isElite = variant === "elite";
         ))}
       </div>
     ) : (
-      <div class="grid grid-cols-4 grid-rows-2 gap-3 h-[500px] rounded-2xl overflow-hidden">
+      <div class="hidden md:grid grid-cols-4 grid-rows-2 gap-3 h-[500px] rounded-2xl overflow-hidden">
         <button
           type="button"
           class="relative col-span-2 row-span-2 overflow-hidden group cursor-pointer gallery-trigger"
@@ -115,7 +135,7 @@ const isElite = variant === "elite";
     )
   }
 
-  <div class="mt-8 flex justify-center">
+  <div class="mt-8 hidden md:flex justify-center">
     <button
       type="button"
       class:list={[
