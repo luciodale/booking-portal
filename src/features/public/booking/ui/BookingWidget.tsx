@@ -16,11 +16,12 @@ import { MobileCalendarSheet } from "@/features/public/booking/ui/mobile/MobileC
 import { useIsMobile } from "@/modules/ui/useIsMobile";
 import { PriceDisplay } from "@/features/public/booking/ui/PriceDisplay";
 import { cn } from "@/modules/utils/cn";
+import type { BookingGuestInput } from "@/features/public/booking/ui/BookingForm";
 import { useAuth } from "@clerk/astro/react";
 import { SwipeBarProvider } from "@luciodale/swipe-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { icons } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1 } },
@@ -63,6 +64,13 @@ function BookingWidgetInner({
   const { isSignedIn } = useAuth();
   const [guestCount, setGuestCount] = useState<number | null>(null);
   const [selectedExtras, setSelectedExtras] = useState<Set<number>>(new Set());
+  const formValuesRef = useRef<Partial<BookingGuestInput>>({});
+  const handleFormValuesChange = useCallback(
+    (values: Partial<BookingGuestInput>) => {
+      formValuesRef.current = values;
+    },
+    []
+  );
 
   const checkout = useBookingCheckout({
     propertyId,
@@ -274,8 +282,10 @@ function BookingWidgetInner({
               maxGuests={maxGuests}
               isAvailable={calendar.isAvailable}
               isSubmitting={checkout.isSubmitting}
+              savedValues={formValuesRef.current}
               onSubmit={checkout.submitBooking}
               onGuestsChange={setGuestCount}
+              onValuesChange={handleFormValuesChange}
             />
           </>
         )}

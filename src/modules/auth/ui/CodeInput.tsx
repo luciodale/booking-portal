@@ -1,6 +1,7 @@
 import { useRef, useCallback } from "react";
 
 const CODE_LENGTH = 6;
+const DIGIT_KEYS = Array.from({ length: CODE_LENGTH }, (_, i) => `digit-${i}`);
 
 export function CodeInput({
   value,
@@ -57,7 +58,7 @@ export function CodeInput({
     <div className="flex gap-2 justify-center" data-testid="signup-code">
       {digits.map((digit, i) => (
         <input
-          key={i}
+          key={DIGIT_KEYS[i]}
           ref={(el) => {
             inputsRef.current[i] = el;
           }}

@@ -7,9 +7,11 @@ import { ExperienceGuestForm } from "@/features/public/booking/ui/ExperienceGues
 import { MobileExperienceCalendarSheet } from "@/features/public/booking/ui/mobile/MobileExperienceCalendarSheet";
 import { useIsMobile } from "@/modules/ui/useIsMobile";
 import { PriceBreakdown } from "@/features/public/booking/ui/PriceBreakdown";
+import type { ExperienceGuestInput } from "@/features/public/booking/ui/ExperienceGuestForm";
 import { useAuth } from "@clerk/astro/react";
 import { SwipeBarProvider } from "@luciodale/swipe-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useCallback, useRef } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: 1 } },
@@ -93,6 +95,13 @@ function BookingFlow({
     currency,
     isSignedIn,
   });
+  const formValuesRef = useRef<Partial<ExperienceGuestInput>>({});
+  const handleFormValuesChange = useCallback(
+    (values: Partial<ExperienceGuestInput>) => {
+      formValuesRef.current = values;
+    },
+    []
+  );
 
   const symbol = currency === "eur" ? "\u20AC" : `${currency.toUpperCase()} `;
 
@@ -235,7 +244,9 @@ function BookingFlow({
             <ExperienceGuestForm
               isSubmitting={checkout.isSubmitting}
               hasDate={!!booking.selectedDate}
+              savedValues={formValuesRef.current}
               onSubmit={checkout.submitBooking}
+              onValuesChange={handleFormValuesChange}
             />
           </>
         )}

@@ -1,5 +1,6 @@
 import { cn } from "@/modules/utils/cn";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -16,21 +17,34 @@ export type ExperienceGuestInput = z.input<typeof guestSchema>;
 type ExperienceGuestFormProps = {
   isSubmitting: boolean;
   hasDate: boolean;
+  savedValues?: Partial<ExperienceGuestInput>;
   onSubmit: (data: ExperienceGuestInput) => void;
+  onValuesChange?: (values: Partial<ExperienceGuestInput>) => void;
 };
 
 export function ExperienceGuestForm({
   isSubmitting,
   hasDate,
+  savedValues,
   onSubmit,
+  onValuesChange,
 }: ExperienceGuestFormProps) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<ExperienceGuestInput>({
     resolver: zodResolver(guestSchema),
+    defaultValues: savedValues,
   });
+
+  useEffect(() => {
+    const subscription = watch((values) => {
+      onValuesChange?.(values);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, onValuesChange]);
 
   const inputCls =
     "w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary";

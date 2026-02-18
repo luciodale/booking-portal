@@ -14,22 +14,26 @@ const bookingGuestSchema = z.object({
   guestNote: z.string().optional(),
 });
 
-type BookingGuestInput = z.input<typeof bookingGuestSchema>;
+export type BookingGuestInput = z.input<typeof bookingGuestSchema>;
 
 type BookingFormProps = {
   maxGuests: number;
   isAvailable: boolean;
   isSubmitting: boolean;
+  savedValues?: Partial<BookingGuestInput>;
   onSubmit: (data: BookingGuestInput) => void;
   onGuestsChange?: (count: number) => void;
+  onValuesChange?: (values: Partial<BookingGuestInput>) => void;
 };
 
 export function BookingForm({
   maxGuests,
   isAvailable,
   isSubmitting,
+  savedValues,
   onSubmit,
   onGuestsChange,
+  onValuesChange,
 }: BookingFormProps) {
   const {
     register,
@@ -38,7 +42,7 @@ export function BookingForm({
     formState: { errors },
   } = useForm<BookingGuestInput>({
     resolver: zodResolver(bookingGuestSchema),
-    defaultValues: { adults: 1, children: 0 },
+    defaultValues: { adults: 1, children: 0, ...savedValues },
   });
 
   const adults = watch("adults");
@@ -48,6 +52,13 @@ export function BookingForm({
     const total = (adults || 1) + (children || 0);
     onGuestsChange?.(total);
   }, [adults, children, onGuestsChange]);
+
+  useEffect(() => {
+    const subscription = watch((values) => {
+      onValuesChange?.(values);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, onValuesChange]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

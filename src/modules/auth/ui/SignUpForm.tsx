@@ -200,9 +200,9 @@ function SignUpFormInner() {
         ) : (
           <form onSubmit={handleVerify} className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-3 text-center">
+              <p className="block text-sm font-medium text-foreground mb-3 text-center">
                 Verification code
-              </label>
+              </p>
               <CodeInput value={code} onChange={setCode} disabled={disabled} />
             </div>
 
