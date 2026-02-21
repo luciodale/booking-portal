@@ -13,7 +13,10 @@ import { useBookingDatesFromUrl } from "@/features/public/booking/hooks/useBooki
 import { useCalendarAutoClose } from "@/features/public/booking/hooks/useCalendarAutoClose";
 import { usePropertyAvailability } from "@/features/public/booking/hooks/usePropertyAvailability";
 import { usePropertyRates } from "@/features/public/booking/hooks/usePropertyRates";
-import type { SmoobuRateDay } from "@/schemas/smoobu";
+import type {
+  SmoobuAvailabilityResponse,
+  SmoobuRateDay,
+} from "@/schemas/smoobu";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 export function useBookingCalendar(
@@ -60,6 +63,22 @@ export function useBookingCalendar(
 
   const availabilityMutation = usePropertyAvailability(propertyId);
 
+  // Race-safe availability state: only the latest mutate() call's
+  // callbacks fire (TanStack Query guarantee), so stale responses
+  // from rapid date changes are automatically discarded.
+  const [availData, setAvailData] = useState<SmoobuAvailabilityResponse | null>(
+    null
+  );
+  const [availError, setAvailError] = useState<Error | null>(null);
+  const [availLoading, setAvailLoading] = useState(false);
+
+  function resetAvailability() {
+    availabilityMutation.reset();
+    setAvailData(null);
+    setAvailError(null);
+    setAvailLoading(false);
+  }
+
   const currency = ratesQuery.data?.currency ?? null;
 
   const rateMap = useMemo((): Record<string, SmoobuRateDay> => {
@@ -72,10 +91,20 @@ export function useBookingCalendar(
     if (!pendingUrlCheck) return;
     if (!checkIn || !checkOut) return;
     setPendingUrlCheck(false);
-    availabilityMutation.mutate({
-      arrivalDate: checkIn,
-      departureDate: checkOut,
-    });
+    setAvailLoading(true);
+    availabilityMutation.mutate(
+      { arrivalDate: checkIn, departureDate: checkOut },
+      {
+        onSuccess: (data) => {
+          setAvailData(data);
+          setAvailLoading(false);
+        },
+        onError: (error) => {
+          setAvailError(error);
+          setAvailLoading(false);
+        },
+      }
+    );
   }, [pendingUrlCheck, checkIn, checkOut, availabilityMutation.mutate]);
 
   const goNextMonth = useCallback(() => {
@@ -90,20 +119,30 @@ export function useBookingCalendar(
     if (!checkIn || (checkIn && checkOut)) {
       setCheckIn(dateStr);
       setCheckOut(null);
-      availabilityMutation.reset();
+      resetAvailability();
     } else if (dateStr > checkIn) {
       setCheckOut(dateStr);
       if (shouldAutoClose()) {
         setCalendarOpen(false);
       }
-      availabilityMutation.mutate({
-        arrivalDate: checkIn,
-        departureDate: dateStr,
-      });
+      setAvailLoading(true);
+      availabilityMutation.mutate(
+        { arrivalDate: checkIn, departureDate: dateStr },
+        {
+          onSuccess: (data) => {
+            setAvailData(data);
+            setAvailLoading(false);
+          },
+          onError: (error) => {
+            setAvailError(error);
+            setAvailLoading(false);
+          },
+        }
+      );
     } else {
       setCheckIn(dateStr);
       setCheckOut(null);
-      availabilityMutation.reset();
+      resetAvailability();
     }
   }
 
@@ -115,21 +154,18 @@ export function useBookingCalendar(
     clearUrlDates();
     resetAutoClose();
     setCalendarOpen(true);
-    availabilityMutation.reset();
+    resetAvailability();
   }
 
   const isAvailable =
-    !!availabilityMutation.data &&
+    !!availData &&
     !!smoobuPropertyId &&
-    availabilityMutation.data.availableApartments.includes(smoobuPropertyId);
+    availData.availableApartments.includes(smoobuPropertyId);
 
   const nightPriceCents = useMemo((): Record<string, number> | null => {
     if (!checkIn || !checkOut || !smoobuPropertyId) return null;
-    if (!availabilityMutation.data) return null;
-    if (
-      !availabilityMutation.data.availableApartments.includes(smoobuPropertyId)
-    )
-      return null;
+    if (!availData) return null;
+    if (!availData.availableApartments.includes(smoobuPropertyId)) return null;
 
     const dates = getDateRange(checkIn, checkOut);
     const result: Record<string, number> = {};
@@ -139,7 +175,7 @@ export function useBookingCalendar(
       result[date] = toCents(rate.price);
     }
     return result;
-  }, [checkIn, checkOut, smoobuPropertyId, rateMap, availabilityMutation.data]);
+  }, [checkIn, checkOut, smoobuPropertyId, rateMap, availData]);
 
   const totalPriceCents = useMemo(
     () =>
@@ -156,9 +192,9 @@ export function useBookingCalendar(
     rateMap,
     currency,
     ratesLoading: ratesQuery.isLoading,
-    availabilityResult: availabilityMutation.data ?? null,
-    availabilityLoading: availabilityMutation.isPending || pendingUrlCheck,
-    availabilityError: availabilityMutation.error,
+    availabilityResult: availData,
+    availabilityLoading: availLoading || pendingUrlCheck,
+    availabilityError: availError,
     isCalendarOpen,
     setCalendarOpen,
     isAvailable,

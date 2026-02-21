@@ -87,6 +87,15 @@ function BookingWidgetInner({
     selectedExtras,
   });
 
+  // Block date changes while a checkout submission is in-flight
+  const handleDateClick = useCallback(
+    (dateStr: string) => {
+      if (checkout.isSubmitting) return;
+      calendar.handleDateClick(dateStr);
+    },
+    [checkout.isSubmitting, calendar.handleDateClick]
+  );
+
   function toggleExtra(index: number) {
     setSelectedExtras((prev) => {
       const next = new Set(prev);
@@ -161,7 +170,7 @@ function BookingWidgetInner({
             rateMap={calendar.rateMap}
             ratesLoading={calendar.ratesLoading}
             currency={calendar.currency}
-            onDateClick={calendar.handleDateClick}
+            onDateClick={handleDateClick}
             onPrevMonth={calendar.goPrevMonth}
             onNextMonth={calendar.goNextMonth}
             onConfirm={calendar.confirmCalendar}
@@ -176,7 +185,7 @@ function BookingWidgetInner({
             rateMap={calendar.rateMap}
             ratesLoading={calendar.ratesLoading}
             currency={calendar.currency}
-            onDateClick={calendar.handleDateClick}
+            onDateClick={handleDateClick}
             onPrevMonth={calendar.goPrevMonth}
             onNextMonth={calendar.goNextMonth}
             onConfirm={calendar.confirmCalendar}

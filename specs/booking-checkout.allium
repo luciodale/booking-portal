@@ -1,0 +1,160 @@
+-- Booking Checkout Flow
+-- Specifies date selection → availability check → form submission lifecycle.
+-- Focus: preventing stale availability data and stuck submission states.
+
+value DateRange {
+    checkIn: Date
+    checkOut: Date
+
+    requires: checkOut > checkIn
+}
+
+entity AvailabilityCheck {
+    dates: DateRange
+    status: pending | resolved | cancelled
+    result: available | unavailable | null
+
+    -- Only the latest check matters
+    is_current: status != cancelled
+}
+
+entity BookingCheckout {
+    -- Date selection
+    selectedDates: DateRange?
+
+    -- Availability
+    latestCheck: AvailabilityCheck?
+    isAvailable: latestCheck != null
+        and latestCheck.is_current
+        and latestCheck.result = available
+
+    -- Submission
+    submissionStatus: idle | submitting | redirecting | failed
+
+    -- Guards
+    canSubmit: isAvailable
+        and submissionStatus = idle
+        and latestCheck.dates = selectedDates
+
+    isLocked: submissionStatus = submitting or submissionStatus = redirecting
+}
+
+given {
+    checkout: BookingCheckout
+}
+
+-- === Date Selection Rules ===
+
+rule SelectCheckoutDate {
+    when: GuestSelectsCheckoutDate(checkout, dates)
+    requires: checkout.submissionStatus = idle
+
+    -- Cancel any in-flight availability check
+    if checkout.latestCheck != null and checkout.latestCheck.status = pending:
+        ensures: checkout.latestCheck.status = cancelled
+
+    ensures: checkout.selectedDates = dates
+    ensures: AvailabilityCheck.created(
+        dates: dates,
+        status: pending,
+        result: null
+    )
+    ensures: CheckAvailability(checkout, dates)
+}
+
+rule PreventDateChangeDuringSubmission {
+    when: GuestSelectsCheckoutDate(checkout, _)
+    requires: checkout.isLocked
+
+    -- No state change: date selection is ignored while submitting
+    ensures: DateChangeBlocked(checkout)
+}
+
+-- === Availability Rules ===
+
+rule AvailabilityResolved {
+    when: check: AvailabilityCheck.status transitions_to resolved
+
+    -- Only apply if this check is still current (not superseded)
+    requires: checkout.latestCheck = check
+
+    ensures: checkout.latestCheck = check
+}
+
+rule AvailabilitySuperseded {
+    when: check: AvailabilityCheck.status transitions_to resolved
+    requires: checkout.latestCheck != check
+
+    -- Discard: a newer check has already been issued
+    ensures: check.status = cancelled
+}
+
+-- === Submission Rules ===
+
+rule SubmitBooking {
+    when: GuestSubmitsBooking(checkout, guestInfo)
+    requires: checkout.canSubmit
+
+    ensures: checkout.submissionStatus = submitting
+    ensures: CreateCheckoutSession(checkout, guestInfo)
+}
+
+rule SubmitBookingBlocked {
+    when: GuestSubmitsBooking(checkout, _)
+    requires: not checkout.canSubmit
+
+    -- No state change: submit action is rejected
+    ensures: SubmissionRejected(checkout)
+}
+
+rule CheckoutSessionCreated {
+    when: CheckoutSessionReady(checkout, redirectUrl)
+    requires: checkout.submissionStatus = submitting
+
+    ensures: checkout.submissionStatus = redirecting
+    ensures: RedirectToPayment(checkout, redirectUrl)
+}
+
+rule CheckoutSessionFailed {
+    when: CheckoutSessionError(checkout)
+    requires: checkout.submissionStatus = submitting
+
+    ensures: checkout.submissionStatus = failed
+}
+
+rule ResetAfterFailure {
+    when: checkout: BookingCheckout.submissionStatus becomes failed
+
+    ensures: checkout.submissionStatus = idle
+}
+
+-- === Surfaces ===
+
+surface BookingButton {
+    facing visitor: Guest
+
+    context checkout: BookingCheckout
+
+    exposes:
+        checkout.submissionStatus
+        checkout.isAvailable
+        checkout.canSubmit
+
+    provides:
+        GuestSubmitsBooking(checkout, guestInfo)
+            when checkout.canSubmit
+
+    guarantee:
+        -- Button never shows "Processing..." when dates have changed
+        -- since the last availability check
+        if checkout.submissionStatus = submitting:
+            checkout.latestCheck.dates = checkout.selectedDates
+
+        -- Submission state always resolves: never stuck
+        if checkout.submissionStatus = submitting:
+            eventually checkout.submissionStatus in {redirecting, failed}
+}
+
+-- === Resolved Decisions ===
+-- 1. Date changes are BLOCKED during submission (not auto-cancelled).
+-- 2. No client-side timeout to force-reset from submitting → failed.
