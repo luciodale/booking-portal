@@ -3,17 +3,19 @@
  * Pure functions for syncing amenities/highlights/views to prevent duplicates
  */
 
+import type { Feature } from "@/modules/constants";
+
 type FeatureFields = {
-  amenities: string[];
-  highlights: string[];
-  views: string[];
+  amenities: Feature[];
+  highlights: Feature[];
+  views: Feature[];
 };
 
 export type FeatureFieldName = keyof FeatureFields;
 
 /**
  * Syncs feature fields to ensure no duplicates across amenities/highlights/views.
- * When an item is added to one field, it's removed from the others.
+ * When an item is added to one field, it's removed from the others (matched by name).
  *
  * @param current - Current values of all three fields
  * @param changedField - Which field was changed
@@ -23,25 +25,25 @@ export type FeatureFieldName = keyof FeatureFields;
 export function syncFeatureFields(
   current: FeatureFields,
   changedField: FeatureFieldName,
-  newValue: string[]
+  newValue: Feature[]
 ): FeatureFields {
-  // Find newly added items
-  const addedItems = newValue.filter((v) => !current[changedField].includes(v));
+  const currentNames = new Set(current[changedField].map((f) => f.name));
+  const addedNames = new Set(
+    newValue.filter((f) => !currentNames.has(f.name)).map((f) => f.name)
+  );
 
-  // Start with updated changed field
   const result: FeatureFields = {
     ...current,
     [changedField]: newValue,
   };
 
-  // Remove newly added items from other fields
-  if (addedItems.length > 0) {
+  if (addedNames.size > 0) {
     const otherFields = (["amenities", "highlights", "views"] as const).filter(
       (f) => f !== changedField
     );
 
     for (const field of otherFields) {
-      result[field] = current[field].filter((v) => !addedItems.includes(v));
+      result[field] = current[field].filter((f) => !addedNames.has(f.name));
     }
   }
 
@@ -49,11 +51,20 @@ export function syncFeatureFields(
 }
 
 /**
+ * Returns true if a custom tag name collides with a default option ID.
+ * Custom tags that match a default must be added via the default toggle instead.
+ */
+export function isDefaultCollision(
+  customName: string,
+  defaultIds: ReadonlySet<string>
+): boolean {
+  const kebab = displayToKebab(customName);
+  return defaultIds.has(kebab);
+}
+
+/**
  * Converts kebab-case tag to display format with capitalized words.
- * Example: "private-pool" → "Private Pool"
- *
- * @param tag - Kebab-case tag string
- * @returns Display-formatted string
+ * Example: "private-pool" -> "Private Pool"
  */
 export function kebabToDisplay(tag: string): string {
   return tag
@@ -64,10 +75,7 @@ export function kebabToDisplay(tag: string): string {
 
 /**
  * Converts display format to kebab-case tag (lowercase with dashes).
- * Example: "Private Pool" → "private-pool"
- *
- * @param input - Display-formatted string
- * @returns Kebab-case tag string
+ * Example: "Private Pool" -> "private-pool"
  */
 export function displayToKebab(input: string): string {
   return input.trim().toLowerCase().replace(/\s+/g, "-");

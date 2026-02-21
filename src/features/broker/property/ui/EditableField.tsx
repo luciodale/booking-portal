@@ -7,11 +7,23 @@ import {
   displayToKebab,
   kebabToDisplay,
 } from "@/features/broker/property/domain/sync-features";
+import type { Feature } from "@/modules/constants";
+import { IconPicker } from "@/modules/ui/react/IconPicker";
 import { Select } from "@/modules/ui/Select";
 import { cn } from "@/modules/utils/cn";
 import { getErrorMessages } from "@/modules/utils/errors";
-import { Check, Loader2 } from "lucide-react";
+import { Check, type LucideIcon, Loader2, icons } from "lucide-react";
 import { type ReactNode, useState } from "react";
+
+/** Resolve a kebab-case or PascalCase icon name to a lucide component */
+function resolveIcon(name: string): LucideIcon | undefined {
+  if (name in icons) return icons[name as keyof typeof icons];
+  const pascal = name
+    .split("-")
+    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+    .join("");
+  return icons[pascal as keyof typeof icons];
+}
 
 interface EditableFieldProps<T> {
   label: string;
@@ -495,17 +507,17 @@ export function EditableSectionField<T extends Record<string, unknown>>({
 
 /** Feature Group variant - for amenities/highlights/views with syncing */
 interface EditableFeatureGroupFieldProps {
-  amenities: string[];
-  highlights: string[];
-  views: string[];
+  amenities: Feature[];
+  highlights: Feature[];
+  views: Feature[];
   onSave: (data: {
-    amenities: string[];
-    highlights: string[];
-    views: string[];
+    amenities: Feature[];
+    highlights: Feature[];
+    views: Feature[];
   }) => Promise<void>;
-  highlightsOptions: Array<{ value: string }>;
-  amenitiesOptions: Array<{ value: string }>;
-  viewsOptions: Array<{ value: string }>;
+  highlightsOptions: Array<{ value: string; icon: string }>;
+  amenitiesOptions: Array<{ value: string; icon: string }>;
+  viewsOptions: Array<{ value: string; icon: string }>;
   className?: string;
 }
 
@@ -529,26 +541,28 @@ export function EditableFeatureGroupField({
       renderFields={({ values, onChange, disabled }) => {
         const syncedOnChange = (
           fieldName: "amenities" | "highlights" | "views",
-          newValue: string[]
+          newValue: Feature[]
         ) => {
           if (disabled) return;
 
-          // Find items added in this change
-          const addedItems = newValue.filter(
-            (v) => !values[fieldName].includes(v)
+          const currentNames = new Set(
+            values[fieldName].map((f) => f.name)
+          );
+          const addedNames = new Set(
+            newValue
+              .filter((f) => !currentNames.has(f.name))
+              .map((f) => f.name)
           );
 
-          // Start with the updated field
           const updated = { ...values, [fieldName]: newValue };
 
-          // Remove newly added items from the other two fields
           const otherFields = (
             ["amenities", "highlights", "views"] as const
           ).filter((f) => f !== fieldName);
 
           for (const field of otherFields) {
             updated[field] = updated[field].filter(
-              (v) => !addedItems.includes(v)
+              (f) => !addedNames.has(f.name)
             );
           }
 
@@ -562,7 +576,7 @@ export function EditableFeatureGroupField({
               <div className="block text-sm font-medium text-foreground mb-3">
                 Property Amenities
               </div>
-              <TagsInput
+              <FeatureTagsInput
                 value={values.amenities}
                 onChange={(newValue) => syncedOnChange("amenities", newValue)}
                 options={amenitiesOptions}
@@ -578,7 +592,7 @@ export function EditableFeatureGroupField({
               <p className="text-sm text-muted-foreground mb-2">
                 Key features that make this property special
               </p>
-              <TagsInput
+              <FeatureTagsInput
                 value={values.highlights}
                 onChange={(newValue) => syncedOnChange("highlights", newValue)}
                 options={highlightsOptions}
@@ -594,7 +608,7 @@ export function EditableFeatureGroupField({
               <p className="text-sm text-muted-foreground mb-2">
                 Views available from the property
               </p>
-              <TagsInput
+              <FeatureTagsInput
                 value={values.views}
                 onChange={(newValue) => syncedOnChange("views", newValue)}
                 options={viewsOptions}
@@ -608,98 +622,121 @@ export function EditableFeatureGroupField({
   );
 }
 
-/** Internal TagsInput component for EditableFeatureGroupField */
-function TagsInput({
+/** Internal FeatureTagsInput component for EditableFeatureGroupField */
+function FeatureTagsInput({
   value,
   onChange,
   options,
   disabled,
 }: {
-  value: string[];
-  onChange: (value: string[]) => void;
-  options: Array<{ value: string }>;
+  value: Feature[];
+  onChange: (value: Feature[]) => void;
+  options: Array<{ value: string; icon: string }>;
   disabled: boolean;
 }) {
-  const [customInput, setCustomInput] = useState("");
-  const optionValues = new Set(options.map((o) => o.value));
-  const customTags = value.filter((v) => !optionValues.has(v));
+  const [customName, setCustomName] = useState("");
+  const [customIcon, setCustomIcon] = useState("check");
+  const optionIds = new Set(options.map((o) => o.value));
+  const selectedNames = new Set(value.map((f) => f.name));
+  const customFeatures = value.filter((f) => !optionIds.has(f.name));
 
-  const toggleValue = (val: string) => {
+  const toggleDefault = (optValue: string, optIcon: string) => {
     if (disabled) return;
-    const newValues = value.includes(val)
-      ? value.filter((v) => v !== val)
-      : [...value, val];
-    onChange(newValues);
+    const exists = selectedNames.has(optValue);
+    const newValue = exists
+      ? value.filter((f) => f.name !== optValue)
+      : [...value, { name: optValue, icon: optIcon }];
+    onChange(newValue);
   };
 
-  const addCustomTag = () => {
+  const removeFeature = (name: string) => {
     if (disabled) return;
-    const kebabTag = displayToKebab(customInput);
-    if (!kebabTag || value.includes(kebabTag)) return;
-    onChange([...value, kebabTag]);
-    setCustomInput("");
+    onChange(value.filter((f) => f.name !== name));
+  };
+
+  const addCustom = () => {
+    if (disabled) return;
+    const kebabTag = displayToKebab(customName);
+    if (!kebabTag || selectedNames.has(kebabTag)) return;
+    if (optionIds.has(kebabTag)) return;
+    onChange([...value, { name: kebabTag, icon: customIcon }]);
+    setCustomName("");
+    setCustomIcon("check");
   };
 
   return (
     <div>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => {
-          const isSelected = value.includes(option.value);
+          const isSelected = selectedNames.has(option.value);
+          const Icon = resolveIcon(option.icon);
           return (
             <button
               key={option.value}
               type="button"
-              onClick={() => toggleValue(option.value)}
+              onClick={() => toggleDefault(option.value, option.icon)}
               disabled={disabled}
               className={cn(
-                "px-3 py-1.5 text-sm rounded-full border transition-colors",
+                "px-3 py-1.5 text-sm rounded-full border transition-colors inline-flex items-center gap-1.5",
                 isSelected
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-card text-foreground border-border hover:border-primary/50",
                 disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
               )}
             >
+              {Icon && <Icon className="w-3.5 h-3.5" />}
               {kebabToDisplay(option.value)}
             </button>
           );
         })}
 
-        {customTags.map((tag) => (
-          <button
-            key={tag}
-            type="button"
-            onClick={() => toggleValue(tag)}
-            disabled={disabled}
-            className={cn(
-              "px-3 py-1.5 text-sm rounded-full border bg-primary text-primary-foreground border-primary flex items-center gap-1",
-              disabled && "opacity-50 cursor-not-allowed"
-            )}
-          >
-            {kebabToDisplay(tag)}
-            <span className="text-xs">×</span>
-          </button>
-        ))}
+        {customFeatures.map((feat) => {
+          const Icon = resolveIcon(feat.icon);
+          return (
+            <button
+              key={feat.name}
+              type="button"
+              onClick={() => removeFeature(feat.name)}
+              disabled={disabled}
+              className={cn(
+                "px-3 py-1.5 text-sm rounded-full border bg-primary text-primary-foreground border-primary flex items-center gap-1.5",
+                disabled && "opacity-50 cursor-not-allowed"
+              )}
+            >
+              {Icon && <Icon className="w-3.5 h-3.5" />}
+              {kebabToDisplay(feat.name)}
+              <span className="text-xs">×</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="flex gap-2 mt-3">
         <input
           type="text"
-          value={customInput}
-          onChange={(e) => setCustomInput(e.target.value)}
+          value={customName}
+          onChange={(e) => setCustomName(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
-              addCustomTag();
+              addCustom();
             }
           }}
           placeholder="Add custom..."
           disabled={disabled}
           className="input flex-1 text-sm"
         />
+        <div className="w-40">
+          <IconPicker
+            value={customIcon}
+            onChange={setCustomIcon}
+            disabled={disabled}
+          />
+        </div>
         <button
           type="button"
-          onClick={addCustomTag}
-          disabled={disabled || !customInput.trim()}
+          onClick={addCustom}
+          disabled={disabled || !customName.trim()}
           className="btn-secondary text-sm disabled:opacity-50"
         >
           Add

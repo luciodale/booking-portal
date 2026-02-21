@@ -1,23 +1,31 @@
 import { describe, expect, it } from "vitest";
+import type { Feature } from "@/modules/constants";
 import {
   displayToKebab,
+  isDefaultCollision,
   kebabToDisplay,
   syncFeatureFields,
 } from "../sync-features";
 
+function f(name: string, icon = "check"): Feature {
+  return { name, icon };
+}
+
 describe("syncFeatureFields", () => {
   const emptyFields = {
-    amenities: [],
-    highlights: [],
-    views: [],
+    amenities: [] as Feature[],
+    highlights: [] as Feature[],
+    views: [] as Feature[],
   };
 
   describe("adding items", () => {
     it("adds item to empty field", () => {
-      const result = syncFeatureFields(emptyFields, "amenities", ["pool"]);
+      const result = syncFeatureFields(emptyFields, "amenities", [
+        f("pool", "waves"),
+      ]);
 
       expect(result).toEqual({
-        amenities: ["pool"],
+        amenities: [f("pool", "waves")],
         highlights: [],
         views: [],
       });
@@ -25,13 +33,13 @@ describe("syncFeatureFields", () => {
 
     it("adds multiple items to field", () => {
       const result = syncFeatureFields(emptyFields, "highlights", [
-        "spa",
-        "chef",
+        f("spa", "sparkles"),
+        f("chef", "chef-hat"),
       ]);
 
       expect(result).toEqual({
         amenities: [],
-        highlights: ["spa", "chef"],
+        highlights: [f("spa", "sparkles"), f("chef", "chef-hat")],
         views: [],
       });
     });
@@ -40,49 +48,57 @@ describe("syncFeatureFields", () => {
   describe("syncing across fields", () => {
     it("removes item from other fields when added", () => {
       const current = {
-        amenities: ["pool", "wifi"],
+        amenities: [f("pool", "waves"), f("wifi", "wifi")],
         highlights: [],
         views: [],
       };
 
-      const result = syncFeatureFields(current, "highlights", ["pool"]);
+      const result = syncFeatureFields(current, "highlights", [
+        f("pool", "waves"),
+      ]);
 
       expect(result).toEqual({
-        amenities: ["wifi"],
-        highlights: ["pool"],
+        amenities: [f("wifi", "wifi")],
+        highlights: [f("pool", "waves")],
         views: [],
       });
     });
 
     it("removes item from multiple other fields", () => {
       const current = {
-        amenities: ["pool"],
-        highlights: ["spa"],
-        views: ["pool", "sea"],
+        amenities: [f("pool", "waves")],
+        highlights: [f("spa", "sparkles")],
+        views: [f("pool", "waves"), f("sea", "waves")],
       };
 
-      const result = syncFeatureFields(current, "highlights", ["spa", "pool"]);
+      const result = syncFeatureFields(current, "highlights", [
+        f("spa", "sparkles"),
+        f("pool", "waves"),
+      ]);
 
       expect(result).toEqual({
         amenities: [],
-        highlights: ["spa", "pool"],
-        views: ["sea"],
+        highlights: [f("spa", "sparkles"), f("pool", "waves")],
+        views: [f("sea", "waves")],
       });
     });
 
     it("handles item moving from highlights to views", () => {
       const current = {
         amenities: [],
-        highlights: ["sunset"],
-        views: ["sea"],
+        highlights: [f("sunset", "sun")],
+        views: [f("sea", "waves")],
       };
 
-      const result = syncFeatureFields(current, "views", ["sea", "sunset"]);
+      const result = syncFeatureFields(current, "views", [
+        f("sea", "waves"),
+        f("sunset", "sun"),
+      ]);
 
       expect(result).toEqual({
         amenities: [],
         highlights: [],
-        views: ["sea", "sunset"],
+        views: [f("sea", "waves"), f("sunset", "sun")],
       });
     });
   });
@@ -90,17 +106,19 @@ describe("syncFeatureFields", () => {
   describe("removing items", () => {
     it("removes item without affecting other fields", () => {
       const current = {
-        amenities: ["pool", "wifi"],
-        highlights: ["spa"],
-        views: ["sea"],
+        amenities: [f("pool", "waves"), f("wifi", "wifi")],
+        highlights: [f("spa", "sparkles")],
+        views: [f("sea", "waves")],
       };
 
-      const result = syncFeatureFields(current, "amenities", ["pool"]);
+      const result = syncFeatureFields(current, "amenities", [
+        f("pool", "waves"),
+      ]);
 
       expect(result).toEqual({
-        amenities: ["pool"],
-        highlights: ["spa"],
-        views: ["sea"],
+        amenities: [f("pool", "waves")],
+        highlights: [f("spa", "sparkles")],
+        views: [f("sea", "waves")],
       });
     });
   });
@@ -108,12 +126,14 @@ describe("syncFeatureFields", () => {
   describe("no changes", () => {
     it("returns same values when nothing added", () => {
       const current = {
-        amenities: ["pool"],
-        highlights: ["spa"],
-        views: ["sea"],
+        amenities: [f("pool", "waves")],
+        highlights: [f("spa", "sparkles")],
+        views: [f("sea", "waves")],
       };
 
-      const result = syncFeatureFields(current, "amenities", ["pool"]);
+      const result = syncFeatureFields(current, "amenities", [
+        f("pool", "waves"),
+      ]);
 
       expect(result).toEqual(current);
     });
@@ -122,7 +142,7 @@ describe("syncFeatureFields", () => {
   describe("edge cases", () => {
     it("handles empty new value", () => {
       const current = {
-        amenities: ["pool", "wifi"],
+        amenities: [f("pool", "waves"), f("wifi", "wifi")],
         highlights: [],
         views: [],
       };
@@ -138,17 +158,17 @@ describe("syncFeatureFields", () => {
 
     it("does not affect other fields when removing all items", () => {
       const current = {
-        amenities: ["pool"],
-        highlights: ["spa"],
-        views: ["sea"],
+        amenities: [f("pool", "waves")],
+        highlights: [f("spa", "sparkles")],
+        views: [f("sea", "waves")],
       };
 
       const result = syncFeatureFields(current, "amenities", []);
 
       expect(result).toEqual({
         amenities: [],
-        highlights: ["spa"],
-        views: ["sea"],
+        highlights: [f("spa", "sparkles")],
+        views: [f("sea", "waves")],
       });
     });
   });
@@ -209,5 +229,38 @@ describe("displayToKebab", () => {
 
   it("handles already kebab-case", () => {
     expect(displayToKebab("private-pool")).toBe("private-pool");
+  });
+});
+
+describe("isDefaultCollision", () => {
+  const defaults = new Set(["hot-tub", "pool", "wifi", "spa"]);
+
+  it("detects exact kebab match", () => {
+    expect(isDefaultCollision("hot-tub", defaults)).toBe(true);
+  });
+
+  it("detects display-format match after kebab conversion", () => {
+    expect(isDefaultCollision("Hot Tub", defaults)).toBe(true);
+  });
+
+  it("detects match with extra whitespace", () => {
+    expect(isDefaultCollision("  hot  tub  ", defaults)).toBe(true);
+  });
+
+  it("detects match with mixed case", () => {
+    expect(isDefaultCollision("HOT TUB", defaults)).toBe(true);
+  });
+
+  it("returns false for non-default name", () => {
+    expect(isDefaultCollision("steam-room", defaults)).toBe(false);
+  });
+
+  it("returns false for empty input", () => {
+    expect(isDefaultCollision("", defaults)).toBe(false);
+  });
+
+  it("detects single-word default", () => {
+    expect(isDefaultCollision("Pool", defaults)).toBe(true);
+    expect(isDefaultCollision("Wifi", defaults)).toBe(true);
   });
 });

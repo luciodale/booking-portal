@@ -5,20 +5,20 @@
 
 import {
   type FeatureFieldName,
-  displayToKebab,
   syncFeatureFields,
 } from "@/features/broker/property/domain/sync-features";
 import { useCityTaxDefault } from "@/features/broker/property/hooks/useCityTaxDefault";
+import type { Feature } from "@/modules/constants";
 import { getFacilityOptions } from "@/modules/constants";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
+import { IconTagsInput } from "@/modules/ui/react/form-inputs/IconTagsInput";
 import {
   ImagesInput,
   type NewImage,
 } from "@/modules/ui/react/form-inputs/ImagesInput";
 import { NumberInput } from "@/modules/ui/react/form-inputs/NumberInput";
 import { SelectInput } from "@/modules/ui/react/form-inputs/SelectInput";
-import { TagsInput } from "@/modules/ui/react/form-inputs/TagsInput";
 import { TextInput } from "@/modules/ui/react/form-inputs/TextInput";
 import { TextareaInput } from "@/modules/ui/react/form-inputs/TextareaInput";
 import type { CreatePropertyInput } from "@/schemas/property";
@@ -157,7 +157,7 @@ export function CreatePropertyForm({
   }
 
   // Synced change handler for amenities/highlights/views
-  function handleSyncedChange(fieldName: FeatureFieldName, newValue: string[]) {
+  function handleSyncedChange(fieldName: FeatureFieldName, newValue: Feature[]) {
     const synced = syncFeatureFields(
       { amenities, highlights, views },
       fieldName,
@@ -314,57 +314,36 @@ export function CreatePropertyForm({
 
       {/* Features & Amenities */}
       <FormSection title="Features & Amenities">
-        <TagsInput
+        <IconTagsInput
           name="amenities"
           control={control}
           label="Property Amenities"
           description="Add amenities — items are unique across all categories"
-          options={getFacilityOptions("amenity")}
+          defaultOptions={getFacilityOptions("amenity")}
           onChangeOverride={(newValue) =>
             handleSyncedChange("amenities", newValue)
           }
-          formatDisplay={(v) =>
-            v
-              .split("-")
-              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-              .join(" ")
-          }
-          formatValue={displayToKebab}
           labelSuffix={renderLink("amenities")}
         />
 
-        <TagsInput
+        <IconTagsInput
           name="highlights"
           control={control}
           label="Signature Highlights"
           description="Key features that make this property special"
-          options={getFacilityOptions("highlight")}
+          defaultOptions={getFacilityOptions("highlight")}
           onChangeOverride={(newValue) =>
             handleSyncedChange("highlights", newValue)
           }
-          formatDisplay={(v) =>
-            v
-              .split("-")
-              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-              .join(" ")
-          }
-          formatValue={displayToKebab}
         />
 
-        <TagsInput
+        <IconTagsInput
           name="views"
           control={control}
           label="Panoramic Views"
           description="Views available from the property"
-          options={getFacilityOptions("view")}
+          defaultOptions={getFacilityOptions("view")}
           onChangeOverride={(newValue) => handleSyncedChange("views", newValue)}
-          formatDisplay={(v) =>
-            v
-              .split("-")
-              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-              .join(" ")
-          }
-          formatValue={displayToKebab}
         />
       </FormSection>
 

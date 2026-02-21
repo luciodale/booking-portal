@@ -2,7 +2,7 @@
  * CreateExperienceForm - Form for creating a new experience
  */
 
-import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
+import { experienceCategories } from "@/features/broker/experience/constants/categoryLabels";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
 import { NumberInput } from "@/modules/ui/react/form-inputs/NumberInput";
@@ -37,12 +37,10 @@ export function CreateExperienceForm({
   const additionalCosts = watch("additionalCosts") ?? [];
   const instantBook = watch("instantBook") ?? false;
 
-  const categoryOptions = Object.entries(experienceCategoryLabels).map(
-    ([value, label]) => ({
-      value,
-      label,
-    })
-  );
+  const categoryOptions = experienceCategories.map((c) => ({
+    value: c.id,
+    label: c.label,
+  }));
 
   return (
     <form

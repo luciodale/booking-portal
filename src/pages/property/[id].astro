@@ -13,7 +13,6 @@ import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
 import PageLayout from "@/layouts/PageLayout.astro";
-import { getFacilityIconName } from "@/modules/constants";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import Badge from "@/modules/ui/astro/Badge.astro";
 import ExperienceCard from "@/modules/ui/astro/ExperienceCard.astro";
@@ -197,12 +196,12 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
           <div>
             <h2 class="text-xl font-semibold text-foreground mb-6">{t(locale, "property.amenities")}</h2>
             <div class="grid grid-cols-2 gap-4">
-              {property.amenities.map((amenity) => (
+              {property.amenities.map((a) => (
                 <div class="flex items-center gap-4 px-4 py-3.5 bg-card rounded-xl border border-border/50">
                   <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
-                    <i data-lucide={getFacilityIconName(amenity, "amenity")} class="w-4 h-4 text-primary"></i>
+                    <i data-lucide={a.icon} class="w-4 h-4 text-primary"></i>
                   </div>
-                  <span class="text-foreground text-sm font-medium">{kebabToDisplay(amenity)}</span>
+                  <span class="text-foreground text-sm font-medium">{kebabToDisplay(a.name)}</span>
                 </div>
               ))}
             </div>
@@ -213,10 +212,10 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
           <div>
             <h2 class="text-xl font-semibold text-foreground mb-4">{t(locale, "property.views")}</h2>
             <div class="flex flex-wrap gap-3">
-              {property.views.map((view) => (
+              {property.views.map((v) => (
                 <span class="amenity-chip">
-                  <i data-lucide="eye" class="w-4 h-4"></i>
-                  {kebabToDisplay(view)}
+                  <i data-lucide={v.icon} class="w-4 h-4"></i>
+                  {kebabToDisplay(v.name)}
                 </span>
               ))}
             </div>
@@ -228,12 +227,12 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
               <div>
                 <h2 class="text-xl font-semibold text-foreground mb-6">{t(locale, "property.highlights")}</h2>
                 <div class="grid grid-cols-2 gap-4">
-                  {property.highlights.map((highlight) => (
+                  {property.highlights.map((h) => (
                     <div class="flex items-center gap-4 px-4 py-3.5 bg-card rounded-xl border border-border/50">
                       <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
-                        <i data-lucide="check" class="w-4 h-4 text-primary"></i>
+                        <i data-lucide={h.icon} class="w-4 h-4 text-primary"></i>
                       </div>
-                      <span class="text-foreground text-sm font-medium">{kebabToDisplay(highlight)}</span>
+                      <span class="text-foreground text-sm font-medium">{kebabToDisplay(h.name)}</span>
                     </div>
                   ))}
                 </div>

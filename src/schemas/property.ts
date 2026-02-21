@@ -67,9 +67,9 @@ const propertyFieldsSchema = baseAssetInsertSchema
     queenSizeBeds: z.number().int().min(0).optional().nullable(),
     kingSizeBeds: z.number().int().min(0).optional().nullable(),
 
-    amenities: z.array(z.string()).optional(), // Pre-filled from Smoobu
-    views: z.array(z.string()).optional(),
-    highlights: z.array(z.string()).optional(),
+    amenities: z.array(z.object({ name: z.string(), icon: z.string() })).optional(),
+    views: z.array(z.object({ name: z.string(), icon: z.string() })).optional(),
+    highlights: z.array(z.object({ name: z.string(), icon: z.string() })).optional(),
 
     checkIn: z
       .string()

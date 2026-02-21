@@ -1,4 +1,5 @@
 import { cn } from "@/modules/utils/cn";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { type LucideIcon, icons } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -7,6 +8,9 @@ interface IconPickerProps {
   onChange: (iconName: string) => void;
   disabled?: boolean;
 }
+
+const COLUMNS = 6;
+const ROW_HEIGHT = 36;
 
 const iconEntries = Object.entries(icons) as [string, LucideIcon][];
 
@@ -18,6 +22,7 @@ export function IconPicker({
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -36,10 +41,17 @@ export function IconPicker({
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return iconEntries
-      .filter(([name]) => name.toLowerCase().includes(q))
-      .slice(0, 50);
+    return iconEntries.filter(([name]) => name.toLowerCase().includes(q));
   }, [search]);
+
+  const rowCount = Math.ceil(filtered.length / COLUMNS);
+
+  const virtualizer = useVirtualizer({
+    count: rowCount,
+    getScrollElement: () => scrollRef.current,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 5,
+  });
 
   const SelectedIcon = value
     ? (icons[value as keyof typeof icons] ?? null)
@@ -76,28 +88,53 @@ export function IconPicker({
             placeholder="Search icons..."
             className="input w-full mb-2 text-sm"
           />
-          <div className="grid grid-cols-6 gap-1 max-h-48 overflow-y-auto">
-            {filtered.map(([name, Icon]) => (
-              <button
-                key={name}
-                type="button"
-                title={name}
-                onClick={() => {
-                  onChange(name);
-                  setOpen(false);
-                  setSearch("");
-                }}
-                className={cn(
-                  "p-2 rounded-md hover:bg-secondary transition-colors flex items-center justify-center",
-                  value === name && "bg-primary/10 ring-1 ring-primary"
-                )}
-              >
-                <Icon className="w-4 h-4" />
-              </button>
-            ))}
-            {filtered.length === 0 && (
-              <div className="col-span-6 py-4 text-center text-sm text-muted-foreground">
+          <div ref={scrollRef} className="max-h-48 overflow-y-auto">
+            {filtered.length === 0 ? (
+              <div className="py-4 text-center text-sm text-muted-foreground">
                 No icons found
+              </div>
+            ) : (
+              <div
+                className="relative w-full"
+                style={{ height: virtualizer.getTotalSize() }}
+              >
+                {virtualizer.getVirtualItems().map((virtualRow) => {
+                  const startIdx = virtualRow.index * COLUMNS;
+                  const rowIcons = filtered.slice(
+                    startIdx,
+                    startIdx + COLUMNS
+                  );
+                  return (
+                    <div
+                      key={virtualRow.index}
+                      className="absolute left-0 w-full grid grid-cols-6 gap-1"
+                      style={{
+                        height: ROW_HEIGHT,
+                        transform: `translateY(${virtualRow.start}px)`,
+                      }}
+                    >
+                      {rowIcons.map(([name, Icon]) => (
+                        <button
+                          key={name}
+                          type="button"
+                          title={name}
+                          onClick={() => {
+                            onChange(name);
+                            setOpen(false);
+                            setSearch("");
+                          }}
+                          className={cn(
+                            "p-2 rounded-md hover:bg-secondary transition-colors flex items-center justify-center",
+                            value === name &&
+                              "bg-primary/10 ring-1 ring-primary"
+                          )}
+                        >
+                          <Icon className="w-4 h-4" />
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

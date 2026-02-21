@@ -3,6 +3,7 @@ import { assets, images } from "@/db/schema";
 import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import { displayToKebab } from "@/features/broker/property/domain/sync-features";
+import type { Feature } from "@/modules/constants";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { t } from "@/i18n/t";
 import type { PropertyWithDetails } from "@/schemas/property";
@@ -57,11 +58,14 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
 
     const data = validationResult.data;
 
+    const normalizeFeatures = (features: Feature[] | undefined) =>
+      features?.map((f) => ({ name: displayToKebab(f.name), icon: f.icon }));
+
     const normalizedData = {
       ...data,
-      amenities: data.amenities?.map(displayToKebab),
-      highlights: data.highlights?.map(displayToKebab),
-      views: data.views?.map(displayToKebab),
+      amenities: normalizeFeatures(data.amenities),
+      highlights: normalizeFeatures(data.highlights),
+      views: normalizeFeatures(data.views),
     };
 
     const [updated] = await db

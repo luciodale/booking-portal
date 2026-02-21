@@ -1,0 +1,186 @@
+-- Amenity Icons
+-- Specifies how property features (amenities, highlights, views) carry explicit icons,
+-- how default vs custom features resolve their icons, and how the three groups stay
+-- mutually exclusive by name.
+
+-- === Values ===
+
+value Feature {
+    name: String
+    icon: String
+
+    requires: name.length > 0
+    requires: icon.length > 0
+}
+
+value DefaultOption {
+    id: String
+    icon: String
+}
+
+-- === Entities ===
+
+entity FacilityGroup {
+    kind: amenity | highlight | view
+    defaults: List<DefaultOption>
+
+    -- No duplicate IDs within a single group
+    requires: defaults.unique_by(d => d.id)
+}
+
+entity FeatureSet {
+    amenities: List<Feature>
+    highlights: List<Feature>
+    views: List<Feature>
+
+    -- Names are unique within each list
+    requires: amenities.unique_by(f => f.name)
+    requires: highlights.unique_by(f => f.name)
+    requires: views.unique_by(f => f.name)
+
+    -- A name cannot appear in more than one group
+    all_names: amenities.map(f => f.name)
+        + highlights.map(f => f.name)
+        + views.map(f => f.name)
+    requires: all_names.unique
+}
+
+-- === Icon Resolution ===
+
+rule ResolveDefaultIcon {
+    -- When a user toggles a predefined option, its icon is locked to the mapping
+    when: ToggleDefault(featureSet, group, optionId)
+    let option = group.defaults.find(d => d.id = optionId)
+    requires: option != null
+
+    ensures: featureSet[group.kind] contains Feature.created(
+        name: option.id,
+        icon: option.icon
+    )
+}
+
+rule ResolveCustomIcon {
+    -- When a user adds a custom feature, they must choose an icon explicitly
+    when: AddCustomFeature(featureSet, groupKind, name, chosenIcon)
+    let group_defaults = FacilityGroup where kind = groupKind
+    let normalized_name = kebab(name)
+
+    -- Custom name must not collide with any default option ID
+    requires: group_defaults.defaults.none(d => d.id = normalized_name)
+    requires: chosenIcon.length > 0
+
+    ensures: featureSet[groupKind] contains Feature.created(
+        name: normalized_name,
+        icon: chosenIcon
+    )
+}
+
+rule RejectCustomDefaultCollision {
+    -- Attempting to add a custom tag whose normalized name matches a default is rejected
+    when: AddCustomFeature(featureSet, groupKind, name, _)
+    let group_defaults = FacilityGroup where kind = groupKind
+    let normalized_name = kebab(name)
+
+    requires: group_defaults.defaults.any(d => d.id = normalized_name)
+
+    -- No state change: the addition is silently rejected
+    ensures: CustomDefaultCollisionRejected(featureSet, groupKind, normalized_name)
+}
+
+-- === Cross-Group Sync ===
+
+rule SyncAcrossGroups {
+    -- Adding a feature to one group removes it (by name) from the other two
+    when: FeatureAdded(featureSet, targetGroup, feature)
+    let other_groups = {amenity, highlight, view} - {targetGroup}
+
+    for group in other_groups:
+        ensures: featureSet[group] excludes_where f => f.name = feature.name
+}
+
+-- === Removal ===
+
+rule RemoveFeature {
+    when: RemoveFeature(featureSet, groupKind, featureName)
+
+    ensures: featureSet[groupKind] excludes_where f => f.name = featureName
+}
+
+-- === Surfaces ===
+
+surface FeatureEditor {
+    facing broker: Broker
+
+    context featureSet: FeatureSet
+
+    exposes:
+        featureSet.amenities
+        featureSet.highlights
+        featureSet.views
+
+    provides:
+        -- Toggle a predefined option (icon is locked)
+        ToggleDefault(featureSet, group, optionId)
+            when group.defaults.any(d => d.id = optionId)
+
+        -- Add a custom feature (user picks icon, name must not collide with defaults)
+        AddCustomFeature(featureSet, groupKind, name, chosenIcon)
+            when chosenIcon.length > 0
+            and name.length > 0
+            and FacilityGroup(kind: groupKind).defaults.none(d => d.id = kebab(name))
+
+        -- Remove any feature
+        RemoveFeature(featureSet, groupKind, featureName)
+            when featureSet[groupKind].any(f => f.name = featureName)
+
+    guarantee:
+        -- Default options always render with their mapped icon (not editable)
+        for group in {amenity, highlight, view}:
+            for feature in featureSet[group]:
+                let defaultOpt = FacilityGroup(kind: group).defaults.find(d => d.id = feature.name)
+                if defaultOpt != null:
+                    feature.icon = defaultOpt.icon
+
+        -- Custom features never shadow a default option's name
+        for group in {amenity, highlight, view}:
+            let defaults = FacilityGroup(kind: group).defaults.map(d => d.id)
+            for feature in featureSet[group]:
+                if feature.name in defaults:
+                    feature.icon = FacilityGroup(kind: group).defaults.find(d => d.id = feature.name).icon
+
+        -- No name appears in more than one group
+        featureSet.all_names.unique
+
+    guidance:
+        -- Default options shown as toggle pills with inline icon
+        -- Custom features show text input + icon picker side by side
+        -- Custom tag removal via click on the tag itself
+}
+
+surface PropertyDetail {
+    facing visitor: Guest
+
+    context featureSet: FeatureSet
+
+    exposes:
+        for a in featureSet.amenities:
+            a.name
+            a.icon
+        for h in featureSet.highlights:
+            h.name
+            h.icon
+        for v in featureSet.views:
+            v.name
+            v.icon
+
+    guidance:
+        -- Icons rendered via data-lucide attribute
+        -- Names formatted from kebab-case to display (e.g. "private-pool" → "Private Pool")
+}
+
+-- === Resolved Decisions ===
+-- 1. Default option icons are locked — users cannot change them.
+-- 2. Custom features require explicit icon selection (defaults to "check" in UI).
+-- 3. Sync is by name, not by icon — same name in different groups is not allowed.
+-- 4. DB stores Feature[] (name + icon pairs); no separate icon column.
+-- 5. Custom tags whose kebab name matches a default ID are rejected — use the toggle instead.

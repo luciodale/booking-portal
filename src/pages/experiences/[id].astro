@@ -11,6 +11,7 @@ import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import ImageGallery from "@/modules/ui/astro/ImageGallery.astro";
 import { formatLocation } from "@/utils/formatLocation";
 import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
+import { getExperienceCategoryIcon } from "@/features/broker/experience/constants/categoryLabels";
 
 export const prerender = false;
 
@@ -27,6 +28,7 @@ if (!data) return Astro.redirect(localePath(locale, "/experiences"));
 const { experience, imageUrls, categoryLabel, linkedProperties } = data;
 
 const primaryImageUrl = imageUrls[0] ?? (experience.imageUrl ? generateImageUrl(experience.imageUrl) : "");
+const categoryIcon = getExperienceCategoryIcon(experience.category ?? "other");
 
 function formatPrice(cents: number, currency: string) {
   const symbol = currency === "eur" ? "\u20AC" : `${currency.toUpperCase()} `;
@@ -96,7 +98,7 @@ function formatPrice(cents: number, currency: string) {
           </div>
         )}
         <div class="flex items-center gap-2 text-foreground">
-          <i data-lucide="compass" class="w-4 h-4 text-primary" />
+          <i data-lucide={categoryIcon} class="w-4 h-4 text-primary" />
           {categoryLabel}
         </div>
       </div>

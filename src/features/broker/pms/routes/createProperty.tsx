@@ -10,6 +10,7 @@ import { useIntegrationListings } from "@/features/broker/pms/queries/useIntegra
 import { useIsPmsIntegrated } from "@/features/broker/pms/queries/useIsPmsIntegrated";
 import { mapSmoobuListingToCreatePropertyPartial } from "@/features/broker/property/domain/mapIntegrationListingToPrefill";
 import { displayToKebab } from "@/features/broker/property/domain/sync-features";
+import type { Feature } from "@/modules/constants";
 import { useUpsertCityTax } from "@/features/broker/property/hooks/useUpsertCityTax";
 import { useCreateProperty } from "@/features/broker/property/queries/useCreateProperty";
 import { createSectionRoute } from "@/features/broker/property/routes/CreateSection";
@@ -98,11 +99,14 @@ function CreatePropertyPage() {
   async function handleSubmit(data: CreatePropertyFormData) {
     try {
       const { images, cityTaxAmount, cityTaxMaxNights, ...propertyData } = data;
+      const normalizeFeatures = (features: Feature[] | undefined) =>
+        features?.map((f) => ({ name: displayToKebab(f.name), icon: f.icon })) ?? [];
+
       const normalizedData = {
         ...propertyData,
-        amenities: propertyData.amenities?.map(displayToKebab) ?? [],
-        highlights: propertyData.highlights?.map(displayToKebab) ?? [],
-        views: propertyData.views?.map(displayToKebab) ?? [],
+        amenities: normalizeFeatures(propertyData.amenities),
+        highlights: normalizeFeatures(propertyData.highlights),
+        views: normalizeFeatures(propertyData.views),
       };
 
       const newProperty = await createProperty.mutateAsync(normalizedData);

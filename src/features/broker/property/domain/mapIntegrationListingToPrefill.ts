@@ -2,6 +2,7 @@
  * Map Smoobu listing (list item + details) to partial CreatePropertyInput for form prefill.
  */
 
+import { getDefaultIcon } from "@/modules/constants";
 import type { CreatePropertyInput } from "@/schemas/property";
 import type { SmoobuApartmentDetails } from "@/schemas/smoobu";
 import { displayToKebab } from "./sync-features";
@@ -30,7 +31,10 @@ export function mapSmoobuListingToCreatePropertyPartial(
     childBeds: rooms.childBeds ?? undefined,
     queenSizeBeds: rooms.queenSizeBeds ?? undefined,
     kingSizeBeds: rooms.kingSizeBeds ?? undefined,
-    amenities: equipments?.map((e) => displayToKebab(e)),
+    amenities: equipments?.map((e) => {
+      const kebab = displayToKebab(e);
+      return { name: kebab, icon: getDefaultIcon(kebab, "amenity") ?? "check" };
+    }),
   };
   return partial;
 }

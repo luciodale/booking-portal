@@ -1,3 +1,4 @@
+import type { Feature } from "@/modules/constants";
 import { sql } from "drizzle-orm";
 import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
@@ -94,9 +95,9 @@ export const assets = sqliteTable(
     checkOut: text("check_out"),
 
     // Features (JSON arrays - auto-parsed by Drizzle)
-    amenities: text("amenities", { mode: "json" }).$type<string[]>(),
-    views: text("views", { mode: "json" }).$type<string[]>(),
-    highlights: text("highlights", { mode: "json" }).$type<string[]>(),
+    amenities: text("amenities", { mode: "json" }).$type<Feature[]>(),
+    views: text("views", { mode: "json" }).$type<Feature[]>(),
+    highlights: text("highlights", { mode: "json" }).$type<Feature[]>(),
 
     // Booking Options
     instantBook: integer("instant_book", { mode: "boolean" })

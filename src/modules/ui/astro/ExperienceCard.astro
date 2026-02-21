@@ -4,6 +4,7 @@ import { defaultLocale } from "@/i18n/types";
 import { t } from "@/i18n/t";
 import { localePath } from "@/i18n/locale-path";
 import type { LinkedExperience } from "@/features/public/browse/property-detail-queries";
+import { getExperienceCategoryIcon } from "@/features/broker/experience/constants/categoryLabels";
 
 interface Props {
   experience: LinkedExperience;
@@ -16,6 +17,7 @@ interface Props {
 const { experience: exp, propertyTitle, ownerWhatsapp, variant = "standard", locale = (Astro.currentLocale ?? defaultLocale) as Locale } = Astro.props;
 
 const isElite = variant === "elite";
+const categoryIcon = getExperienceCategoryIcon(exp.category);
 
 function formatPrice(cents: number, currency: string) {
   const symbol = currency === "eur" ? "\u20AC" : `${currency.toUpperCase()} `;
@@ -63,7 +65,7 @@ function formatPrice(cents: number, currency: string) {
 
     {isElite ? (
       <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between">
-        <span class="badge-elite">{exp.category}</span>
+        <span class="badge-elite inline-flex items-center gap-1.5"><i data-lucide={categoryIcon} class="w-3.5 h-3.5" />{exp.category}</span>
         <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm">
           {exp.duration}
         </span>
@@ -71,7 +73,7 @@ function formatPrice(cents: number, currency: string) {
     ) : (
       <>
         <div class="absolute top-4 left-4">
-          <span class="badge-elite">{exp.category}</span>
+          <span class="badge-elite inline-flex items-center gap-1.5"><i data-lucide={categoryIcon} class="w-3.5 h-3.5" />{exp.category}</span>
         </div>
         <div class="absolute bottom-4 right-4">
           <span class="px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white text-sm">
