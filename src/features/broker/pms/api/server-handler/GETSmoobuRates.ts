@@ -8,8 +8,8 @@ import { eq } from "drizzle-orm";
 import { jsonError, jsonSuccess, safeErrorMessage } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ locals, url, request }) => {
+  const locale = getRequestLocale(request);
   try {
-    const locale = getRequestLocale(request);
     const smoobuPropertyId = url.searchParams.get("smoobuPropertyId");
     const startDate = url.searchParams.get("startDate");
     const endDate = url.searchParams.get("endDate");

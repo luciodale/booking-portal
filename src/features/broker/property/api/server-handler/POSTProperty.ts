@@ -17,8 +17,8 @@ import {
 } from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const locale = getRequestLocale(request);
   try {
-    const locale = getRequestLocale(request);
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
       return jsonError(t(locale, "error.dbNotAvailable"), 503);

@@ -18,8 +18,8 @@ import {
 } from "./responseHelpers";
 
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
+  const locale = getRequestLocale(request);
   try {
-    const locale = getRequestLocale(request);
     const { id } = params;
     if (!id) {
       return jsonError(t(locale, "error.missingPropertyId"), 400);

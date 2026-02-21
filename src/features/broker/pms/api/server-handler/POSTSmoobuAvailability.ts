@@ -8,8 +8,8 @@ import { eq } from "drizzle-orm";
 import { jsonError, jsonSuccess, safeErrorMessage } from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const locale = getRequestLocale(request);
   try {
-    const locale = getRequestLocale(request);
     const body = (await request.json()) as {
       smoobuPropertyId?: number;
       arrivalDate?: string;

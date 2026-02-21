@@ -25,8 +25,8 @@ import {
 } from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const locale = getRequestLocale(request);
   try {
-    const locale = getRequestLocale(request);
     const D1Database = locals.runtime?.env?.DB;
     const R2Bucket = locals.runtime?.env?.R2_IMAGES_BUCKET;
 

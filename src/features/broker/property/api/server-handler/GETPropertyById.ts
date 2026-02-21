@@ -15,8 +15,8 @@ import {
 } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ params, locals, request }) => {
+  const locale = getRequestLocale(request);
   try {
-    const locale = getRequestLocale(request);
     const { id } = params;
     if (!id) {
       return jsonError(t(locale, "error.missingPropertyId"), 400);

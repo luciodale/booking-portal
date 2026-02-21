@@ -14,8 +14,8 @@ import { eq } from "drizzle-orm";
 import { jsonError, jsonSuccess } from "./responseHelpers";
 
 export const GET: APIRoute = async ({ params, locals, request }) => {
+  const locale = getRequestLocale(request);
   try {
-    const locale = getRequestLocale(request);
     const idParam = params?.id;
     const id = idParam ? Number(idParam) : Number.NaN;
     if (!Number.isInteger(id) || id < 1) {
