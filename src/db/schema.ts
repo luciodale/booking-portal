@@ -330,6 +330,7 @@ export const experiences = sqliteTable(
 
     // Details
     category: text("category"),
+    categoryIcon: text("category_icon"),
     duration: text("duration"), // e.g., "8 hours"
     maxParticipants: integer("max_participants"),
 

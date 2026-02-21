@@ -48,6 +48,7 @@ const experienceFieldsSchema = baseExperienceInsertSchema
     city: z.string().min(2).optional(),
     country: z.string().min(2).optional(),
     category: z.string().min(1, "Category is required"),
+    categoryIcon: z.string().optional(),
     duration: z.string().min(1, "Duration is required"),
     maxParticipants: z.number().int().min(1).max(100).optional(),
     basePrice: z
@@ -123,6 +124,7 @@ export const experienceListItemSchema = experienceSelectSchema
     city: true,
     country: true,
     category: true,
+    categoryIcon: true,
     duration: true,
     status: true,
     basePrice: true,

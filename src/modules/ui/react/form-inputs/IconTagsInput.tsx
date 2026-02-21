@@ -4,7 +4,7 @@
 
 import type { Feature } from "@/modules/constants";
 import { kebabToDisplay } from "@/features/broker/property/domain/sync-features";
-import { IconPicker } from "@/modules/ui/react/IconPicker";
+import { IconTextInput } from "@/modules/ui/react/form-inputs/IconTextInput";
 import { cn } from "@/modules/utils/cn";
 import { type LucideIcon, icons } from "lucide-react";
 import { type ReactNode, useState } from "react";
@@ -149,32 +149,14 @@ export function IconTagsInput<T extends FieldValues>({
             </div>
 
             {/* Custom tag input with icon picker */}
-            <div className="flex gap-2 mt-3">
-              <input
-                type="text"
-                value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    addCustom();
-                  }
-                }}
-                placeholder="Add custom tag..."
-                className="input flex-1 text-sm"
-              />
-              <div className="w-40">
-                <IconPicker value={customIcon} onChange={setCustomIcon} />
-              </div>
-              <button
-                type="button"
-                onClick={addCustom}
-                disabled={!customName.trim()}
-                className="btn-secondary text-sm disabled:opacity-50"
-              >
-                Add
-              </button>
-            </div>
+            <IconTextInput
+              textValue={customName}
+              iconValue={customIcon}
+              onTextChange={setCustomName}
+              onIconChange={setCustomIcon}
+              onAdd={addCustom}
+              placeholder="Add custom tag..."
+            />
 
             {fieldState.error && (
               <p className="text-sm text-error mt-1">

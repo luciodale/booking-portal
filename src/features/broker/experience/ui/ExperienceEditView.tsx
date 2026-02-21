@@ -2,7 +2,7 @@
  * ExperienceEditView - Per-field edit interface for experiences
  */
 
-import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
+import { experienceCategories } from "@/features/broker/experience/constants/categoryLabels";
 import { useExperience } from "@/features/broker/experience/queries/useExperience";
 import { useUpdateExperience } from "@/features/broker/experience/queries/useUpdateExperience";
 import {
@@ -11,6 +11,7 @@ import {
   EditableTextField,
   EditableTextareaField,
 } from "@/features/broker/property/ui/EditableField";
+import { CategoryPicker } from "@/modules/ui/react/form-inputs/IconSelectInput";
 import type { ExperienceAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import type { UpdateExperienceInput } from "@/schemas/experience";
@@ -67,9 +68,11 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
     );
   }
 
-  const categoryOptions = Object.entries(experienceCategoryLabels).map(
-    ([value, label]) => ({ value, label })
-  );
+  const categoryDefaultOptions = experienceCategories.map((c) => ({
+    value: c.id,
+    label: c.label,
+    icon: c.icon,
+  }));
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -105,11 +108,32 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
       <section className="bg-card border border-border p-6 rounded-xl">
         <h2 className="text-xl font-semibold text-foreground mb-6">Details</h2>
         <div className="space-y-6">
-          <EditableSelectField
-            label="Category"
-            value={experience.category ?? ""}
-            onSave={(v) => saveField("category", v)}
-            options={categoryOptions}
+          <EditableSectionField
+            title="Category"
+            values={{
+              category: experience.category ?? "",
+              categoryIcon: experience.categoryIcon ?? "",
+            }}
+            onSave={async (data) => {
+              await updateExperience.mutateAsync({
+                id: experienceId,
+                data: {
+                  category: data.category,
+                  categoryIcon: data.categoryIcon,
+                },
+              });
+            }}
+            renderFields={({ values, onChange, disabled }) => (
+              <CategoryPicker
+                category={values.category}
+                categoryIcon={values.categoryIcon}
+                onChange={(cat, icon) =>
+                  onChange({ category: cat, categoryIcon: icon })
+                }
+                disabled={disabled}
+                defaultOptions={categoryDefaultOptions}
+              />
+            )}
           />
           <EditableTextField
             label="Duration"

@@ -22,6 +22,7 @@ export type LinkedExperience = {
   imageUrl: string;
   duration: string;
   category: string;
+  categoryIcon: string | null;
   discountPercent: number;
   basePrice: number;
   currency: string;
@@ -80,6 +81,7 @@ export async function fetchLinkedExperiences(
         category: exp.category
           ? (experienceCategoryLabels[exp.category] ?? exp.category)
           : "Other",
+        categoryIcon: exp.categoryIcon ?? null,
         discountPercent: link.discountPercent ?? 0,
         basePrice: exp.basePrice,
         currency: exp.currency,

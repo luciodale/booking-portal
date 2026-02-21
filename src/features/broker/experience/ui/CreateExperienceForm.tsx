@@ -5,6 +5,7 @@
 import { experienceCategories } from "@/features/broker/experience/constants/categoryLabels";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
+import { IconSelectInput } from "@/modules/ui/react/form-inputs/IconSelectInput";
 import { NumberInput } from "@/modules/ui/react/form-inputs/NumberInput";
 import { SelectInput } from "@/modules/ui/react/form-inputs/SelectInput";
 import { TextInput } from "@/modules/ui/react/form-inputs/TextInput";
@@ -37,9 +38,10 @@ export function CreateExperienceForm({
   const additionalCosts = watch("additionalCosts") ?? [];
   const instantBook = watch("instantBook") ?? false;
 
-  const categoryOptions = experienceCategories.map((c) => ({
+  const categoryDefaultOptions = experienceCategories.map((c) => ({
     value: c.id,
     label: c.label,
+    icon: c.icon,
   }));
 
   return (
@@ -78,12 +80,13 @@ export function CreateExperienceForm({
       </FormSection>
 
       <FormSection title="Details">
-        <SelectInput
-          name="category"
+        <IconSelectInput
+          categoryName="category"
+          iconName="categoryIcon"
           control={control}
           label="Category"
           required
-          options={categoryOptions}
+          defaultOptions={categoryDefaultOptions}
         />
 
         <TextInput
