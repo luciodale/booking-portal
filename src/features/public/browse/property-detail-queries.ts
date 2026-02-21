@@ -6,7 +6,10 @@ import {
   experiences,
   users,
 } from "@/db/schema";
-import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
+import {
+  experienceCategories,
+  experienceCategoryLabels,
+} from "@/features/broker/experience/constants/categoryLabels";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import { formatLocation } from "@/utils/formatLocation";
 import { and, eq } from "drizzle-orm";
@@ -22,7 +25,7 @@ export type LinkedExperience = {
   imageUrl: string;
   duration: string;
   category: string;
-  categoryIcon: string | null;
+  categoryIcon: string;
   discountPercent: number;
   basePrice: number;
   currency: string;
@@ -81,7 +84,10 @@ export async function fetchLinkedExperiences(
         category: exp.category
           ? (experienceCategoryLabels[exp.category] ?? exp.category)
           : "Other",
-        categoryIcon: exp.categoryIcon ?? null,
+        categoryIcon:
+          experienceCategories.find((c) => c.id === exp.category)?.icon ??
+          exp.categoryIcon ??
+          "circle-dot",
         discountPercent: link.discountPercent ?? 0,
         basePrice: exp.basePrice,
         currency: exp.currency,

@@ -30,9 +30,7 @@ const { experience, imageUrls, categoryLabel, linkedProperties } = data;
 const primaryImageUrl =
   imageUrls[0] ??
   (experience.imageUrl ? generateImageUrl(experience.imageUrl) : "");
-const categoryIcon =
-  experience.categoryIcon ??
-  getExperienceCategoryIcon(experience.category ?? "other");
+const categoryIcon = getExperienceCategoryIcon(experience.category ?? "other");
 
 function formatPrice(cents: number, currency: string) {
   const symbol = currency === "eur" ? "\u20AC" : `${currency.toUpperCase()} `;

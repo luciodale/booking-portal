@@ -59,7 +59,7 @@ export function CategoryPicker({
     if (category === opt.value) {
       onChange("", "");
     } else {
-      onChange(opt.value, opt.icon);
+      onChange(opt.value, "");
     }
     setShowCustom(false);
   }
@@ -70,7 +70,7 @@ export function CategoryPicker({
       .toLowerCase()
       .replace(/\s+/g, "-")
       .replace(/[^a-z0-9-]/g, "");
-    if (!kebab) return;
+    if (!kebab || defaultIds.has(kebab)) return;
     onChange(kebab, customIcon);
     setCustomName("");
     setCustomIcon("check");

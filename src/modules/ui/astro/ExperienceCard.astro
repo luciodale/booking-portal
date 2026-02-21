@@ -1,5 +1,4 @@
 ---
-import { getExperienceCategoryIcon } from "@/features/broker/experience/constants/categoryLabels";
 import type { LinkedExperience } from "@/features/public/browse/property-detail-queries";
 import { localePath } from "@/i18n/locale-path";
 import { t } from "@/i18n/t";
@@ -23,8 +22,7 @@ const {
 } = Astro.props;
 
 const isElite = variant === "elite";
-const categoryIcon =
-  exp.categoryIcon ?? getExperienceCategoryIcon(exp.category);
+const categoryIcon = exp.categoryIcon;
 
 function formatPrice(cents: number, currency: string) {
   const symbol = currency === "eur" ? "\u20AC" : `${currency.toUpperCase()} `;
