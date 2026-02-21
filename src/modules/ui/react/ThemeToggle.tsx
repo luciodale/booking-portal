@@ -12,7 +12,7 @@ import {
 import { Monitor, Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 
-type Theme = "system" | "light" | "dark";
+export type Theme = "system" | "light" | "dark";
 
 const OPTIONS: { value: Theme; label: string; Icon: typeof Monitor }[] = [
   { value: "light", label: "Light", Icon: Sun },
@@ -20,7 +20,7 @@ const OPTIONS: { value: Theme; label: string; Icon: typeof Monitor }[] = [
   { value: "system", label: "System", Icon: Monitor },
 ];
 
-function applyTheme(theme: Theme) {
+export function applyTheme(theme: Theme) {
   const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
   const dark = theme === "dark" || (theme === "system" && prefersDark);
   document.documentElement.classList.toggle("dark", dark);

@@ -1,70 +1,95 @@
 ---
+import { localePath, stripLocalePrefix } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { t } from "@/i18n/t";
-import { localePath } from "@/i18n/locale-path";
-import { stripLocalePrefix } from "@/i18n/locale-path";
 import { HeaderAuthSection } from "@/modules/auth/ui/HeaderAuthSection";
+import { MobileNav } from "@/modules/ui/react/MobileNav";
 import { ThemeToggle } from "@/modules/ui/react/ThemeToggle";
 
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 const rawPath = stripLocalePrefix(Astro.url.pathname);
 
 const navLinks = [
-  { href: localePath(locale, "/"), label: t(locale, "nav.home"), matchPath: "/" },
-  { href: localePath(locale, "/elite"), label: t(locale, "nav.elite"), matchPath: "/elite" },
-  { href: localePath(locale, "/standard"), label: t(locale, "nav.standard"), matchPath: "/standard" },
-  { href: localePath(locale, "/experiences"), label: t(locale, "nav.experiences"), matchPath: "/experiences" },
-  { href: localePath(locale, "/about"), label: t(locale, "nav.about"), matchPath: "/about" },
+  {
+    href: localePath(locale, "/"),
+    label: t(locale, "nav.home"),
+    matchPath: "/",
+  },
+  {
+    href: localePath(locale, "/elite"),
+    label: t(locale, "nav.elite"),
+    matchPath: "/elite",
+  },
+  {
+    href: localePath(locale, "/standard"),
+    label: t(locale, "nav.standard"),
+    matchPath: "/standard",
+  },
+  {
+    href: localePath(locale, "/experiences"),
+    label: t(locale, "nav.experiences"),
+    matchPath: "/experiences",
+  },
+  {
+    href: localePath(locale, "/about"),
+    label: t(locale, "nav.about"),
+    matchPath: "/about",
+  },
 ];
 ---
 
 <header class="sticky top-0 left-0 right-0 z-50 h-header-height glass">
   <nav class="container mx-auto px-6 h-full flex items-center justify-between">
-      <!-- Logo -->
-      <a href={localePath(locale, "/")} class="flex items-center gap-2 group">
-        <div
-          class="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-accent flex items-center justify-center"
-        >
-          <span class="text-primary-foreground font-bold text-sm">E</span>
-        </div>
-        <span class="text-xl font-semibold tracking-tight">
-          <span class="text-foreground">Elite</span>
-          <span class="text-primary">Stay</span>
-        </span>
-      </a>
+    <!-- Logo -->
+    <a href={localePath(locale, "/")} class="flex items-center gap-2 group">
+      <div
+        class="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-accent flex items-center justify-center"
+      >
+        <span class="text-primary-foreground font-bold text-sm">E</span>
+      </div>
+      <span class="text-xl font-semibold tracking-tight">
+        <span class="text-foreground">Elite</span>
+        <span class="text-primary">Stay</span>
+      </span>
+    </a>
 
-      <!-- Navigation Links -->
-      <div class="hidden md:flex items-center gap-8">
-        {
-          navLinks.map((link) => (
-            <a
-              href={link.href}
+    <!-- Navigation Links -->
+    <div class="hidden md:flex items-center gap-8">
+      {
+        navLinks.map((link) => (
+          <a
+            href={link.href}
+            class:list={[
+              "relative text-sm font-medium transition-colors duration-200 group",
+              rawPath === link.matchPath
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground",
+            ]}
+          >
+            {link.label}
+            <span
               class:list={[
-                "relative text-sm font-medium transition-colors duration-200 group",
+                "absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300",
                 rawPath === link.matchPath
-                  ? "text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "w-full"
+                  : "w-0 group-hover:w-full",
               ]}
-            >
-              {link.label}
-              <span
-                class:list={[
-                  "absolute -bottom-1 left-0 h-0.5 bg-primary transition-all duration-300",
-                  rawPath === link.matchPath
-                    ? "w-full"
-                    : "w-0 group-hover:w-full",
-                ]}
-              />
-            </a>
-          ))
-        }
-      </div>
+            />
+          </a>
+        ))
+      }
+    </div>
 
-      <!-- Theme Toggle & Auth -->
-      <div class="flex items-center gap-2">
-        <ThemeToggle client:load />
-        <HeaderAuthSection locale={locale} client:load />
-      </div>
+    <!-- Mobile: hamburger only -->
+    <div class="md:hidden">
+      <MobileNav client:only="react" locale={locale} currentPath={rawPath} />
+    </div>
+
+    <!-- Desktop: theme toggle & auth -->
+    <div class="hidden md:flex items-center gap-2">
+      <ThemeToggle client:load />
+      <HeaderAuthSection locale={locale} client:load />
+    </div>
   </nav>
 </header>

@@ -1,6 +1,8 @@
 import { useScrollTopOnNavigate } from "@/features/broker/property/hooks/useScrollTopOnNavigate";
+import { BackofficeMobileNav } from "@/features/broker/ui/BackofficeMobileNav";
 import { BackofficeUserMenu } from "@/features/broker/ui/BackofficeUserMenu";
 import { useAuth, useUser } from "@clerk/clerk-react";
+import { SwipeBarProvider } from "@luciodale/swipe-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
 
@@ -38,66 +40,75 @@ function BackofficeLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="min-h-screen bg-background">
-        <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border">
-          <nav className="px-6 py-4 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-accent flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-sm">
-                  E
+      <SwipeBarProvider>
+        <div className="min-h-screen bg-background">
+          <header className="sticky top-0 z-50 bg-card/80 backdrop-blur-xl border-b border-border">
+            <nav className="px-6 py-4 flex items-center justify-between">
+              <Link to="/" className="flex items-center gap-2 group">
+                <div className="w-8 h-8 rounded-lg bg-linear-to-br from-primary to-accent flex items-center justify-center">
+                  <span className="text-primary-foreground font-bold text-sm">
+                    E
+                  </span>
+                </div>
+                <span className="text-lg font-semibold tracking-tight">
+                  <span className="text-foreground">Elite</span>
+                  <span className="text-primary">Stay</span>
+                  <span className="text-muted-foreground ml-2 text-sm font-normal">
+                    Backoffice
+                  </span>
                 </span>
-              </div>
-              <span className="text-lg font-semibold tracking-tight">
-                <span className="text-foreground">Elite</span>
-                <span className="text-primary">Stay</span>
-                <span className="text-muted-foreground ml-2 text-sm font-normal">
-                  Backoffice
-                </span>
-              </span>
-            </Link>
-            <div className="flex items-center gap-6">
-              <Link
-                to="/properties"
-                data-testid="nav-properties"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Properties
               </Link>
-              <Link
-                to="/experiences"
-                data-testid="nav-experiences"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Experiences
-              </Link>
-              <Link
-                to="/bookings"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Bookings
-              </Link>
-              <Link
-                to="/create/properties/new"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Create Property
-              </Link>
-              {isAdmin && (
+              <BackofficeMobileNav isAdmin={isAdmin} />
+              <div className="hidden md:flex items-center gap-6">
                 <Link
-                  to="/admin/events"
+                  to="/properties"
+                  data-testid="nav-properties"
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  Events
+                  Properties
                 </Link>
-              )}
-              <BackofficeUserMenu />
-            </div>
-          </nav>
-        </header>
-        <main>
-          <Outlet />
-        </main>
-      </div>
+                <Link
+                  to="/experiences"
+                  data-testid="nav-experiences"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Experiences
+                </Link>
+                <Link
+                  to="/bookings"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Bookings
+                </Link>
+                <Link
+                  to="/create/properties/new"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Create Property
+                </Link>
+                {isAdmin && (
+                  <Link
+                    to="/admin/events"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Events
+                  </Link>
+                )}
+                <a
+                  href="/"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Public Site
+                </a>
+                <BackofficeUserMenu />
+              </div>
+            </nav>
+          </header>
+          <main>
+            <Outlet />
+          </main>
+        </div>
+      </SwipeBarProvider>
     </QueryClientProvider>
   );
 }
