@@ -9,6 +9,7 @@ import { useClerk } from "@clerk/clerk-react";
 import { SwipeBarLeft, useSwipeBarContext } from "@luciodale/swipe-bar";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
+  Banknote,
   Building2,
   Calendar,
   CalendarDays,
@@ -18,6 +19,7 @@ import {
   Monitor,
   Moon,
   PlusCircle,
+  Settings,
   Sun,
   X,
 } from "lucide-react";
@@ -92,8 +94,12 @@ export function BackofficeMobileNav({ isAdmin }: { isAdmin: boolean }) {
       label: "Create Property",
       icon: <PlusCircle size={18} />,
     },
+    { to: "/connect", label: "Payouts", icon: <Banknote size={18} /> },
     ...(isAdmin
-      ? [{ to: "/admin/events", label: "Events", icon: <Calendar size={18} /> }]
+      ? [
+          { to: "/admin/events", label: "Events", icon: <Calendar size={18} /> },
+          { to: "/admin/settings", label: "Settings", icon: <Settings size={18} /> },
+        ]
       : []),
   ];
 

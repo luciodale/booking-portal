@@ -16,6 +16,17 @@ export const users = sqliteTable("users", {
   bio: text("bio"),
   verified: integer("verified", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  stripeConnectedAccountId: text("stripe_connected_account_id"),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+// ============================================================================
+// Platform Settings table - generic key-value admin settings
+// ============================================================================
+export const platformSettings = sqliteTable("platform_settings", {
+  id: text("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -529,3 +540,5 @@ export type ExperienceBooking = typeof experienceBookings.$inferSelect;
 export type NewExperienceBooking = typeof experienceBookings.$inferInsert;
 export type CityTaxDefault = typeof cityTaxDefaults.$inferSelect;
 export type NewCityTaxDefault = typeof cityTaxDefaults.$inferInsert;
+export type PlatformSetting = typeof platformSettings.$inferSelect;
+export type NewPlatformSetting = typeof platformSettings.$inferInsert;

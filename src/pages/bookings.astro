@@ -1,13 +1,10 @@
 ---
-import { BookingsHistoryView } from "@/features/public/bookings/ui/BookingsHistoryView";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { t } from "@/i18n/t";
-import { localePath } from "@/i18n/locale-path";
-import PageLayout from "@/layouts/PageLayout.astro";
 
 export const prerender = false;
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 ---
 

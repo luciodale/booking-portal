@@ -1,4 +1,5 @@
 ---
+// biome-ignore lint/correctness/noUnusedVariables: Astro Props typing
 interface Props {
   badge?: string;
   title: string;
@@ -10,15 +11,23 @@ interface Props {
 }
 
 const {
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   badge,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   title,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   titleGradient,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   subtitle,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   cityName,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   backgroundImage,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   height = "full",
 } = Astro.props;
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const heightClasses = {
   full: "h-[85vh]",
   medium: "py-24",

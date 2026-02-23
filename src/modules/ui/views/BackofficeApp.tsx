@@ -1,7 +1,9 @@
 import type { Locale } from "@/i18n/types";
 import { LocaleProvider } from "@/i18n/react/LocaleProvider";
 import { eventsRoute } from "@/features/admin/events/routes/events";
+import { settingsRoute } from "@/features/admin/settings/routes/settings";
 import { bookingsRoute } from "@/features/broker/bookings/routes/bookings";
+import { connectRoute } from "@/features/broker/connect/routes/connect";
 import { experiencesRoute } from "@/features/broker/experience/routes/experiences";
 import { editExperienceRoute } from "@/features/broker/experience/routes/experiences.$id.edit";
 import { createExperienceRoute } from "@/features/broker/experience/routes/experiences.new";
@@ -23,7 +25,9 @@ const routeTree = rootRoute.addChildren([
   editExperienceRoute,
   createExperienceRoute,
   eventsRoute,
+  settingsRoute,
   bookingsRoute,
+  connectRoute,
 ]);
 
 const router = createRouter({

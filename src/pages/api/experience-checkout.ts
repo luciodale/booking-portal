@@ -12,6 +12,8 @@ import { t } from "@/i18n/t";
 import { localePath } from "@/i18n/locale-path";
 import type { Locale } from "@/i18n/types";
 import { z } from "zod";
+import { resolveConnectAccount } from "@/features/broker/connect/domain/resolveConnectAccount";
+import { getApplicationFeePercent } from "@/features/admin/settings/domain/getApplicationFeePercent";
 
 const bodySchema = z.object({
   experienceId: z.string().min(1),
@@ -92,6 +94,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
+    // Verify broker has completed Stripe Connect onboarding
+    const connectedAccountId = await resolveConnectAccount(
+      db,
+      experience.userId
+    );
+    if (!connectedAccountId) {
+      return jsonResponse(
+        { error: "This experience's host hasn't set up payouts yet" },
+        400
+      );
+    }
+
     // Compute total price server-side
     const baseTotalCents = experience.basePrice * participants;
     const additionalCostItems = computeExperienceAdditionalCosts(
@@ -103,6 +117,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       0
     );
     const totalPriceCents = baseTotalCents + additionalTotalCents;
+
+    // Compute application fee for Stripe Connect
+    const feePercent = await getApplicationFeePercent(db);
+    const applicationFeeAmount = Math.round(
+      (totalPriceCents * feePercent) / 100
+    );
 
     const origin = new URL(request.url).origin;
 
@@ -119,6 +139,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       guestEmail: guestInfo.email,
       guestPhone: guestInfo.phone ?? "",
       guestNote: guestInfo.guestNote ?? "",
+      applicationFeeAmount: String(applicationFeeAmount),
     };
 
     // ── Dev mode: skip Stripe, fire webhook via mock server ───────────────
@@ -181,6 +202,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       customer_email: guestInfo.email,
       line_items: lineItems,
       metadata,
+      payment_intent_data: {
+        application_fee_amount: applicationFeeAmount,
+        transfer_data: {
+          destination: connectedAccountId,
+        },
+      },
       success_url: `${origin}${localePath(locale, "/booking/experience-success")}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}${localePath(locale, `/experiences/${experienceId}`)}`,
     });

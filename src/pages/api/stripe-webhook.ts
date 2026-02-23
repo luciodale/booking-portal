@@ -5,6 +5,7 @@ import {
   brokerLogs,
   experienceBookings,
   pmsIntegrations,
+  users,
 } from "@/db/schema";
 import { createSmoobuBooking } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCreateBooking";
 import { createEventLogger } from "@/modules/logging/eventLogger";
@@ -88,6 +89,34 @@ export const POST: APIRoute = async ({ request, locals }) => {
           metadata: { bookingId: booking.id, paymentIntentId },
         });
       }
+    }
+
+    return new Response("OK", { status: 200 });
+  }
+
+  // ── account.updated — log Connect account status changes ──────────────
+  if (event.type === "account.updated") {
+    const account = event.data.object as Stripe.Account;
+    const db = getDb(D1Database);
+
+    const [user] = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(eq(users.stripeConnectedAccountId, account.id))
+      .limit(1);
+
+    if (user) {
+      log.info({
+        source: "stripe-webhook",
+        message: `Connected account ${account.id} updated: charges_enabled=${account.charges_enabled}, payouts_enabled=${account.payouts_enabled}`,
+        metadata: {
+          userId: user.id,
+          accountId: account.id,
+          chargesEnabled: account.charges_enabled,
+          payoutsEnabled: account.payouts_enabled,
+          detailsSubmitted: account.details_submitted,
+        },
+      });
     }
 
     return new Response("OK", { status: 200 });

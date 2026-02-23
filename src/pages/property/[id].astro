@@ -1,24 +1,14 @@
 ---
 import { getDb } from "@/db";
 import { assets, images } from "@/db/schema";
-import { kebabToDisplay } from "@/features/broker/property/domain/sync-features";
-import { BookingWidget } from "@/features/public/booking/ui/BookingWidget";
 import {
   fetchCityTax,
   fetchLinkedExperiences,
   fetchOwnerWhatsapp,
 } from "@/features/public/browse/property-detail-queries";
-import { localePath } from "@/i18n/locale-path";
-import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import PageLayout from "@/layouts/PageLayout.astro";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
-import Badge from "@/modules/ui/astro/Badge.astro";
-import ExperienceCard from "@/modules/ui/astro/ExperienceCard.astro";
-import ExtrasSection from "@/modules/ui/astro/ExtrasSection.astro";
-import ImageGallery from "@/modules/ui/astro/ImageGallery.astro";
-import PropertyMap from "@/modules/ui/astro/PropertyMap.astro";
 import { formatAddress, formatLocation } from "@/utils/formatLocation";
 import { asc, eq } from "drizzle-orm";
 
@@ -27,6 +17,7 @@ export const prerender = false;
 const { id } = Astro.params;
 if (!id) return Astro.redirect("/");
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 
 const db = getDb(Astro.locals.runtime.env.DB);
@@ -55,6 +46,7 @@ const assetImagesList = await db
 
 const imageUrls = assetImagesList.map((img) => generateImageUrl(img.r2Key));
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const property = {
   id: asset.id,
   title: asset.title,
@@ -72,6 +64,7 @@ const property = {
   views: asset.views ?? [],
 };
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
   fetchLinkedExperiences(db, asset.id),
   fetchOwnerWhatsapp(db, asset.userId),

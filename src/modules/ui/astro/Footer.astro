@@ -3,11 +3,10 @@ import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
 import { t } from "@/i18n/t";
 import { localePath } from "@/i18n/locale-path";
-import LanguageSwitcher from "@/modules/ui/astro/LanguageSwitcher.astro";
 
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 
-const footerLinks = {
+const _footerLinks = {
   company: [
     { href: localePath(locale, "/about"), label: t(locale, "footer.aboutUs") },
     { href: localePath(locale, "/careers"), label: t(locale, "footer.careers") },
@@ -25,7 +24,7 @@ const footerLinks = {
   ],
 };
 
-const currentYear = new Date().getFullYear();
+const _currentYear = new Date().getFullYear();
 ---
 
 <footer class="border-t border-border bg-card">

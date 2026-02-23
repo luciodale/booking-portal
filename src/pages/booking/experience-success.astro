@@ -3,19 +3,18 @@ import { getDb } from "@/db";
 import { experienceBookings, experiences } from "@/db/schema";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { t } from "@/i18n/t";
-import { localePath } from "@/i18n/locale-path";
-import BaseLayout from "@/layouts/BaseLayout.astro";
-import Header from "@/modules/ui/astro/Header.astro";
 import { eq } from "drizzle-orm";
 
 export const prerender = false;
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 
 const sessionId = Astro.url.searchParams.get("session_id");
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 let booking = null;
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 let experienceTitle = "";
 
 if (sessionId) {

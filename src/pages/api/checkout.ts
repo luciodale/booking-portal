@@ -18,6 +18,8 @@ import { t } from "@/i18n/t";
 import { localePath } from "@/i18n/locale-path";
 import type { Locale } from "@/i18n/types";
 import { z } from "zod";
+import { resolveConnectAccount } from "@/features/broker/connect/domain/resolveConnectAccount";
+import { getApplicationFeePercent } from "@/features/admin/settings/domain/getApplicationFeePercent";
 
 const checkoutBodySchema = z.object({
   propertyId: z.string().min(1),
@@ -110,6 +112,15 @@ export const POST: APIRoute = async ({ request, locals }) => {
       !integration.pmsUserId
     ) {
       return jsonResponse({ error: t(locale, "error.noPmsIntegration") }, 404);
+    }
+
+    // Verify broker has completed Stripe Connect onboarding
+    const connectedAccountId = await resolveConnectAccount(db, asset.userId);
+    if (!connectedAccountId) {
+      return jsonResponse(
+        { error: "This property's host hasn't set up payouts yet" },
+        400
+      );
     }
 
     // Re-verify availability server-side
@@ -286,6 +297,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const grandTotalCents =
       serverPriceCents + additionalTotalCents + extrasTotalCents + serverCityTaxCents;
 
+    // Compute application fee for Stripe Connect
+    const feePercent = await getApplicationFeePercent(db);
+    const applicationFeeAmount = Math.round(
+      (grandTotalCents * feePercent) / 100
+    );
+
     const origin = new URL(request.url).origin;
 
     const metadata = {
@@ -305,6 +322,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       guestPhone: guestInfo.phone ?? "",
       adults: String(guestInfo.adults),
       children: String(guestInfo.children),
+      applicationFeeAmount: String(applicationFeeAmount),
     };
 
     // ── Dev mode: skip Stripe, fire webhook via mock server ───────────────
@@ -392,6 +410,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       customer_email: guestInfo.email,
       line_items: lineItems,
       metadata,
+      payment_intent_data: {
+        application_fee_amount: applicationFeeAmount,
+        transfer_data: {
+          destination: connectedAccountId,
+        },
+      },
       success_url: `${origin}${localePath(locale, "/booking/success")}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}${localePath(locale, `/elite/${propertyId}`)}`,
     });

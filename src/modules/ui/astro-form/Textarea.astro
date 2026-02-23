@@ -1,4 +1,5 @@
 ---
+// biome-ignore lint/correctness/noUnusedVariables: Astro Props typing
 interface Props {
   name: string;
   label?: string;
@@ -11,13 +12,21 @@ interface Props {
 }
 
 const {
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   name,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   label,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   placeholder,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   value,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   rows = 4,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   required = false,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   disabled = false,
+  // biome-ignore lint/correctness/noUnusedVariables: used in template
   class: className,
 } = Astro.props;
 ---

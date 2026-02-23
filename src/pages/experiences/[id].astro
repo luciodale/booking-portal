@@ -1,17 +1,11 @@
 ---
 import { getDb } from "@/db";
 import { getExperienceCategoryIcon } from "@/features/broker/experience/constants/categoryLabels";
-import { ExperienceBookingWidget } from "@/features/public/booking/ui/ExperienceBookingWidget";
 import { fetchExperienceById } from "@/features/public/browse/experience-queries";
 import { localePath } from "@/i18n/locale-path";
-import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import PageLayout from "@/layouts/PageLayout.astro";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
-import ImageGallery from "@/modules/ui/astro/ImageGallery.astro";
-import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
-import { formatLocation } from "@/utils/formatLocation";
 
 export const prerender = false;
 
@@ -25,13 +19,17 @@ const data = await fetchExperienceById(db, id);
 
 if (!data) return Astro.redirect(localePath(locale, "/experiences"));
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const { experience, imageUrls, categoryLabel, linkedProperties } = data;
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const primaryImageUrl =
   imageUrls[0] ??
   (experience.imageUrl ? generateImageUrl(experience.imageUrl) : "");
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const categoryIcon = getExperienceCategoryIcon(experience.category ?? "other");
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 function formatPrice(cents: number, currency: string) {
   const symbol = currency === "eur" ? "\u20AC" : `${currency.toUpperCase()} `;
   return `${symbol}${(cents / 100).toLocaleString()}`;

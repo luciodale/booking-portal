@@ -86,12 +86,26 @@ function BackofficeLayout() {
                 >
                   Create Property
                 </Link>
+                <Link
+                  to="/connect"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Payouts
+                </Link>
                 {isAdmin && (
                   <Link
                     to="/admin/events"
                     className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                   >
                     Events
+                  </Link>
+                )}
+                {isAdmin && (
+                  <Link
+                    to="/admin/settings"
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    Settings
                   </Link>
                 )}
                 <a

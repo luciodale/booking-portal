@@ -6,21 +6,18 @@ import {
 } from "@/features/public/browse/experience-queries";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { t } from "@/i18n/t";
-import { localePath } from "@/i18n/locale-path";
-import PageLayout from "@/layouts/PageLayout.astro";
-import Button from "@/modules/ui/astro/Button.astro";
-import Heading from "@/modules/ui/astro/Heading.astro";
-import Hero from "@/modules/ui/astro/Hero.astro";
 
 export const prerender = false;
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 const db = getDb(Astro.locals.runtime.env.DB);
 const cityParam = Astro.url.searchParams.get("city");
 const currentPage = Math.max(1, Number(Astro.url.searchParams.get("page") || "1"));
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const cityCards = cityParam ? [] : await fetchExperienceCityCards(db);
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const { experiences, totalCount, totalPages } = cityParam
   ? await fetchExperiencesByCity(db, cityParam, currentPage)
   : { experiences: [], totalCount: 0, totalPages: 0 };

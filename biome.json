@@ -50,8 +50,8 @@
             "useImportType": "off"
           },
           "correctness": {
-            "noUnusedVariables": "off",
-            "noUnusedImports": "off"
+            "noUnusedVariables": "error",
+            "noUnusedImports": "error"
           }
         }
       }

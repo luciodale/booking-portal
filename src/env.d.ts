@@ -11,6 +11,10 @@ interface Env {
   STRIPE_WEBHOOK_SECRET?: string;
 }
 
+interface ImportMetaEnv {
+  readonly PUBLIC_STRIPE_PUBLISHABLE_KEY: string;
+}
+
 type Runtime = import("@astrojs/cloudflare").Runtime<Env>;
 
 declare namespace App {

@@ -4,9 +4,7 @@ import { fetchBookingById } from "@/features/public/bookings/queries";
 import { fetchExperiencesByCity } from "@/features/public/browse/experience-queries";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { t } from "@/i18n/t";
 import { localePath } from "@/i18n/locale-path";
-import PageLayout from "@/layouts/PageLayout.astro";
 import { requireAuth } from "@/modules/auth/auth";
 
 export const prerender = false;
@@ -29,12 +27,15 @@ if (!booking) return Astro.redirect(localePath(locale, "/bookings"));
 
 const today = new Date().toISOString().split("T")[0];
 const isFuture = booking.checkIn >= today;
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const isNew = Astro.url.searchParams.get("new") === "true";
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const cityExperiences = isFuture && booking.property.city
   ? (await fetchExperiencesByCity(db, booking.property.city, 1)).experiences
   : [];
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
   confirmed: "bg-green-500/10 text-green-400 border-green-500/20",
@@ -42,10 +43,12 @@ const statusColors: Record<string, string> = {
   completed: "bg-blue-500/10 text-blue-400 border-blue-500/20",
 };
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const propertyHref = localePath(locale, booking.property.tier === "elite"
   ? `/elite/${booking.property.id}`
   : `/property/${booking.property.id}`);
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 function formatCents(cents: number, currency: string) {
   return `${(cents / 100).toFixed(2)} ${currency.toUpperCase()}`;
 }

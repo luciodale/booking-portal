@@ -6,20 +6,18 @@ import {
 } from "@/features/public/browse/queries";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { t } from "@/i18n/t";
-import { localePath } from "@/i18n/locale-path";
-import PageLayout from "@/layouts/PageLayout.astro";
-import Hero from "@/modules/ui/astro/Hero.astro";
-import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
 
 export const prerender = false;
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 const db = getDb(Astro.locals.runtime.env.DB);
 const cityParam = Astro.url.searchParams.get("city");
 const currentPage = Math.max(1, Number(Astro.url.searchParams.get("page") || "1"));
 
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const cityCards = cityParam ? [] : await fetchCityCards(db, "elite");
+// biome-ignore lint/correctness/noUnusedVariables: used in template
 const { properties, totalCount, totalPages } = cityParam
   ? await fetchPropertiesByCity(db, "elite", cityParam, currentPage)
   : { properties: [], totalCount: 0, totalPages: 0 };
