@@ -1,10 +1,12 @@
 ---
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
+import { t } from "@/i18n/t";
 import { localePath } from "@/i18n/locale-path";
 import type { Asset } from "@/db/schema";
+import { formatLocation } from "@/utils/formatLocation";
+import Badge from "@/modules/ui/astro/Badge.astro";
 
-// biome-ignore lint/correctness/noUnusedVariables: Astro Props typing
 interface Props {
   asset: Asset;
   imageUrl: string;
@@ -12,11 +14,9 @@ interface Props {
   locale?: Locale;
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const { asset, imageUrl, target, locale = (Astro.currentLocale ?? defaultLocale) as Locale } = Astro.props;
 
 const isElite = asset.tier === "elite";
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const href = localePath(locale, isElite ? `/elite/${asset.id}` : `/property/${asset.id}`);
 ---
 

@@ -1,13 +1,11 @@
 ---
 import type { Asset } from "@/db/schema";
 
-// biome-ignore lint/correctness/noUnusedVariables: Astro Props typing
 interface Props {
   variant: Asset["tier"];
 }
 
 const { variant } = Astro.props;
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const isElite = variant === "elite";
 ---
 

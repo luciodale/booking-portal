@@ -2,8 +2,10 @@
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
 import { t } from "@/i18n/t";
+import { switchLocale } from "@/i18n/locale-path";
+import GalleryLightbox from "@/modules/ui/astro/GalleryLightbox.astro";
+import { GlobalToaster } from "@/modules/ui/react/GlobalToaster";
 
-// biome-ignore lint/correctness/noUnusedVariables: Astro Props typing
 interface Props {
   title: string;
   description?: string;
@@ -15,22 +17,16 @@ const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 
 const {
   title,
-  // biome-ignore lint/correctness/noUnusedVariables: used in template
   description = t(locale, "home.defaultDescription"),
-  // biome-ignore lint/correctness/noUnusedVariables: used in template
   ogImage = "/og-image.jpg",
-  // biome-ignore lint/correctness/noUnusedVariables: used in template
   canonicalUrl,
 } = Astro.props;
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const siteTitle = title
   ? `${title} | EliteStay`
   : "EliteStay - Luxury Direct Booking";
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const currentPath = Astro.url.pathname;
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const origin = Astro.url.origin;
 ---
 

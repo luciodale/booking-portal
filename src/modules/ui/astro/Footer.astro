@@ -3,10 +3,10 @@ import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
 import { t } from "@/i18n/t";
 import { localePath } from "@/i18n/locale-path";
+import LanguageSwitcher from "@/modules/ui/astro/LanguageSwitcher.astro";
 
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const footerLinks = {
   company: [
     { href: localePath(locale, "/about"), label: t(locale, "footer.aboutUs") },
@@ -25,7 +25,6 @@ const footerLinks = {
   ],
 };
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const currentYear = new Date().getFullYear();
 ---
 

@@ -1,11 +1,9 @@
 ---
-// biome-ignore lint/correctness/noUnusedVariables: Astro Props typing
 interface Props {
   latitude: string;
   longitude: string;
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const { latitude, longitude } = Astro.props;
 ---
 

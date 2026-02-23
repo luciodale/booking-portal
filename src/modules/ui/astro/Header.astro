@@ -3,12 +3,13 @@ import { localePath, stripLocalePrefix } from "@/i18n/locale-path";
 import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
+import { HeaderAuthSection } from "@/modules/auth/ui/HeaderAuthSection";
+import { MobileNav } from "@/modules/ui/react/MobileNav";
+import { ThemeToggle } from "@/modules/ui/react/ThemeToggle";
 
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const rawPath = stripLocalePrefix(Astro.url.pathname);
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const navLinks = [
   {
     href: localePath(locale, "/"),

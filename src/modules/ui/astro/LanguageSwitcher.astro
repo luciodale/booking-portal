@@ -1,16 +1,15 @@
 ---
 import type { Locale } from "@/i18n/types";
+import { locales } from "@/i18n/types";
+import { switchLocale } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
 
-// biome-ignore lint/correctness/noUnusedVariables: Astro Props typing
 interface Props {
   locale: Locale;
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const { locale } = Astro.props;
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const currentPath = Astro.url.pathname;
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const search = Astro.url.search;
 ---
 

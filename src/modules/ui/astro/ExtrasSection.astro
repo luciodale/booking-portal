@@ -11,25 +11,20 @@ type Extra = {
   maxNights?: number;
 };
 
-// biome-ignore lint/correctness/noUnusedVariables: Astro Props typing
 interface Props {
   extras: Extra[];
   variant?: "standard" | "elite";
   locale?: Locale;
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const { extras, variant = "standard", locale = (Astro.currentLocale ?? defaultLocale) as Locale } = Astro.props;
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const isElite = variant === "elite";
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 function formatPrice(cents: number) {
   return `\u20AC${(cents / 100).toLocaleString()}`;
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const perLabels: Record<Extra["per"], string> = {
   stay: t(locale, "property.perStay"),
   night: t(locale, "property.perNight"),

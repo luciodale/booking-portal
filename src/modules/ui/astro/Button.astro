@@ -1,16 +1,12 @@
 ---
-// biome-ignore lint/correctness/noUnusedVariables: Astro Props typing
 interface Props {
   variant?: "primary" | "secondary";
   href?: string;
   class?: string;
 }
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const { variant = "primary", href, class: className } = Astro.props;
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const Tag = href ? "a" : "button";
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const buttonClass = variant === "primary" ? "btn-primary" : "btn-secondary";
 ---
 

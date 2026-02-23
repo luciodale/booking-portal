@@ -1,9 +1,10 @@
 ---
 import type { LinkedExperience } from "@/features/public/browse/property-detail-queries";
+import { localePath } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
 
-// biome-ignore lint/correctness/noUnusedVariables: Astro Props typing
 interface Props {
   experience: LinkedExperience;
   propertyTitle: string;
@@ -14,21 +15,15 @@ interface Props {
 
 const {
   experience: exp,
-  // biome-ignore lint/correctness/noUnusedVariables: used in template
   propertyTitle,
-  // biome-ignore lint/correctness/noUnusedVariables: used in template
   ownerWhatsapp,
   variant = "standard",
-  // biome-ignore lint/correctness/noUnusedVariables: used in template
   locale = (Astro.currentLocale ?? defaultLocale) as Locale,
 } = Astro.props;
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const isElite = variant === "elite";
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 const categoryIcon = exp.categoryIcon;
 
-// biome-ignore lint/correctness/noUnusedVariables: used in template
 function formatPrice(cents: number, currency: string) {
   const symbol = currency === "eur" ? "\u20AC" : `${currency.toUpperCase()} `;
   return `${symbol}${(cents / 100).toLocaleString()}`;

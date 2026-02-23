@@ -1,5 +1,9 @@
 ---
-// biome-ignore lint/correctness/noUnusedVariables: Astro Props typing
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Footer from "@/modules/ui/astro/Footer.astro";
+import Header from "@/modules/ui/astro/Header.astro";
+import LucideIcons from "@/modules/ui/astro/LucideIcons.astro";
+
 interface Props {
   title: string;
   description?: string;
@@ -9,15 +13,10 @@ interface Props {
 }
 
 const {
-  // biome-ignore lint/correctness/noUnusedVariables: used in template
   title,
-  // biome-ignore lint/correctness/noUnusedVariables: used in template
   description,
-  // biome-ignore lint/correctness/noUnusedVariables: used in template
   ogImage,
-  // biome-ignore lint/correctness/noUnusedVariables: used in template
   canonicalUrl,
-  // biome-ignore lint/correctness/noUnusedVariables: used in template
   showMarble = false,
 } = Astro.props;
 ---
