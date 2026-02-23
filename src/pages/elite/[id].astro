@@ -17,7 +17,8 @@ export const prerender = false;
 const { id } = Astro.params;
 if (!id) return Astro.redirect("/elite");
 
-const _locale = (Astro.currentLocale ?? defaultLocale) as Locale;
+// biome-ignore lint/correctness/noUnusedVariables: used in template
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 
 const db = getDb(Astro.locals.runtime.env.DB);
 
@@ -44,7 +45,8 @@ const assetImagesList = await db
 
 const imageUrls = assetImagesList.map((img) => generateImageUrl(img.r2Key));
 
-const _property = {
+// biome-ignore lint/correctness/noUnusedVariables: used in template
+const property = {
   id: asset.id,
   title: asset.title,
   location: formatLocation(asset),
@@ -62,7 +64,8 @@ const _property = {
   views: asset.views ?? [],
 };
 
-const [_linkedExperiences, _ownerWhatsapp, _cityTax] = await Promise.all([
+// biome-ignore lint/correctness/noUnusedVariables: used in template
+const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
   fetchLinkedExperiences(db, asset.id),
   fetchOwnerWhatsapp(db, asset.userId),
   fetchCityTax(db, asset.userId, asset.city, asset.country),

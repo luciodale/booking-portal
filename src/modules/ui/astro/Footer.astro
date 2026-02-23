@@ -6,7 +6,8 @@ import { localePath } from "@/i18n/locale-path";
 
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 
-const _footerLinks = {
+// biome-ignore lint/correctness/noUnusedVariables: used in template
+const footerLinks = {
   company: [
     { href: localePath(locale, "/about"), label: t(locale, "footer.aboutUs") },
     { href: localePath(locale, "/careers"), label: t(locale, "footer.careers") },
@@ -24,7 +25,8 @@ const _footerLinks = {
   ],
 };
 
-const _currentYear = new Date().getFullYear();
+// biome-ignore lint/correctness/noUnusedVariables: used in template
+const currentYear = new Date().getFullYear();
 ---
 
 <footer class="border-t border-border bg-card">

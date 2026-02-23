@@ -5,9 +5,11 @@ import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
 
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
-const _rawPath = stripLocalePrefix(Astro.url.pathname);
+// biome-ignore lint/correctness/noUnusedVariables: used in template
+const rawPath = stripLocalePrefix(Astro.url.pathname);
 
-const _navLinks = [
+// biome-ignore lint/correctness/noUnusedVariables: used in template
+const navLinks = [
   {
     href: localePath(locale, "/"),
     label: t(locale, "nav.home"),

@@ -4,7 +4,8 @@ import { defaultLocale } from "@/i18n/types";
 
 export const prerender = false;
 
-const _locale = (Astro.currentLocale ?? defaultLocale) as Locale;
+// biome-ignore lint/correctness/noUnusedVariables: used in template
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 ---
 
 <BaseLayout
