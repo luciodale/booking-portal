@@ -10,6 +10,7 @@ export const common = {
   "auth.signOut": "Sign Out",
   "auth.myBookings": "My Bookings",
   "auth.backoffice": "Backoffice",
+  "auth.adminSettings": "Admin Settings",
 
   "footer.company": "Company",
   "footer.aboutUs": "About Us",

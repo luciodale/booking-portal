@@ -12,6 +12,7 @@ export const common: Record<keyof typeof en, string> = {
   "auth.signOut": "Esci",
   "auth.myBookings": "Le Mie Prenotazioni",
   "auth.backoffice": "Backoffice",
+  "auth.adminSettings": "Impostazioni Admin",
 
   "footer.company": "Azienda",
   "footer.aboutUs": "Chi Siamo",

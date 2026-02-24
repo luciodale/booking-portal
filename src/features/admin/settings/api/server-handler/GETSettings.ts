@@ -25,9 +25,7 @@ export async function GETSettings(locals: APIContext["locals"]) {
 
     return jsonSuccess(settings);
   } catch (error) {
-    return jsonError(
-      error instanceof Error ? error.message : "Internal error",
-      mapErrorToStatus(error)
-    );
+    console.error("[GETSettings]", error);
+    return jsonError("Internal error", mapErrorToStatus(error));
   }
 }

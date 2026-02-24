@@ -11,7 +11,8 @@ import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
 export async function POSTCreateConnectAccount(
-  locals: APIContext["locals"]
+  locals: APIContext["locals"],
+  { replace = false }: { replace?: boolean } = {}
 ) {
   try {
     const D1Database = locals.runtime?.env?.DB;
@@ -32,7 +33,7 @@ export async function POSTCreateConnectAccount(
       .where(eq(users.id, ctx.userId))
       .limit(1);
 
-    if (user?.stripeConnectedAccountId) {
+    if (user?.stripeConnectedAccountId && !replace) {
       return jsonSuccess({ accountId: user.stripeConnectedAccountId });
     }
 
@@ -55,8 +56,11 @@ export async function POSTCreateConnectAccount(
 
     return jsonSuccess({ accountId: account.id });
   } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Internal error";
+    console.error("[POSTCreateConnectAccount]", message, error);
     return jsonError(
-      error instanceof Error ? error.message : "Internal error",
+      import.meta.env.DEV ? message : "Internal error",
       mapErrorToStatus(error)
     );
   }

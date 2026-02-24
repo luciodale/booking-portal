@@ -9,6 +9,7 @@ import {
   useFloating,
   useInteractions,
 } from "@floating-ui/react";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
 function useBackofficeUserMenu() {
@@ -41,9 +42,13 @@ function useBackofficeUserMenu() {
       "?"
     : "?";
 
+  const isAdmin =
+    (user?.publicMetadata as { role?: string } | undefined)?.role === "admin";
+
   return {
     user,
     isOpen,
+    isAdmin,
     initials,
     refs,
     floatingStyles,
@@ -57,6 +62,7 @@ export function BackofficeUserMenu() {
   const {
     user,
     isOpen,
+    isAdmin,
     initials,
     refs,
     floatingStyles,
@@ -99,6 +105,15 @@ export function BackofficeUserMenu() {
               {user?.primaryEmailAddress?.emailAddress}
             </p>
           </div>
+
+          {isAdmin && (
+            <Link
+              to="/admin/settings"
+              className="flex items-center gap-2 px-3 py-2 text-sm text-foreground rounded-lg hover:bg-secondary transition-colors"
+            >
+              Admin Settings
+            </Link>
+          )}
 
           <a
             href="/"

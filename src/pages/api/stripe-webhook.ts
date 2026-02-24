@@ -28,34 +28,29 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const log = createEventLogger(D1Database);
   const body = await request.text();
 
+  const stripe = new Stripe(stripeKey);
+  const sig = request.headers.get("stripe-signature");
+
+  if (!sig) {
+    return new Response("Missing signature", { status: 400 });
+  }
+
   let event: Stripe.Event;
 
-  if (import.meta.env.DEV) {
-    // Dev mode: accept unsigned payloads from the mock server
-    event = JSON.parse(body) as Stripe.Event;
-  } else {
-    const stripe = new Stripe(stripeKey);
-    const sig = request.headers.get("stripe-signature");
-
-    if (!sig) {
-      return new Response("Missing signature", { status: 400 });
-    }
-
-    try {
-      event = await stripe.webhooks.constructEventAsync(
-        body,
-        sig,
-        webhookSecret
-      );
-    } catch (err) {
-      console.error("Webhook signature verification failed:", err);
-      log.error({
-        source: "stripe-webhook",
-        message: "Webhook signature verification failed",
-        metadata: { error: err instanceof Error ? err.message : String(err) },
-      });
-      return new Response("Invalid signature", { status: 400 });
-    }
+  try {
+    event = await stripe.webhooks.constructEventAsync(
+      body,
+      sig,
+      webhookSecret
+    );
+  } catch (err) {
+    console.error("Webhook signature verification failed:", err);
+    log.error({
+      source: "stripe-webhook",
+      message: "Webhook signature verification failed",
+      metadata: { error: err instanceof Error ? err.message : String(err) },
+    });
+    return new Response("Invalid signature", { status: 400 });
   }
 
   // ── charge.refunded fallback ──────────────────────────────────────────

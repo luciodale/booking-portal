@@ -1,41 +1,24 @@
 import { useConnectStatus } from "@/features/broker/connect/queries/useConnectStatus";
 import { useCreateConnectAccount } from "@/features/broker/connect/queries/useCreateConnectAccount";
-import { useCreateAccountSession } from "@/features/broker/connect/queries/useCreateAccountSession";
-import {
-  ConnectAccountOnboarding,
-  ConnectComponentsProvider,
-} from "@stripe/react-connect-js";
-import { loadConnectAndInitialize } from "@stripe/connect-js";
-import { useState } from "react";
-import { CheckCircle } from "lucide-react";
-import { connectQueryKeys } from "@/features/broker/connect/queries/useConnectStatus";
-import { useQueryClient } from "@tanstack/react-query";
+import { useCreateAccountLink } from "@/features/broker/connect/queries/useCreateAccountLink";
+import { AlertTriangle, CheckCircle } from "lucide-react";
 
 export function ConnectOnboardingView() {
   const { data: connectStatus, isLoading } = useConnectStatus();
-  const queryClient = useQueryClient();
   const createAccountMutation = useCreateConnectAccount();
-  const createSessionMutation = useCreateAccountSession();
+  const createLinkMutation = useCreateAccountLink();
 
-  const [stripeConnectInstance, setStripeConnectInstance] = useState<
-    ReturnType<typeof loadConnectAndInitialize> | undefined
-  >(undefined);
+  const isRevoked = connectStatus?.status === "revoked";
+  const isPending =
+    createAccountMutation.isPending || createLinkMutation.isPending;
 
   async function handleStartOnboarding() {
-    const { accountId } = await createAccountMutation.mutateAsync();
+    await createAccountMutation.mutateAsync(
+      isRevoked ? { replace: true } : undefined
+    );
 
-    const instance = loadConnectAndInitialize({
-      publishableKey: import.meta.env.PUBLIC_STRIPE_PUBLISHABLE_KEY,
-      fetchClientSecret: async () => {
-        const { clientSecret } = await createSessionMutation.mutateAsync();
-        return clientSecret;
-      },
-      appearance: {
-        overlays: "dialog",
-      },
-    });
-
-    setStripeConnectInstance(instance);
+    const { url } = await createLinkMutation.mutateAsync();
+    window.location.href = url;
   }
 
   if (isLoading) {
@@ -46,7 +29,6 @@ export function ConnectOnboardingView() {
     );
   }
 
-  // Complete state
   if (connectStatus?.status === "complete") {
     return (
       <div className="max-w-lg mx-auto py-8 px-6">
@@ -80,26 +62,6 @@ export function ConnectOnboardingView() {
     );
   }
 
-  // Embedded onboarding active
-  if (stripeConnectInstance) {
-    return (
-      <div className="max-w-2xl mx-auto py-8 px-6">
-        <h1 className="text-2xl font-semibold mb-6">Complete Payout Setup</h1>
-        <ConnectComponentsProvider connectInstance={stripeConnectInstance}>
-          <ConnectAccountOnboarding
-            onExit={() => {
-              queryClient.invalidateQueries({
-                queryKey: connectQueryKeys.status(),
-              });
-              setStripeConnectInstance(undefined);
-            }}
-          />
-        </ConnectComponentsProvider>
-      </div>
-    );
-  }
-
-  // Not started / incomplete
   return (
     <div className="max-w-lg mx-auto py-8 px-6">
       <h1 className="text-2xl font-semibold mb-4">Set Up Payouts</h1>
@@ -107,6 +69,23 @@ export function ConnectOnboardingView() {
         Connect your bank account to receive payments from guest bookings. This
         process is powered by Stripe and takes a few minutes.
       </p>
+      {isRevoked && (
+        <div className="rounded-lg border border-red-500/30 bg-red-50 dark:bg-red-950/20 p-4 mb-6">
+          <div className="flex items-center gap-2 mb-1">
+            <AlertTriangle
+              className="text-red-600 dark:text-red-400"
+              size={16}
+            />
+            <p className="text-sm font-medium text-red-700 dark:text-red-400">
+              Previous connection is no longer valid
+            </p>
+          </div>
+          <p className="text-sm text-red-600 dark:text-red-400/80">
+            Your linked Stripe account was revoked or can no longer be accessed.
+            Please set up a new connection below.
+          </p>
+        </div>
+      )}
       {connectStatus?.status === "incomplete" && (
         <div className="rounded-lg border border-amber-500/30 bg-amber-50 dark:bg-amber-950/20 p-4 mb-6">
           <p className="text-sm text-amber-700 dark:text-amber-400">
@@ -118,16 +97,16 @@ export function ConnectOnboardingView() {
       <button
         type="button"
         onClick={handleStartOnboarding}
-        disabled={
-          createAccountMutation.isPending || createSessionMutation.isPending
-        }
+        disabled={isPending}
         className="rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
       >
-        {createAccountMutation.isPending || createSessionMutation.isPending
-          ? "Setting up..."
-          : connectStatus?.status === "incomplete"
-            ? "Continue Setup"
-            : "Set Up Payouts"}
+        {isPending
+          ? "Redirecting to Stripe..."
+          : isRevoked
+            ? "Reconnect Payouts"
+            : connectStatus?.status === "incomplete"
+              ? "Continue Setup"
+              : "Set Up Payouts"}
       </button>
     </div>
   );

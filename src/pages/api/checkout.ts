@@ -325,34 +325,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       applicationFeeAmount: String(applicationFeeAmount),
     };
 
-    // ── Dev mode: skip Stripe, fire webhook via mock server ───────────────
-    if (import.meta.env.DEV) {
-      const mockSessionId = `mock_${Date.now()}`;
-      const mockRes = await fetch(
-        `${import.meta.env.SMOOBU_BASE_URL}/mock/trigger-webhook`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ metadata, sessionId: mockSessionId }),
-        }
-      );
-
-      if (!mockRes.ok) {
-        return jsonResponse({ error: "Mock webhook failed" }, 502);
-      }
-
-      log.info({
-        source: "checkout",
-        message: "Dev checkout — mock webhook fired",
-        metadata: { propertyId },
-      });
-
-      return jsonResponse({
-        url: `${origin}${localePath(locale, "/booking/success")}?session_id=${mockSessionId}`,
-      });
-    }
-
-    // ── Production: create Stripe Checkout Session ────────────────────────
     const stripe = new Stripe(stripeKey);
 
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
@@ -412,6 +384,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       metadata,
       payment_intent_data: {
         application_fee_amount: applicationFeeAmount,
+        on_behalf_of: connectedAccountId,
         transfer_data: {
           destination: connectedAccountId,
         },

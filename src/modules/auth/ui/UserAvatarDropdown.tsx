@@ -57,9 +57,13 @@ function useUserAvatarDropdown() {
       "?"
     : "?";
 
+  const isAdmin =
+    (user?.publicMetadata as { role?: string } | undefined)?.role === "admin";
+
   return {
     user,
     isOpen,
+    isAdmin,
     initials,
     refs,
     floatingStyles,
@@ -78,6 +82,7 @@ export function UserAvatarDropdown({ locale = "en" }: UserAvatarDropdownProps) {
   const {
     user,
     isOpen,
+    isAdmin,
     initials,
     refs,
     floatingStyles,
@@ -142,6 +147,15 @@ export function UserAvatarDropdown({ locale = "en" }: UserAvatarDropdownProps) {
           >
             {t(locale, "auth.backoffice")}
           </a>
+
+          {isAdmin && (
+            <a
+              href={localePath(locale, "/backoffice/admin/settings")}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-foreground rounded-lg hover:bg-secondary transition-colors"
+            >
+              {t(locale, "auth.adminSettings")}
+            </a>
+          )}
 
           <button
             type="button"

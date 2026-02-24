@@ -10,8 +10,9 @@ import type { APIContext } from "astro";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
-export async function POSTCreateAccountSession(
-  locals: APIContext["locals"]
+export async function POSTCreateAccountLink(
+  locals: APIContext["locals"],
+  { origin }: { origin: string }
 ) {
   try {
     const D1Database = locals.runtime?.env?.DB;
@@ -36,18 +37,16 @@ export async function POSTCreateAccountSession(
     }
 
     const stripe = new Stripe(stripeKey);
-    const session = await stripe.accountSessions.create({
+    const accountLink = await stripe.accountLinks.create({
       account: user.stripeConnectedAccountId,
-      components: {
-        account_onboarding: { enabled: true },
-      },
+      return_url: `${origin}/backoffice/connect`,
+      refresh_url: `${origin}/backoffice/connect`,
+      type: "account_onboarding",
     });
 
-    return jsonSuccess({ clientSecret: session.client_secret });
+    return jsonSuccess({ url: accountLink.url });
   } catch (error) {
-    return jsonError(
-      error instanceof Error ? error.message : "Internal error",
-      mapErrorToStatus(error)
-    );
+    console.error("[POSTCreateAccountLink]", error);
+    return jsonError("Internal error", mapErrorToStatus(error));
   }
 }

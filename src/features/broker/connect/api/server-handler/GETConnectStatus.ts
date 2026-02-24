@@ -11,7 +11,7 @@ import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
 export type ConnectStatus = {
-  status: "not_started" | "incomplete" | "complete";
+  status: "not_started" | "incomplete" | "complete" | "revoked";
   chargesEnabled: boolean;
   payoutsEnabled: boolean;
   detailsSubmitted: boolean;
@@ -46,9 +46,20 @@ export async function GETConnectStatus(locals: APIContext["locals"]) {
     }
 
     const stripe = new Stripe(stripeKey);
-    const account = await stripe.accounts.retrieve(
-      user.stripeConnectedAccountId
-    );
+
+    let account: Stripe.Account;
+    try {
+      account = await stripe.accounts.retrieve(
+        user.stripeConnectedAccountId
+      );
+    } catch {
+      return jsonSuccess<ConnectStatus>({
+        status: "revoked",
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        detailsSubmitted: false,
+      });
+    }
 
     const chargesEnabled = account.charges_enabled ?? false;
     const payoutsEnabled = account.payouts_enabled ?? false;
@@ -64,9 +75,7 @@ export async function GETConnectStatus(locals: APIContext["locals"]) {
       detailsSubmitted,
     });
   } catch (error) {
-    return jsonError(
-      error instanceof Error ? error.message : "Internal error",
-      mapErrorToStatus(error)
-    );
+    console.error("[GETConnectStatus]", error);
+    return jsonError("Internal error", mapErrorToStatus(error));
   }
 }

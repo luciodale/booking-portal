@@ -1,7 +1,10 @@
 import type { ConnectStatus } from "@/features/broker/connect/api/server-handler/GETConnectStatus";
 
-export async function createConnectAccount(): Promise<{ accountId: string }> {
-  const response = await fetch("/api/backoffice/connect/account", {
+export async function createConnectAccount(
+  { replace = false }: { replace?: boolean } = {}
+): Promise<{ accountId: string }> {
+  const params = replace ? "?replace=true" : "";
+  const response = await fetch(`/api/backoffice/connect/account${params}`, {
     method: "POST",
   });
   const json = (await response.json()) as {
@@ -15,21 +18,19 @@ export async function createConnectAccount(): Promise<{ accountId: string }> {
   return json.data as { accountId: string };
 }
 
-export async function createAccountSession(): Promise<{
-  clientSecret: string;
-}> {
-  const response = await fetch("/api/backoffice/connect/account-session", {
+export async function createAccountLink(): Promise<{ url: string }> {
+  const response = await fetch("/api/backoffice/connect/account-link", {
     method: "POST",
   });
   const json = (await response.json()) as {
     success: boolean;
-    data?: { clientSecret: string };
+    data?: { url: string };
     error?: { message: string };
   };
   if (!response.ok || !json.success) {
-    throw new Error(json.error?.message ?? "Failed to create account session");
+    throw new Error(json.error?.message ?? "Failed to create account link");
   }
-  return json.data as { clientSecret: string };
+  return json.data as { url: string };
 }
 
 export async function fetchConnectStatus(): Promise<ConnectStatus> {

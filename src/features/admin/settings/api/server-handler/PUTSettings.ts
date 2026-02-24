@@ -75,9 +75,7 @@ export async function PUTSettings(
 
     return jsonSuccess({ key, value });
   } catch (error) {
-    return jsonError(
-      error instanceof Error ? error.message : "Internal error",
-      mapErrorToStatus(error)
-    );
+    console.error("[PUTSettings]", error);
+    return jsonError("Internal error", mapErrorToStatus(error));
   }
 }

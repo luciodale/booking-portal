@@ -7,7 +7,7 @@ export function useCreateConnectAccount() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: createConnectAccount,
+    mutationFn: (opts?: { replace?: boolean }) => createConnectAccount(opts),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: connectQueryKeys.status() });
     },

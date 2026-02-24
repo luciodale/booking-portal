@@ -100,14 +100,7 @@ function BackofficeLayout() {
                     Events
                   </Link>
                 )}
-                {isAdmin && (
-                  <Link
-                    to="/admin/settings"
-                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    Settings
-                  </Link>
-                )}
+
                 <a
                   href="/"
                   className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
