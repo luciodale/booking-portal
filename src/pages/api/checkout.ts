@@ -276,11 +276,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
       )
       .limit(1);
 
-    const serverCityTaxCents = cityTaxRow
-      ? cityTaxRow.amount *
-        Math.min(nights, cityTaxRow.maxNights ?? nights) *
-        guests
-      : 0;
+    const serverCityTaxCents =
+      cityTaxRow && cityTaxRow.amount > 0
+        ? cityTaxRow.amount *
+          Math.min(nights, cityTaxRow.maxNights ?? nights) *
+          guests
+        : 0;
 
     if (cityTaxCents !== serverCityTaxCents) {
       log.error({

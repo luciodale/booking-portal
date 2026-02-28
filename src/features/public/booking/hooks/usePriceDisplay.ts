@@ -177,7 +177,7 @@ export function usePriceDisplay({
 
     // Compute city tax
     let cityTaxCents = 0;
-    if (cityTax && guests != null && guests > 0) {
+    if (cityTax && cityTax.amount > 0 && guests != null && guests > 0) {
       const effectiveNights =
         cityTax.maxNights != null
           ? Math.min(nights, cityTax.maxNights)

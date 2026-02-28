@@ -137,5 +137,7 @@ export async function fetchCityTax(
     )
     .limit(1);
 
-  return row ? { amount: row.amount, maxNights: row.maxNights } : null;
+  return row && row.amount > 0
+    ? { amount: row.amount, maxNights: row.maxNights }
+    : null;
 }

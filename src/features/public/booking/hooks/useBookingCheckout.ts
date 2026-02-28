@@ -51,7 +51,7 @@ export function useBookingCheckout(params: {
       const guests = data.adults + data.children;
       const nights = Object.keys(params.nightPriceCents).length;
       let cityTaxCents = 0;
-      if (params.cityTax) {
+      if (params.cityTax && params.cityTax.amount > 0) {
         const effectiveNights =
           params.cityTax.maxNights != null
             ? Math.min(nights, params.cityTax.maxNights)
