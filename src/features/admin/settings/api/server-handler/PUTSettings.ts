@@ -16,15 +16,7 @@ const putSettingSchema = z.object({
   value: z.string(),
 });
 
-const validators: Record<string, z.ZodType<string>> = {
-  application_fee_percent: z.string().refine(
-    (v) => {
-      const n = Number(v);
-      return Number.isInteger(n) && n >= 0 && n <= 100;
-    },
-    { message: "Must be an integer between 0 and 100" }
-  ),
-};
+const validators: Record<string, z.ZodType<string>> = {};
 
 export async function PUTSettings(
   request: Request,

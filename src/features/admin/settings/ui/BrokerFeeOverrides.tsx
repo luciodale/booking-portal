@@ -76,8 +76,8 @@ export function BrokerFeeOverrides() {
     <div className="mt-14">
       <h2 className="text-lg font-semibold mb-2">Broker Fee Overrides</h2>
       <p className="text-sm text-muted-foreground mb-8">
-        Set a custom application fee for specific brokers. Overrides the global
-        default above.
+        Set a custom application fee for specific brokers. Overrides the default
+        10%.
       </p>
 
       {/* Add override form */}
