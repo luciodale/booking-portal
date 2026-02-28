@@ -31,6 +31,9 @@ export default defineConfig({
     }),
   ],
   vite: {
+    server: {
+      allowedHosts: [".trycloudflare.com"],
+    },
     plugins: [tailwindcss()],
     resolve: {
       alias: {

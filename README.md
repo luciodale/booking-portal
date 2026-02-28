@@ -77,6 +77,19 @@ Stripe runs against the **test/sandbox** environment. Use [Stripe test cards](ht
 
 Smoobu is fully mocked locally via `scripts/mock-smoobu.ts` (9 pre-configured apartments, 150 EUR/night, 3-night minimum).
 
+### Clerk Webhooks (local)
+
+Clerk webhooks (e.g. `user.created`) don't reach `localhost` by default. To receive them locally:
+
+1. Start a tunnel: `cloudflared tunnel --url http://localhost:4321`
+2. In the Clerk Dashboard, create a **second** webhook endpoint (don't touch production):
+   - URL: `https://<subdomain>.trycloudflare.com/api/clerk-webhook`
+   - Events: `user.created`
+3. Copy the new endpoint's signing secret into `.dev.vars` as `CLERK_WEBHOOK_SECRET`
+4. Restart `bun run dev`
+
+The `trycloudflare.com` URL changes each session — update the Clerk webhook URL accordingly.
+
 ## Scripts
 
 ### Development

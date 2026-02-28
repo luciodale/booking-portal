@@ -37,7 +37,7 @@ export function safeErrorMessage(error: unknown, fallback: string, locale?: stri
   if (!(error instanceof Error)) return fallback;
   const msg = error.message;
   if (msg === "Unauthorized") return locale ? t(locale, "error.unauthorized" as TranslationKey) : msg;
-  if (msg.startsWith("Forbidden")) return locale ? t(locale, "error.forbidden" as TranslationKey) : msg;
+  if (msg.startsWith("Forbidden")) return msg;
   if (msg.includes("UNIQUE constraint failed"))
     return locale ? t(locale, "error.recordAlreadyExists" as TranslationKey) : "This record already exists";
   if (msg.includes("NOT NULL constraint failed"))
