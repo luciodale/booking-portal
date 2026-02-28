@@ -18,7 +18,6 @@ import {
   type NewImage,
 } from "@/modules/ui/react/form-inputs/ImagesInput";
 import { NumberInput } from "@/modules/ui/react/form-inputs/NumberInput";
-import { SelectInput } from "@/modules/ui/react/form-inputs/SelectInput";
 import { TextInput } from "@/modules/ui/react/form-inputs/TextInput";
 import { TextareaInput } from "@/modules/ui/react/form-inputs/TextareaInput";
 import type { CreatePropertyInput } from "@/schemas/property";
@@ -134,8 +133,6 @@ export function CreatePropertyForm({
       }
     }
   }, [cityTaxQuery.data, setValue]);
-
-  const isElite = tier === "elite";
 
   /** Fill a single field from Smoobu data */
   function linkField<K extends keyof CreatePropertyFormData>(field: K) {

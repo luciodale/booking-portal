@@ -1,12 +1,14 @@
 import { useConnectStatus } from "@/features/broker/connect/queries/useConnectStatus";
 import { useCreateConnectAccount } from "@/features/broker/connect/queries/useCreateConnectAccount";
 import { useCreateAccountLink } from "@/features/broker/connect/queries/useCreateAccountLink";
-import { AlertTriangle, CheckCircle } from "lucide-react";
+import { useCreateLoginLink } from "@/features/broker/connect/queries/useCreateLoginLink";
+import { AlertTriangle, CheckCircle, ExternalLink } from "lucide-react";
 
 export function ConnectOnboardingView() {
   const { data: connectStatus, isLoading } = useConnectStatus();
   const createAccountMutation = useCreateConnectAccount();
   const createLinkMutation = useCreateAccountLink();
+  const createLoginLinkMutation = useCreateLoginLink();
 
   const isRevoked = connectStatus?.status === "revoked";
   const isPending =
@@ -19,6 +21,11 @@ export function ConnectOnboardingView() {
 
     const { url } = await createLinkMutation.mutateAsync();
     window.location.href = url;
+  }
+
+  async function handleManagePayouts() {
+    const { url } = await createLoginLinkMutation.mutateAsync();
+    window.open(url, "_blank");
   }
 
   if (isLoading) {
@@ -57,6 +64,17 @@ export function ConnectOnboardingView() {
               </p>
             </div>
           </div>
+          <button
+            type="button"
+            onClick={handleManagePayouts}
+            disabled={createLoginLinkMutation.isPending}
+            className="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+          >
+            {createLoginLinkMutation.isPending
+              ? "Opening Stripe..."
+              : "Manage Payout Details"}
+            {!createLoginLinkMutation.isPending && <ExternalLink size={14} />}
+          </button>
         </div>
       </div>
     );

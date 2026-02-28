@@ -33,6 +33,21 @@ export async function createAccountLink(): Promise<{ url: string }> {
   return json.data as { url: string };
 }
 
+export async function createLoginLink(): Promise<{ url: string }> {
+  const response = await fetch("/api/backoffice/connect/login-link", {
+    method: "POST",
+  });
+  const json = (await response.json()) as {
+    success: boolean;
+    data?: { url: string };
+    error?: { message: string };
+  };
+  if (!response.ok || !json.success) {
+    throw new Error(json.error?.message ?? "Failed to create login link");
+  }
+  return json.data as { url: string };
+}
+
 export async function fetchConnectStatus(): Promise<ConnectStatus> {
   const response = await fetch("/api/backoffice/connect/status");
   const json = (await response.json()) as {

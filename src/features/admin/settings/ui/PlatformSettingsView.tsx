@@ -1,7 +1,9 @@
+import { BrokerFeeOverrides } from "@/features/admin/settings/ui/BrokerFeeOverrides";
 import {
   usePlatformSettings,
   useUpdateSetting,
 } from "@/features/admin/settings/queries/useSettings";
+import { showError } from "@/modules/ui/react/stores/notificationStore";
 import { useEffect, useState } from "react";
 
 export function PlatformSettingsView() {
@@ -18,7 +20,10 @@ export function PlatformSettingsView() {
   function handleSave(e: React.FormEvent) {
     e.preventDefault();
     const n = Number(feePercent);
-    if (!Number.isInteger(n) || n < 0 || n > 100) return;
+    if (!Number.isInteger(n) || n < 0 || n > 100) {
+      showError("Fee must be a whole number between 0 and 100");
+      return;
+    }
     updateMutation.mutate({
       key: "application_fee_percent",
       value: String(n),
@@ -34,17 +39,17 @@ export function PlatformSettingsView() {
   }
 
   return (
-    <div className="max-w-lg mx-auto py-8 px-6">
-      <h1 className="text-2xl font-semibold mb-6">Platform Settings</h1>
-      <form onSubmit={handleSave} className="space-y-4">
+    <div className="max-w-xl mx-auto py-10 px-6">
+      <h1 className="text-2xl font-semibold mb-8">Platform Settings</h1>
+      <form onSubmit={handleSave} className="space-y-5">
         <div>
           <label
             htmlFor="fee-percent"
-            className="block text-sm font-medium text-foreground mb-1"
+            className="block text-sm font-medium text-foreground mb-1.5"
           >
             Application Fee (%)
           </label>
-          <p className="text-xs text-muted-foreground mb-2">
+          <p className="text-sm text-muted-foreground mb-3">
             Percentage of each booking total retained by the platform. The
             remainder goes to the broker.
           </p>
@@ -67,6 +72,8 @@ export function PlatformSettingsView() {
           {updateMutation.isPending ? "Saving..." : "Save"}
         </button>
       </form>
+
+      <BrokerFeeOverrides />
     </div>
   );
 }

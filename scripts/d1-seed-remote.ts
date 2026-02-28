@@ -5,7 +5,7 @@
  */
 
 import { join } from "node:path";
-import { checkExistingData, executeSql, generateSql } from "./_helpers/d1";
+import { executeSql, generateSql } from "./_helpers/d1";
 
 const ROOT_DIR = join(import.meta.dir, "..");
 const SQL_PATH = join(ROOT_DIR, ".seed.sql");

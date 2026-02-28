@@ -1,10 +1,21 @@
 import type { getDb } from "@/db";
-import { platformSettings } from "@/db/schema";
+import { brokerFeeOverrides, platformSettings } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function getApplicationFeePercent(
-  db: ReturnType<typeof getDb>
+  db: ReturnType<typeof getDb>,
+  brokerUserId: string
 ): Promise<number> {
+  // Check per-broker override first
+  const [override] = await db
+    .select({ feePercent: brokerFeeOverrides.feePercent })
+    .from(brokerFeeOverrides)
+    .where(eq(brokerFeeOverrides.userId, brokerUserId))
+    .limit(1);
+
+  if (override) return override.feePercent;
+
+  // Fall back to global platform setting
   const [row] = await db
     .select({ value: platformSettings.value })
     .from(platformSettings)

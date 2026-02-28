@@ -298,7 +298,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       serverPriceCents + additionalTotalCents + extrasTotalCents + serverCityTaxCents;
 
     // Compute application fee for Stripe Connect
-    const feePercent = await getApplicationFeePercent(db);
+    const feePercent = await getApplicationFeePercent(db, asset.userId);
     const applicationFeeAmount = Math.round(
       (grandTotalCents * feePercent) / 100
     );

@@ -512,6 +512,20 @@ export const cityTaxDefaults = sqliteTable(
 );
 
 // ============================================================================
+// Broker Fee Overrides - per-broker application fee overrides
+// ============================================================================
+export const brokerFeeOverrides = sqliteTable("broker_fee_overrides", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" })
+    .unique(),
+  feePercent: integer("fee_percent").notNull(), // 0-100
+  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+});
+
+// ============================================================================
 // Type exports
 // ============================================================================
 export type User = typeof users.$inferSelect;
@@ -542,3 +556,5 @@ export type CityTaxDefault = typeof cityTaxDefaults.$inferSelect;
 export type NewCityTaxDefault = typeof cityTaxDefaults.$inferInsert;
 export type PlatformSetting = typeof platformSettings.$inferSelect;
 export type NewPlatformSetting = typeof platformSettings.$inferInsert;
+export type BrokerFeeOverride = typeof brokerFeeOverrides.$inferSelect;
+export type NewBrokerFeeOverride = typeof brokerFeeOverrides.$inferInsert;
