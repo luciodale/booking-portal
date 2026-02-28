@@ -67,7 +67,7 @@ function useHandleSignIn() {
     setPassword,
     error,
     submitting: loading,
-    disabled: loading || !isLoaded,
+    disabled: loading,
     handleSubmit,
     handleOAuth,
     signUpHref,

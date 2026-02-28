@@ -92,7 +92,7 @@ function useHandleSignUp() {
     step,
     error,
     submitting: loading,
-    disabled: loading || !isLoaded,
+    disabled: loading,
     handleSubmit,
     handleVerify,
     handleOAuth,
