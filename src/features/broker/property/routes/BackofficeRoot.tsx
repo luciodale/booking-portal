@@ -81,9 +81,9 @@ function BackofficeInner({ isAdmin }: { isAdmin: boolean }) {
 
   return (
     <div className="flex bg-background" style={{ height: "100dvh" }}>
-      <div className="relative flex h-full w-full overflow-hidden">
+      <div className="relative flex h-full w-full overflow-clip">
         <BackofficeSidebar isAdmin={isAdmin} />
-        <div className="relative flex h-full max-w-full flex-1 flex-col overflow-hidden">
+        <div className="relative flex h-full max-w-full flex-1 flex-col overflow-clip">
           <div ref={scrollRef} className="flex h-full w-full flex-1 flex-col overflow-auto">
             <BackofficeHeader isAdmin={isAdmin} />
             <main>
