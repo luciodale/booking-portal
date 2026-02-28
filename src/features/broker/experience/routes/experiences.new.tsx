@@ -1,21 +1,54 @@
 import { useCreateExperience } from "@/features/broker/experience/queries/useCreateExperience";
-import { CreateExperienceForm } from "@/features/broker/experience/ui/CreateExperienceForm";
+import {
+  CreateExperienceForm,
+  type CreateExperienceFormData,
+} from "@/features/broker/experience/ui/CreateExperienceForm";
 import { rootRoute } from "@/features/broker/property/routes/BackofficeRoot";
 import { BackofficePageHeader } from "@/features/broker/ui/BackofficePageHeader";
+import { showError } from "@/modules/ui/react/stores/notificationStore";
 import { getErrorMessages } from "@/modules/utils/errors";
-import type { CreateExperienceInput } from "@/schemas/experience";
 import { createRoute, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
 
 function CreateExperiencePage() {
   const navigate = useNavigate();
   const createExperience = useCreateExperience();
+  const [isUploading, setIsUploading] = useState(false);
 
-  async function handleSubmit(data: CreateExperienceInput) {
-    const newExperience = await createExperience.mutateAsync(data);
-    navigate({
-      to: "/experiences/$id/edit",
-      params: { id: newExperience.id },
-    });
+  async function handleSubmit(data: CreateExperienceFormData) {
+    try {
+      const { images, ...experienceData } = data;
+      const newExperience = await createExperience.mutateAsync(experienceData);
+
+      if (images.length > 0) {
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append("experienceId", newExperience.id);
+        const primaryIndex = images.findIndex((img) => img.isPrimary);
+        for (const img of images) {
+          formData.append("images", img.file);
+        }
+        if (primaryIndex >= 0) {
+          formData.append("isPrimary", String(primaryIndex));
+        }
+        const response = await fetch(
+          "/api/backoffice/upload-experience-images",
+          { method: "POST", body: formData }
+        );
+        if (!response.ok) {
+          showError("Experience created but image upload failed.");
+        }
+        setIsUploading(false);
+      }
+
+      navigate({
+        to: "/experiences/$id/edit",
+        params: { id: newExperience.id },
+      });
+    } catch (error) {
+      console.error("Submission failed", error);
+      setIsUploading(false);
+    }
   }
 
   return (
@@ -28,7 +61,7 @@ function CreateExperiencePage() {
 
       <CreateExperienceForm
         onSubmit={handleSubmit}
-        isLoading={createExperience.isPending}
+        isLoading={createExperience.isPending || isUploading}
       />
 
       {createExperience.isError && (

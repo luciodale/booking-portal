@@ -6,6 +6,10 @@ import { experienceCategories } from "@/features/broker/experience/constants/cat
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
 import { IconSelectInput } from "@/modules/ui/react/form-inputs/IconSelectInput";
+import {
+  ImagesInput,
+  type NewImage,
+} from "@/modules/ui/react/form-inputs/ImagesInput";
 import { NumberInput } from "@/modules/ui/react/form-inputs/NumberInput";
 import { SelectInput } from "@/modules/ui/react/form-inputs/SelectInput";
 import { TextInput } from "@/modules/ui/react/form-inputs/TextInput";
@@ -14,9 +18,25 @@ import type { CreateExperienceInput } from "@/schemas/experience";
 import { createExperienceSchema } from "@/schemas/experience";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+export interface CreateExperienceFormData extends CreateExperienceInput {
+  images: NewImage[];
+}
+
+const imageSchema = z.object({
+  id: z.string(),
+  file: z.custom<File>(),
+  previewUrl: z.string(),
+  isPrimary: z.boolean(),
+});
+
+const formSchema = createExperienceSchema.extend({
+  images: z.array(imageSchema).min(1, "At least one image required"),
+});
 
 interface CreateExperienceFormProps {
-  onSubmit: (data: CreateExperienceInput) => Promise<void>;
+  onSubmit: (data: CreateExperienceFormData) => Promise<void>;
   isLoading?: boolean;
 }
 
@@ -25,16 +45,18 @@ export function CreateExperienceForm({
   isLoading = false,
 }: CreateExperienceFormProps) {
   const { control, handleSubmit, formState, reset, watch, setValue } =
-    useForm<CreateExperienceInput>({
-      resolver: zodResolver(createExperienceSchema),
+    useForm<CreateExperienceFormData>({
+      resolver: zodResolver(formSchema),
       defaultValues: {
         status: "published",
         currency: "eur",
         instantBook: false,
         additionalCosts: [],
+        images: [],
       },
     });
 
+  const images = watch("images");
   const additionalCosts = watch("additionalCosts") ?? [];
   const instantBook = watch("instantBook") ?? false;
 
@@ -178,6 +200,19 @@ export function CreateExperienceForm({
             </p>
           </div>
         </label>
+      </FormSection>
+
+      {/* Images */}
+      <FormSection title="Experience Images">
+        <p className="text-sm text-muted-foreground mb-4">
+          Upload high-quality images of the experience. The first image will be
+          the primary display image.
+        </p>
+        <ImagesInput
+          images={images}
+          onChange={(newImages) => setValue("images", newImages)}
+          error={formState.errors.images?.message}
+        />
       </FormSection>
 
       <div className="flex justify-end gap-4">

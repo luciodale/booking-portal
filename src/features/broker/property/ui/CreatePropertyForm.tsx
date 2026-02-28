@@ -11,6 +11,7 @@ import { useCityTaxDefault } from "@/features/broker/property/hooks/useCityTaxDe
 import type { Feature } from "@/modules/constants";
 import { getFacilityOptions } from "@/modules/constants";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
+import { ExtrasEditor } from "@/modules/ui/react/ExtrasEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
 import { IconTagsInput } from "@/modules/ui/react/form-inputs/IconTagsInput";
 import {
@@ -107,12 +108,14 @@ export function CreatePropertyForm({
         views: [],
         images: [],
         showFullAddress: true,
+        extras: [],
         additionalCosts: [],
         instantBook: false,
       },
     });
 
   const images = watch("images");
+  const extras = watch("extras") ?? [];
   const additionalCosts = watch("additionalCosts") ?? [];
   const instantBook = watch("instantBook") ?? false;
   const amenities = watch("amenities") ?? [];
@@ -359,6 +362,18 @@ export function CreatePropertyForm({
           ]}
           showMaxNights
           onChange={(costs) => setValue("additionalCosts", costs, { shouldDirty: true })}
+          disabled={isLoading}
+        />
+      </FormSection>
+
+      {/* Extras (guest-selectable add-ons) */}
+      <FormSection title="Extras">
+        <p className="text-sm text-muted-foreground">
+          Guest-selectable add-ons with icons (amounts in cents).
+        </p>
+        <ExtrasEditor
+          extras={extras}
+          onChange={(val) => setValue("extras", val, { shouldDirty: true })}
           disabled={isLoading}
         />
       </FormSection>

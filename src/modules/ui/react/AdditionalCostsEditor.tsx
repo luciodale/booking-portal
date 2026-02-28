@@ -4,7 +4,7 @@
  */
 
 import { cn } from "@/modules/utils/cn";
-import { Plus, Trash2 } from "lucide-react";
+import { AddRowButton, RemoveRowButton } from "./ListEditorButtons";
 
 interface CostRow<P extends string = string> {
   label: string;
@@ -116,26 +116,11 @@ export function AdditionalCostsEditor<P extends string>({
             </div>
           )}
 
-          <button
-            type="button"
-            onClick={() => removeRow(index)}
-            disabled={disabled}
-            className="p-2.5 rounded-lg border border-border text-muted-foreground hover:text-error hover:border-error/50 transition-colors disabled:opacity-50"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          <RemoveRowButton onClick={() => removeRow(index)} disabled={disabled} />
         </div>
       ))}
 
-      <button
-        type="button"
-        onClick={addRow}
-        disabled={disabled}
-        className="flex items-center gap-2 text-sm text-primary hover:text-primary-hover transition-colors disabled:opacity-50"
-      >
-        <Plus className="w-4 h-4" />
-        Add cost
-      </button>
+      <AddRowButton onClick={addRow} disabled={disabled} label="Add cost" />
     </div>
   );
 }

@@ -64,7 +64,7 @@ export function IconPicker({
         disabled={disabled}
         onClick={() => setOpen(!open)}
         className={cn(
-          "flex items-center gap-2 px-4 py-3 rounded-lg border border-border text-sm w-full",
+          "input flex items-center gap-2",
           disabled && "opacity-50 cursor-not-allowed",
           !disabled && "hover:border-primary/50"
         )}
