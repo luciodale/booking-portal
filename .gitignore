@@ -18,3 +18,8 @@ test-results/
 
 
 
+
+tmp/
+
+# Localflare generated files
+.localflare/

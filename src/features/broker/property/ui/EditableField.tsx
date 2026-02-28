@@ -29,10 +29,12 @@ interface EditableSectionFieldProps<T extends Record<string, unknown>> {
   title: string;
   values: T;
   onSave: (values: T) => Promise<void>;
+  validate?: (values: T) => string | null;
   renderFields: (props: {
     values: T;
     onChange: (values: T) => void;
     disabled: boolean;
+    showErrors: boolean;
   }) => ReactNode;
   description?: string;
   headerAction?: ReactNode;
@@ -43,6 +45,7 @@ export function EditableSectionField<T extends Record<string, unknown>>({
   title,
   values,
   onSave,
+  validate,
   renderFields,
   description,
   headerAction,
@@ -51,14 +54,25 @@ export function EditableSectionField<T extends Record<string, unknown>>({
   const [localValues, setLocalValues] = useState<T>(values);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [showErrors, setShowErrors] = useState(false);
 
   const hasChanges = JSON.stringify(localValues) !== JSON.stringify(values);
 
   const handleSave = async () => {
     if (!hasChanges) return;
 
+    if (validate) {
+      const validationError = validate(localValues);
+      if (validationError) {
+        setErrors([validationError]);
+        setShowErrors(true);
+        return;
+      }
+    }
+
     setIsSaving(true);
     setErrors([]);
+    setShowErrors(false);
 
     try {
       await onSave(localValues);
@@ -109,6 +123,7 @@ export function EditableSectionField<T extends Record<string, unknown>>({
         values: localValues,
         onChange: setLocalValues,
         disabled: isSaving,
+        showErrors,
       })}
 
       {errors.length > 0 && (

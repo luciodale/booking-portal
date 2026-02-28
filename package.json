@@ -1,8 +1,11 @@
 {
   "name": "booking-portal",
   "scripts": {
-    "dev": "bun run mock:smoobu & bun run stripe:dev & astro dev",
+    "dev": "bun run tunnels:dev > tmp/tunnels.log 2>&1 & astro dev",
+    "localflare": "bunx localflare",
+    "cloudflared:dev": "bunx cloudflared tunnel --url http://localhost:4321",
     "stripe:dev": "stripe listen --forward-to localhost:4321/api/stripe-webhook",
+    "tunnels:dev": "bun run cloudflared:dev & bun run stripe:dev",
     "build": "tsc --noEmit && bun run test && astro build",
     "preview": "astro build && wrangler dev",
     "deploy": "wrangler deploy",

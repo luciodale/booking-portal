@@ -86,6 +86,30 @@ const propertyFieldsSchema = baseAssetInsertSchema
     longitude: z.string().min(1, "Longitude is required"),
 
     showFullAddress: z.boolean().optional(),
+
+    additionalCosts: z
+      .array(
+        z.object({
+          label: z.string().min(1, "Label is required"),
+          amount: z.number().int().min(1, "Amount must be greater than 0"),
+          per: z.enum(["stay", "night", "guest", "night_per_guest"]),
+          maxNights: z.number().int().min(1).optional(),
+        })
+      )
+      .optional()
+      .nullable(),
+    extras: z
+      .array(
+        z.object({
+          name: z.string().min(1, "Name is required"),
+          icon: z.string(),
+          amount: z.number().int().min(1, "Amount must be greater than 0"),
+          per: z.enum(["stay", "night", "guest", "night_per_guest"]),
+          maxNights: z.number().int().min(1).optional(),
+        })
+      )
+      .optional()
+      .nullable(),
   });
 
 /**

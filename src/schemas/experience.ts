@@ -59,8 +59,8 @@ const experienceFieldsSchema = baseExperienceInsertSchema
     additionalCosts: z
       .array(
         z.object({
-          label: z.string(),
-          amount: z.number(),
+          label: z.string().min(1, "Label is required"),
+          amount: z.number().int().min(1, "Amount must be greater than 0"),
           per: z.enum(["booking", "participant"]),
         })
       )

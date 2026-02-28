@@ -9,8 +9,11 @@ import { useUpsertCityTax } from "@/features/broker/property/hooks/useUpsertCity
 import { useProperty } from "@/features/broker/property/queries/useProperty";
 import { useUpdateProperty } from "@/features/broker/property/queries/useUpdateProperty";
 import { getFacilityOptions } from "@/modules/constants";
-import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
-import { ExtrasEditor } from "@/modules/ui/react/ExtrasEditor";
+import {
+  AdditionalCostsEditor,
+  validateAdditionalCosts,
+} from "@/modules/ui/react/AdditionalCostsEditor";
+import { ExtrasEditor, validateExtras } from "@/modules/ui/react/ExtrasEditor";
 import type {
   PropertyAdditionalCost,
   PropertyExtra,
@@ -322,7 +325,8 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
           description="Optional fees charged on top of the nightly rate (amounts in cents)."
           values={{ additionalCosts: (property.additionalCosts ?? []) as PropertyAdditionalCost[] }}
           onSave={(data) => saveField("additionalCosts", data.additionalCosts)}
-          renderFields={({ values, onChange, disabled }) => (
+          validate={(data) => validateAdditionalCosts(data.additionalCosts)}
+          renderFields={({ values, onChange, disabled, showErrors }) => (
             <AdditionalCostsEditor
               costs={values.additionalCosts}
               perOptions={[
@@ -336,6 +340,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
                 onChange({ additionalCosts: costs as PropertyAdditionalCost[] })
               }
               disabled={disabled}
+              showErrors={showErrors}
             />
           )}
         />
@@ -348,11 +353,13 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
           description="Optional add-ons guests can select during booking (amounts in cents)."
           values={{ extras: (property.extras ?? []) as PropertyExtra[] }}
           onSave={(data) => saveField("extras", data.extras)}
-          renderFields={({ values, onChange, disabled }) => (
+          validate={(data) => validateExtras(data.extras)}
+          renderFields={({ values, onChange, disabled, showErrors }) => (
             <ExtrasEditor
               extras={values.extras}
               onChange={(extras) => onChange({ extras })}
               disabled={disabled}
+              showErrors={showErrors}
             />
           )}
         />

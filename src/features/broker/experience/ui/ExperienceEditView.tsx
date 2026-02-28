@@ -8,7 +8,10 @@ import { useUpdateExperience } from "@/features/broker/experience/queries/useUpd
 import { EditableSectionField } from "@/features/broker/property/ui/EditableField";
 import { CategoryPicker } from "@/modules/ui/react/form-inputs/IconSelectInput";
 import type { ExperienceAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
-import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
+import {
+  AdditionalCostsEditor,
+  validateAdditionalCosts,
+} from "@/modules/ui/react/AdditionalCostsEditor";
 import type { UpdateExperienceInput } from "@/schemas/experience";
 import { useQueryClient } from "@tanstack/react-query";
 import { experienceQueryKeys } from "@/features/broker/experience/constants/queryKeys";
@@ -383,7 +386,8 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
           onSave={(data) =>
             saveField("additionalCosts", data.additionalCosts)
           }
-          renderFields={({ values, onChange, disabled }) => (
+          validate={(data) => validateAdditionalCosts(data.additionalCosts)}
+          renderFields={({ values, onChange, disabled, showErrors }) => (
             <AdditionalCostsEditor
               costs={values.additionalCosts}
               perOptions={[...experiencePerOptions]}
@@ -391,6 +395,7 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
                 onChange({ additionalCosts: costs as ExperienceAdditionalCost[] })
               }
               disabled={disabled}
+              showErrors={showErrors}
             />
           )}
         />
