@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "4eb8ad38-fc3d-4b3c-80b3-0ae4ec4f1113",
+  "id": "278ddde2-2b43-434d-a335-8c59ffa1d232",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "asset_experiences": {
@@ -30,22 +30,6 @@
         },
         "discount_percent": {
           "name": "discount_percent",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 0
-        },
-        "featured": {
-          "name": "featured",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "sort_order": {
-          "name": "sort_order",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -305,6 +289,20 @@
           "notNull": false,
           "autoincrement": false
         },
+        "check_in": {
+          "name": "check_in",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "check_out": {
+          "name": "check_out",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "amenities": {
           "name": "amenities",
           "type": "text",
@@ -326,20 +324,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "video_url": {
-          "name": "video_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "pdf_asset_path": {
-          "name": "pdf_asset_path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "instant_book": {
           "name": "instant_book",
           "type": "integer",
@@ -355,21 +339,12 @@
           "notNull": false,
           "autoincrement": false
         },
-        "featured": {
-          "name": "featured",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": false
-        },
-        "sort_order": {
-          "name": "sort_order",
-          "type": "integer",
+        "extras": {
+          "name": "extras",
+          "type": "text",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false,
-          "default": 0
+          "autoincrement": false
         },
         "created_at": {
           "name": "created_at",
@@ -414,13 +389,6 @@
           "name": "idx_assets_status",
           "columns": [
             "status"
-          ],
-          "isUnique": false
-        },
-        "idx_assets_featured": {
-          "name": "idx_assets_featured",
-          "columns": [
-            "featured"
           ],
           "isUnique": false
         },
@@ -658,6 +626,75 @@
             "id"
           ],
           "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "broker_fee_overrides": {
+      "name": "broker_fee_overrides",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "fee_percent": {
+          "name": "fee_percent",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "broker_fee_overrides_user_id_unique": {
+          "name": "broker_fee_overrides_user_id_unique",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {
+        "broker_fee_overrides_user_id_users_id_fk": {
+          "name": "broker_fee_overrides_user_id_users_id_fk",
+          "tableFrom": "broker_fee_overrides",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -1268,6 +1305,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "category_icon": {
+          "name": "category_icon",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "duration": {
           "name": "duration",
           "type": "text",
@@ -1312,13 +1356,13 @@
           "autoincrement": false,
           "default": "'draft'"
         },
-        "featured": {
-          "name": "featured",
+        "show_price": {
+          "name": "show_price",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": false
+          "default": true
         },
         "additional_costs": {
           "name": "additional_costs",
@@ -1474,6 +1518,53 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "platform_settings": {
+      "name": "platform_settings",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "value": {
+          "name": "value",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "platform_settings_key_unique": {
+          "name": "platform_settings_key_unique",
+          "columns": [
+            "key"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
@@ -1794,6 +1885,13 @@
           "notNull": false,
           "autoincrement": false,
           "default": "CURRENT_TIMESTAMP"
+        },
+        "stripe_connected_account_id": {
+          "name": "stripe_connected_account_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
         },
         "updated_at": {
           "name": "updated_at",

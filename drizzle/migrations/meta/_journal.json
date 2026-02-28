@@ -5,43 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1771113692043,
+      "when": 1772298704985,
       "tag": "0000_init",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1771200304395,
-      "tag": "0001_normal_ultimo",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1771286400000,
-      "tag": "0002_schema_cleanup",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1771632000000,
-      "tag": "0003_add_category_icon",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1771891200000,
-      "tag": "0004_add_stripe_connect",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1772006400000,
-      "tag": "0005_add_broker_fee_overrides",
       "breakpoints": true
     }
   ]
