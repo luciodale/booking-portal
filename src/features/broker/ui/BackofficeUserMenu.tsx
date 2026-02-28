@@ -12,6 +12,10 @@ import {
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 
+type BackofficeUserMenuProps = {
+  isAdmin: boolean;
+};
+
 function useBackofficeUserMenu() {
   const { user } = useUser();
   const { signOut } = useClerk();
@@ -42,13 +46,9 @@ function useBackofficeUserMenu() {
       "?"
     : "?";
 
-  const isAdmin =
-    (user?.publicMetadata as { role?: string } | undefined)?.role === "admin";
-
   return {
     user,
     isOpen,
-    isAdmin,
     initials,
     refs,
     floatingStyles,
@@ -58,11 +58,10 @@ function useBackofficeUserMenu() {
   };
 }
 
-export function BackofficeUserMenu() {
+export function BackofficeUserMenu({ isAdmin }: BackofficeUserMenuProps) {
   const {
     user,
     isOpen,
-    isAdmin,
     initials,
     refs,
     floatingStyles,
@@ -114,13 +113,6 @@ export function BackofficeUserMenu() {
               Admin Settings
             </Link>
           )}
-
-          <a
-            href="/"
-            className="flex items-center gap-2 px-3 py-2 text-sm text-foreground rounded-lg hover:bg-secondary transition-colors"
-          >
-            Public Site
-          </a>
 
           <button
             type="button"

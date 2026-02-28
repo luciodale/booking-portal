@@ -4,7 +4,6 @@ import { defaultLocale } from "@/i18n/types";
 import { t } from "@/i18n/t";
 import { localePath } from "@/i18n/locale-path";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import Footer from "@/modules/ui/astro/Footer.astro";
 import BackofficeApp from "@/modules/ui/views/BackofficeApp";
 
 export const prerender = false;
@@ -30,5 +29,4 @@ const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
       </div>
     </div>
   </BackofficeApp>
-  <Footer />
 </BaseLayout>
