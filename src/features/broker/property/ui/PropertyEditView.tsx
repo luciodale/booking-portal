@@ -1,6 +1,6 @@
 /**
- * PropertyEditView - Per-field edit interface
- * Each field saves independently via inline save buttons
+ * PropertyEditView - Section-level edit interface
+ * Each section saves all its fields together via a single save button
  */
 
 import { propertyQueryKeys } from "@/features/broker/property/constants/queryKeys";
@@ -20,9 +20,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   EditableFeatureGroupField,
   EditableSectionField,
-  EditableSelectField,
-  EditableTextField,
-  EditableTextareaField,
 } from "./EditableField";
 import { ImagesManager } from "./ImagesManager";
 import { LocationSectionEdit } from "./LocationSectionEdit";
@@ -81,38 +78,84 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
     <div className="max-w-4xl mx-auto space-y-8">
       {/* Basic Information */}
       <section className="bg-card border border-border p-6 rounded-xl">
-        <h2 className="text-xl font-semibold text-foreground mb-6">
-          Basic Information
-        </h2>
+        <EditableSectionField
+          title="Basic Information"
+          values={{
+            title: property.title,
+            description: property.description ?? "",
+            shortDescription: property.shortDescription ?? "",
+          }}
+          onSave={(data) => saveFields(data)}
+          renderFields={({ values, onChange, disabled }) => (
+            <div className="space-y-6">
+              <div>
+                <label
+                  htmlFor="edit-title"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Property Title
+                </label>
+                <input
+                  id="edit-title"
+                  type="text"
+                  value={values.title}
+                  onChange={(e) =>
+                    onChange({ ...values, title: e.target.value })
+                  }
+                  disabled={disabled}
+                  placeholder="Stunning Oceanfront Villa"
+                  maxLength={200}
+                  className="input"
+                />
+              </div>
 
-        <div className="space-y-6">
-          <EditableTextField
-            label="Property Title"
-            value={property.title}
-            onSave={(v) => saveField("title", v)}
-            placeholder="Stunning Oceanfront Villa"
-            maxLength={200}
-          />
+              <div>
+                <label
+                  htmlFor="edit-description"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Full Description
+                </label>
+                <textarea
+                  id="edit-description"
+                  value={values.description}
+                  onChange={(e) =>
+                    onChange({ ...values, description: e.target.value })
+                  }
+                  disabled={disabled}
+                  placeholder="Detailed description of the property..."
+                  rows={6}
+                  maxLength={5000}
+                  className="input resize-none"
+                />
+              </div>
 
-          <EditableTextareaField
-            label="Full Description"
-            value={property.description ?? ""}
-            onSave={(v) => saveField("description", v)}
-            placeholder="Detailed description of the property..."
-            rows={6}
-            maxLength={5000}
-          />
-
-          <EditableTextareaField
-            label="Short Description"
-            value={property.shortDescription ?? ""}
-            onSave={(v) => saveField("shortDescription", v)}
-            description="Brief summary for property cards"
-            placeholder="Luxury villa with stunning sea views..."
-            rows={3}
-            maxLength={500}
-          />
-        </div>
+              <div>
+                <label
+                  htmlFor="edit-shortDescription"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Short Description
+                </label>
+                <p className="text-sm text-muted-foreground mb-2">
+                  Brief summary for property cards
+                </p>
+                <textarea
+                  id="edit-shortDescription"
+                  value={values.shortDescription}
+                  onChange={(e) =>
+                    onChange({ ...values, shortDescription: e.target.value })
+                  }
+                  disabled={disabled}
+                  placeholder="Luxury villa with stunning sea views..."
+                  rows={3}
+                  maxLength={500}
+                  className="input resize-none"
+                />
+              </div>
+            </div>
+          )}
+        />
       </section>
 
       {/* Location */}
@@ -331,70 +374,155 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
 
       {/* Booking Options */}
       <section className="bg-card border border-border p-6 rounded-xl">
-        <h2 className="text-xl font-semibold text-foreground mb-6">
-          Booking Options
-        </h2>
+        <EditableSectionField
+          title="Booking Options"
+          values={{
+            checkIn: property.checkIn ?? "",
+            checkOut: property.checkOut ?? "",
+            instantBook: property.instantBook ? "yes" : "no",
+          }}
+          onSave={(data) =>
+            saveFields({
+              checkIn: data.checkIn || null,
+              checkOut: data.checkOut || null,
+              instantBook: data.instantBook === "yes",
+            })
+          }
+          renderFields={({ values, onChange, disabled }) => (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label
+                    htmlFor="edit-checkIn"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
+                    Check-in Time
+                  </label>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Default check-in time (HH:mm)
+                  </p>
+                  <input
+                    id="edit-checkIn"
+                    type="text"
+                    value={values.checkIn}
+                    onChange={(e) =>
+                      onChange({ ...values, checkIn: e.target.value })
+                    }
+                    disabled={disabled}
+                    placeholder="16:00"
+                    className="input"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="edit-checkOut"
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
+                    Check-out Time
+                  </label>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Default check-out time (HH:mm)
+                  </p>
+                  <input
+                    id="edit-checkOut"
+                    type="text"
+                    value={values.checkOut}
+                    onChange={(e) =>
+                      onChange({ ...values, checkOut: e.target.value })
+                    }
+                    disabled={disabled}
+                    placeholder="10:00"
+                    className="input"
+                  />
+                </div>
+              </div>
 
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
-            <EditableTextField
-              label="Check-in Time"
-              value={property.checkIn ?? ""}
-              onSave={(v) => saveField("checkIn", v || null)}
-              placeholder="16:00"
-              description="Default check-in time (HH:mm)"
-            />
-            <EditableTextField
-              label="Check-out Time"
-              value={property.checkOut ?? ""}
-              onSave={(v) => saveField("checkOut", v || null)}
-              placeholder="10:00"
-              description="Default check-out time (HH:mm)"
-            />
-          </div>
-
-          <EditableSelectField
-            label="Instant Book"
-            value={property.instantBook ? "yes" : "no"}
-            onSave={(v) => saveField("instantBook", v === "yes")}
-            options={[
-              { value: "yes", label: "Yes" },
-              { value: "no", label: "No" },
-            ]}
-          />
-        </div>
+              <div>
+                <label
+                  htmlFor="edit-instantBook"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Instant Book
+                </label>
+                <select
+                  id="edit-instantBook"
+                  value={values.instantBook}
+                  onChange={(e) =>
+                    onChange({ ...values, instantBook: e.target.value })
+                  }
+                  disabled={disabled}
+                  className="input"
+                >
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
+            </div>
+          )}
+        />
       </section>
 
       {/* Property Status */}
       <section className="bg-card border border-border p-6 rounded-xl">
-        <h2 className="text-xl font-semibold text-foreground mb-6">
-          Property Status
-        </h2>
+        <EditableSectionField
+          title="Property Status"
+          values={{
+            status: property.status,
+            tier: property.tier,
+          }}
+          onSave={(data) =>
+            saveFields({
+              status: data.status as "draft" | "published" | "archived",
+              tier: data.tier as "elite" | "standard",
+            })
+          }
+          renderFields={({ values, onChange, disabled }) => (
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label
+                  htmlFor="edit-status"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Status
+                </label>
+                <select
+                  id="edit-status"
+                  value={values.status}
+                  onChange={(e) =>
+                    onChange({ ...values, status: e.target.value })
+                  }
+                  disabled={disabled}
+                  className="input"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </div>
 
-        <div className="grid grid-cols-2 gap-6">
-          <EditableSelectField
-            label="Status"
-            value={property.status}
-            onSave={(v) =>
-              saveField("status", v as "draft" | "published" | "archived")
-            }
-            options={[
-              { value: "draft", label: "Draft" },
-              { value: "published", label: "Published" },
-              { value: "archived", label: "Archived" },
-            ]}
-          />
-
-          <EditableSelectField
-            label="Tier"
-            value={property.tier}
-            onSave={(v) => saveField("tier", v as "elite" | "standard")}
-            options={[
-              { value: "elite", label: "Elite" },
-              { value: "standard", label: "Standard" },
-            ]}
-          />
-        </div>
+              <div>
+                <label
+                  htmlFor="edit-tier"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  Tier
+                </label>
+                <select
+                  id="edit-tier"
+                  value={values.tier}
+                  onChange={(e) =>
+                    onChange({ ...values, tier: e.target.value })
+                  }
+                  disabled={disabled}
+                  className="input"
+                >
+                  <option value="elite">Elite</option>
+                  <option value="standard">Standard</option>
+                </select>
+              </div>
+            </div>
+          )}
+        />
       </section>
     </div>
   );
