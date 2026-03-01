@@ -5,6 +5,7 @@ import { kebabToDisplay } from "@/features/broker/property/domain/sync-features"
 import { BookingWidget } from "@/features/public/booking/ui/BookingWidget";
 import {
   fetchCityTax,
+  fetchOwnerHasPayments,
   fetchOwnerWhatsapp,
 } from "@/features/public/browse/property-detail-queries";
 import { localePath } from "@/i18n/locale-path";
@@ -71,12 +72,14 @@ const property = {
   views: asset.views ?? [],
 };
 
-const effectiveInstantBook = isItalyCountry(asset.country) && asset.instantBook;
-
-const [ownerWhatsapp, cityTax] = await Promise.all([
+const [ownerWhatsapp, cityTax, ownerHasPayments] = await Promise.all([
   fetchOwnerWhatsapp(db, asset.userId),
   fetchCityTax(db, asset.userId, asset.city, asset.country),
+  fetchOwnerHasPayments(db, asset.userId),
 ]);
+
+const effectiveInstantBook =
+  isItalyCountry(asset.country) && asset.instantBook && ownerHasPayments;
 ---
 
 <PageLayout

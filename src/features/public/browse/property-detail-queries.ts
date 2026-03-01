@@ -114,6 +114,19 @@ export async function fetchOwnerWhatsapp(
   return owner?.whatsappNumber ?? null;
 }
 
+export async function fetchOwnerHasPayments(
+  db: Db,
+  userId: string
+): Promise<boolean> {
+  const [owner] = await db
+    .select({ stripeConnectedAccountId: users.stripeConnectedAccountId })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
+
+  return owner?.stripeConnectedAccountId != null;
+}
+
 export async function fetchCityTax(
   db: Db,
   userId: string,
