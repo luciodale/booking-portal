@@ -3,6 +3,7 @@ import { t } from "@/i18n/t";
 import { localePath } from "@/i18n/locale-path";
 import { fetchBookings } from "@/features/public/bookings/api/fetchBookings";
 import type { BookingListItem } from "@/features/public/bookings/api/fetchBookings";
+import { centsToUnit } from "@/modules/money/money";
 import { cn } from "@/modules/utils/cn";
 import {
   QueryClient,
@@ -129,7 +130,7 @@ function BookingCard({ booking, locale }: { booking: BookingListItem; locale: Lo
         </div>
         <div className="text-right shrink-0 space-y-1">
           <div className="text-foreground font-bold">
-            {(booking.totalPrice / 100).toFixed(2)}{" "}
+            {centsToUnit(booking.totalPrice).toFixed(2)}{" "}
             {booking.currency.toUpperCase()}
           </div>
           <span

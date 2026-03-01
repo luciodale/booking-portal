@@ -4,6 +4,7 @@ import { localePath } from "@/i18n/locale-path";
 import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
+import { centsToUnit } from "@/modules/money/money";
 
 interface Props {
   experience: LinkedExperience;
@@ -26,7 +27,7 @@ const categoryIcon = exp.categoryIcon;
 
 function formatPrice(cents: number, currency: string) {
   const symbol = currency === "eur" ? "\u20AC" : `${currency.toUpperCase()} `;
-  return `${symbol}${(cents / 100).toLocaleString()}`;
+  return `${symbol}${centsToUnit(cents).toLocaleString()}`;
 }
 ---
 

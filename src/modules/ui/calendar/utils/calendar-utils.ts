@@ -3,6 +3,7 @@
  * Helper functions for calendar views
  */
 
+import { centsToUnit } from "@/modules/money/money";
 import type { PricingPeriod } from "../domain/types";
 
 /**
@@ -54,7 +55,7 @@ export function getWeekDays(date: Date): Date[] {
  * Format price for display (short form)
  */
 export function formatPriceShort(cents: number): string {
-  return `€${Math.round(cents / 100)}`;
+  return `€${Math.round(centsToUnit(cents))}`;
 }
 
 /**

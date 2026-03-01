@@ -4,6 +4,12 @@ import {
   formatPropertyCostPreview,
 } from "@/features/public/booking/domain/computeAdditionalCosts";
 import { formatPrice } from "@/features/public/booking/domain/dateUtils";
+import {
+  centsToUnit,
+  divideCents,
+  multiplyCents,
+  sumCents,
+} from "@/modules/money/money";
 import type {
   CityTax,
   PriceLineItem,
@@ -166,13 +172,11 @@ export function usePriceDisplay({
       }));
     }
 
-    const additionalTotalCents = additionalCostItems.reduce(
-      (sum, item) => sum + item.amountCents,
-      0
+    const additionalTotalCents = sumCents(
+      additionalCostItems.map((item) => item.amountCents)
     );
-    const extrasTotalCents = extraItems.reduce(
-      (sum, item) => sum + item.amountCents,
-      0
+    const extrasTotalCents = sumCents(
+      extraItems.map((item) => item.amountCents)
     );
 
     // Compute city tax
@@ -182,23 +186,26 @@ export function usePriceDisplay({
         cityTax.maxNights != null
           ? Math.min(nights, cityTax.maxNights)
           : nights;
-      cityTaxCents = cityTax.amount * effectiveNights * guests;
+      cityTaxCents = multiplyCents(
+        multiplyCents(cityTax.amount, effectiveNights),
+        guests
+      );
       additionalCostItems.push({
         label: "City Tax",
         amountCents: cityTaxCents,
-        detail: `${formatPrice(cityTax.amount / 100, resolvedCurrency)}/night/guest${cityTax.maxNights != null ? ` (max ${cityTax.maxNights} nights)` : ""}`,
+        detail: `${formatPrice(centsToUnit(cityTax.amount), resolvedCurrency)}/night/guest${cityTax.maxNights != null ? ` (max ${cityTax.maxNights} nights)` : ""}`,
       });
     }
 
     return {
       status: "available",
       totalPriceCents,
-      perNightCents: Math.round(totalPriceCents / nights),
+      perNightCents: divideCents(totalPriceCents, nights),
       nights,
       currency: resolvedCurrency,
       additionalCostItems,
       extraItems,
-      grandTotalCents: totalPriceCents + additionalTotalCents + extrasTotalCents + cityTaxCents,
+      grandTotalCents: sumCents([totalPriceCents, additionalTotalCents, extrasTotalCents, cityTaxCents]),
     };
   }, [
     checkIn,

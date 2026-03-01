@@ -19,8 +19,8 @@ describe("toCents", () => {
   test("handles notorious floating-point values", () => {
     // 0.1 + 0.2 = 0.30000000000000004 in JS
     expect(toCents(0.1 + 0.2)).toBe(30);
-    // 1.005 * 100 = 100.4999... in IEEE 754, so Math.round gives 100
-    expect(toCents(1.005)).toBe(100);
+    // Decimal("1.005") * 100 = 100.5 → rounds to 101 (ROUND_HALF_UP)
+    expect(toCents(1.005)).toBe(101);
   });
 });
 

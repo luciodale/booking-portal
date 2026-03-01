@@ -10,6 +10,7 @@ import {
 import { useCityTaxDefault } from "@/features/broker/property/hooks/useCityTaxDefault";
 import type { Feature } from "@/modules/constants";
 import { getFacilityOptions } from "@/modules/constants";
+import { CentsHint } from "@/modules/ui/react/CentsHint";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { ExtrasEditor } from "@/modules/ui/react/ExtrasEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
@@ -26,7 +27,7 @@ import { createPropertySchema } from "@/schemas/property";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link2 } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { LocationSection } from "./LocationSection";
 
@@ -123,6 +124,7 @@ export function CreatePropertyForm({
   const views = watch("views") ?? [];
   const city = watch("city") ?? "";
   const country = watch("country") ?? "";
+  const cityTaxAmountValue = useWatch({ control, name: "cityTaxAmount" });
 
   const cityTaxQuery = useCityTaxDefault(city, country);
   const cityTaxPrefilled = useRef(false);
@@ -394,6 +396,7 @@ export function CreatePropertyForm({
             control={control}
             label="Amount (cents/person/night)"
             min={0}
+            labelSuffix={<CentsHint cents={cityTaxAmountValue} />}
           />
           <NumberInput
             name="cityTaxMaxNights"

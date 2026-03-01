@@ -5,6 +5,7 @@
 import { experienceCategories } from "@/features/broker/experience/constants/categoryLabels";
 import { useExperience } from "@/features/broker/experience/queries/useExperience";
 import { useUpdateExperience } from "@/features/broker/experience/queries/useUpdateExperience";
+import { CentsHint } from "@/modules/ui/react/CentsHint";
 import { EditableSectionField } from "@/features/broker/property/ui/EditableField";
 import { CategoryPicker } from "@/modules/ui/react/form-inputs/IconSelectInput";
 import type { ExperienceAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
@@ -329,6 +330,7 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
                   placeholder="25000"
                   className="input"
                 />
+                <CentsHint cents={Number(values.basePrice) || undefined} />
               </div>
 
               <div>

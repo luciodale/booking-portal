@@ -4,10 +4,10 @@
  * No Date objects — works with YYYY-MM-DD strings for Cloudflare Workers compatibility.
  */
 
+import { toCents as _toCents } from "@/modules/money/money";
+
 /** Convert a euro/dollar amount to cents, rounding to nearest integer. */
-export function toCents(amount: number): number {
-  return Math.round(amount * 100);
-}
+export const toCents = _toCents;
 
 /** Returns array of YYYY-MM-DD strings from start (inclusive) to end (exclusive). */
 export function getDateRange(start: string, end: string): string[] {

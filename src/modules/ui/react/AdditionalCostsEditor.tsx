@@ -4,6 +4,7 @@
  */
 
 import { cn } from "@/modules/utils/cn";
+import { CentsHint } from "./CentsHint";
 import { AddRowButton, RemoveRowButton } from "./ListEditorButtons";
 
 interface CostRow<P extends string = string> {
@@ -108,6 +109,7 @@ export function AdditionalCostsEditor<P extends string>({
                     showErrors && row.amount <= 0 && "border-error"
                   )}
                 />
+                <CentsHint cents={row.amount} />
               </div>
 
               <div className="w-44">

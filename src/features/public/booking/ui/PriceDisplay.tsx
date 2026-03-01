@@ -4,6 +4,7 @@ import type {
   PropertyAdditionalCost,
   PropertyExtra,
 } from "@/features/public/booking/domain/pricingTypes";
+import { centsToUnit } from "@/modules/money/money";
 import { usePriceDisplay } from "@/features/public/booking/hooks/usePriceDisplay";
 import { PriceBreakdown } from "@/features/public/booking/ui/PriceBreakdown";
 import type { SmoobuAvailabilityResponse } from "@/schemas/smoobu";
@@ -105,12 +106,12 @@ export function PriceDisplay({ onRetry, ...props }: PriceDisplayProps) {
               className="flex items-baseline gap-1"
             >
               <span className="text-2xl font-bold text-foreground">
-                {formatPrice(state.totalPriceCents / 100, state.currency)}
+                {formatPrice(centsToUnit(state.totalPriceCents), state.currency)}
               </span>
               <span className="text-sm text-muted-foreground">total</span>
             </div>
             <div className="text-sm text-muted-foreground">
-              {formatPrice(state.perNightCents / 100, state.currency)}/night x{" "}
+              {formatPrice(centsToUnit(state.perNightCents), state.currency)}/night x{" "}
               {state.nights} night
               {state.nights !== 1 ? "s" : ""}
             </div>
@@ -119,7 +120,7 @@ export function PriceDisplay({ onRetry, ...props }: PriceDisplayProps) {
       }
 
       const accommodationItem = {
-        label: `${formatPrice(state.perNightCents / 100, state.currency)}/night x ${state.nights} night${state.nights !== 1 ? "s" : ""}`,
+        label: `${formatPrice(centsToUnit(state.perNightCents), state.currency)}/night x ${state.nights} night${state.nights !== 1 ? "s" : ""}`,
         amountCents: state.totalPriceCents,
       };
 

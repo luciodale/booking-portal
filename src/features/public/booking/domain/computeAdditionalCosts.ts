@@ -1,3 +1,4 @@
+import { centsToUnit, multiplyCents } from "@/modules/money/money";
 import { formatPrice } from "./dateUtils";
 import type {
   ExperienceAdditionalCost,
@@ -19,14 +20,14 @@ export function computePropertyAdditionalCosts(
       case "night":
         return {
           label: cost.label,
-          amountCents: cost.amount * params.nights,
-          detail: `${formatPrice(cost.amount / 100, params.currency)}/night`,
+          amountCents: multiplyCents(cost.amount, params.nights),
+          detail: `${formatPrice(centsToUnit(cost.amount), params.currency)}/night`,
         };
       case "guest":
         return {
           label: cost.label,
-          amountCents: cost.amount * params.guests,
-          detail: `${formatPrice(cost.amount / 100, params.currency)}/guest`,
+          amountCents: multiplyCents(cost.amount, params.guests),
+          detail: `${formatPrice(centsToUnit(cost.amount), params.currency)}/guest`,
         };
       case "night_per_guest": {
         const effectiveNights =
@@ -35,8 +36,11 @@ export function computePropertyAdditionalCosts(
             : params.nights;
         return {
           label: cost.label,
-          amountCents: cost.amount * effectiveNights * params.guests,
-          detail: `${formatPrice(cost.amount / 100, params.currency)}/night/guest${cost.maxNights != null ? ` (max ${cost.maxNights} nights)` : ""}`,
+          amountCents: multiplyCents(
+            multiplyCents(cost.amount, effectiveNights),
+            params.guests
+          ),
+          detail: `${formatPrice(centsToUnit(cost.amount), params.currency)}/night/guest${cost.maxNights != null ? ` (max ${cost.maxNights} nights)` : ""}`,
         };
       }
     }
@@ -56,8 +60,8 @@ export function computeExperienceAdditionalCosts(
       case "participant":
         return {
           label: cost.label,
-          amountCents: cost.amount * params.participants,
-          detail: `${formatPrice(cost.amount / 100, params.currency)}/participant`,
+          amountCents: multiplyCents(cost.amount, params.participants),
+          detail: `${formatPrice(centsToUnit(cost.amount), params.currency)}/participant`,
         };
     }
   });
@@ -70,7 +74,7 @@ export function formatPropertyCostPreview(
   if (!costs || costs.length === 0) return [];
 
   return costs.map((cost) => {
-    const rate = formatPrice(cost.amount / 100, currency);
+    const rate = formatPrice(centsToUnit(cost.amount), currency);
     switch (cost.per) {
       case "stay":
         return { label: cost.label, amountCents: cost.amount };
@@ -111,15 +115,15 @@ export function computeExtrasTotal(
       case "night":
         items.push({
           label: extra.name,
-          amountCents: extra.amount * params.nights,
-          detail: `${formatPrice(extra.amount / 100, params.currency)}/night`,
+          amountCents: multiplyCents(extra.amount, params.nights),
+          detail: `${formatPrice(centsToUnit(extra.amount), params.currency)}/night`,
         });
         break;
       case "guest":
         items.push({
           label: extra.name,
-          amountCents: extra.amount * params.guests,
-          detail: `${formatPrice(extra.amount / 100, params.currency)}/guest`,
+          amountCents: multiplyCents(extra.amount, params.guests),
+          detail: `${formatPrice(centsToUnit(extra.amount), params.currency)}/guest`,
         });
         break;
       case "night_per_guest": {
@@ -129,8 +133,11 @@ export function computeExtrasTotal(
             : params.nights;
         items.push({
           label: extra.name,
-          amountCents: extra.amount * effectiveNights * params.guests,
-          detail: `${formatPrice(extra.amount / 100, params.currency)}/night/guest${extra.maxNights != null ? ` (max ${extra.maxNights} nights)` : ""}`,
+          amountCents: multiplyCents(
+            multiplyCents(extra.amount, effectiveNights),
+            params.guests
+          ),
+          detail: `${formatPrice(centsToUnit(extra.amount), params.currency)}/night/guest${extra.maxNights != null ? ` (max ${extra.maxNights} nights)` : ""}`,
         });
         break;
       }

@@ -4,6 +4,7 @@ import type {
   PropertyAdditionalCost,
   PropertyExtra,
 } from "@/features/public/booking/domain/pricingTypes";
+import { centsToUnit } from "@/modules/money/money";
 import { useBookingCalendar } from "@/features/public/booking/hooks/useBookingCalendar";
 import { useBookingCheckout } from "@/features/public/booking/hooks/useBookingCheckout";
 import { useMinStayNotice } from "@/features/public/booking/hooks/useMinStayNotice";
@@ -257,7 +258,7 @@ function BookingWidgetInner({
                     </div>
                     <span className="text-sm font-semibold text-foreground whitespace-nowrap">
                       {formatPrice(
-                        extra.amount / 100,
+                        centsToUnit(extra.amount),
                         calendar.currency ?? "EUR"
                       )}
                       {perLabel}

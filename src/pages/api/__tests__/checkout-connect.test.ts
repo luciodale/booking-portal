@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { z } from "zod";
+import { percentOfCents } from "@/modules/money/money";
 
 const applicationFeePercentSchema = z.string().refine(
   (v) => {
@@ -10,7 +11,7 @@ const applicationFeePercentSchema = z.string().refine(
 );
 
 function computeFee(totalCents: number, percent: number): number {
-  return Math.round((totalCents * percent) / 100);
+  return percentOfCents(totalCents, percent);
 }
 
 describe("application_fee_percent validation", () => {

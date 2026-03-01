@@ -16,16 +16,17 @@ type PaymentSplit = {
   hostPayoutCents: number;
 };
 
+import { percentOfCents } from "@/modules/money/money";
+
 export function computePaymentSplit(input: PaymentSplitInput): PaymentSplit {
   const taxableBaseCents =
     input.nightlyTotalCents + input.additionalCostsCents;
 
-  const platformFeeCents = Math.round(
-    (taxableBaseCents * input.feePercent) / 100
-  );
+  const platformFeeCents = percentOfCents(taxableBaseCents, input.feePercent);
 
-  const withholdingTaxCents = Math.round(
-    (taxableBaseCents * input.withholdingPercent) / 100
+  const withholdingTaxCents = percentOfCents(
+    taxableBaseCents,
+    input.withholdingPercent
   );
 
   const applicationFeeCents = platformFeeCents + withholdingTaxCents;

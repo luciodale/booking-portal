@@ -3,6 +3,7 @@ import {
   useBackofficeBookings,
   useCancelBooking,
 } from "@/features/broker/bookings/hooks/useBackofficeBookings";
+import { centsToUnit } from "@/modules/money/money";
 import { queryProperties } from "@/features/broker/property/api/client-server/queryProperties";
 import { cn } from "@/modules/utils/cn";
 import { SearchableDropdown } from "@luciodale/react-searchable-dropdown";
@@ -27,7 +28,7 @@ function formatCents(cents: number, currency: string) {
   return new Intl.NumberFormat("en", {
     style: "currency",
     currency: currency.toUpperCase(),
-  }).format(cents / 100);
+  }).format(centsToUnit(cents));
 }
 
 function usePropertyOptions() {

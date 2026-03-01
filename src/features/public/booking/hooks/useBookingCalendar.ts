@@ -1,7 +1,5 @@
-import {
-  getDateRange,
-  toCents,
-} from "@/features/public/booking/domain/computeStayPrice";
+import { getDateRange } from "@/features/public/booking/domain/computeStayPrice";
+import { toCents } from "@/modules/money/money";
 import {
   addMonths,
   computeRateRange,

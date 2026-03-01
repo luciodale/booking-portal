@@ -2,6 +2,7 @@
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
 import { t } from "@/i18n/t";
+import { centsToUnit } from "@/modules/money/money";
 
 type Extra = {
   name: string;
@@ -22,7 +23,7 @@ const { extras, variant = "standard", locale = (Astro.currentLocale ?? defaultLo
 const isElite = variant === "elite";
 
 function formatPrice(cents: number) {
-  return `\u20AC${(cents / 100).toLocaleString()}`;
+  return `\u20AC${centsToUnit(cents).toLocaleString()}`;
 }
 
 const perLabels: Record<Extra["per"], string> = {

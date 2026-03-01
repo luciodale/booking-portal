@@ -1,5 +1,6 @@
 import { formatPrice } from "@/features/public/booking/domain/dateUtils";
 import type { PriceLineItem } from "@/features/public/booking/domain/pricingTypes";
+import { centsToUnit } from "@/modules/money/money";
 
 type PriceBreakdownProps = {
   items: PriceLineItem[];
@@ -20,7 +21,7 @@ export function PriceBreakdown({
             <span className="text-muted-foreground">{item.label}</span>
             <span className="text-foreground whitespace-nowrap">
               {item.amountCents > 0
-                ? formatPrice(item.amountCents / 100, currency)
+                ? formatPrice(centsToUnit(item.amountCents), currency)
                 : "—"}
             </span>
           </div>
@@ -38,7 +39,7 @@ export function PriceBreakdown({
             {total.label}
           </span>
           <span className="text-lg font-bold text-foreground">
-            {formatPrice(total.amountCents / 100, currency)}
+            {formatPrice(centsToUnit(total.amountCents), currency)}
           </span>
         </div>
       </div>

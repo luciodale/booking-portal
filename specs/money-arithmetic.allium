@@ -1,0 +1,88 @@
+-- Money Arithmetic: Safe Monetary Math Module
+-- Centralises all money calculations through decimal arithmetic
+-- to eliminate IEEE 754 floating-point precision errors.
+-- All rounding uses ROUND_HALF_UP to nearest integer.
+
+config {
+    rounding_mode: ROUND_HALF_UP
+}
+
+-- === Conversions ===
+
+rule ToCents {
+    -- Converts a unit amount (euros/dollars) to integer cents.
+    -- Uses decimal arithmetic internally so 1.005 → 101, not 100.
+    given: amount: number
+    ensures: result = round(amount * 100)
+
+    -- IEEE 754 notorious values handled correctly:
+    --   0.1 + 0.2 → 30 (not 30.000000000000004)
+    --   19.99     → 1999
+    --   1.005     → 101 (not 100)
+}
+
+rule CentsToUnit {
+    -- Converts integer cents to unit amount for display.
+    -- No rounding needed: exact division by 100.
+    given: cents: integer
+    ensures: result = cents / 100
+}
+
+-- === Arithmetic ===
+
+rule MultiplyCents {
+    -- Safe multiplication of cents by an integer factor.
+    -- Used for: cost.amount * nights, cost.amount * guests,
+    --           city tax per-night-per-guest chains.
+    given: cents: integer, factor: number
+    ensures: result = round(cents * factor)
+}
+
+rule PercentOfCents {
+    -- Safe percentage of a cent amount.
+    -- Used for: platform fee, withholding tax.
+    given: cents: integer, percent: number
+    ensures: result = round(cents * percent / 100)
+}
+
+rule SumCents {
+    -- Safe summation of cent values.
+    -- Used for: line item totals, grand totals.
+    given: values: List<integer>
+    ensures: result = round(sum(values))
+}
+
+rule DivideCents {
+    -- Safe division of cents, rounded to integer.
+    -- Used for: per-night price display.
+    given: total: integer, divisor: number
+    ensures: result = round(total / divisor)
+}
+
+-- === Invariants ===
+
+invariant RoundTrip {
+    -- Converting to cents and back preserves the original value
+    -- for amounts representable with at most 2 decimal places.
+    CentsToUnit(ToCents(x)) = x
+        where x has at most 2 decimal places
+}
+
+invariant IntegerOutput {
+    -- ToCents, MultiplyCents, PercentOfCents, SumCents, DivideCents
+    -- all return integers (no fractional cents).
+    for f in {ToCents, MultiplyCents, PercentOfCents, SumCents, DivideCents}:
+        f(args).is_integer
+}
+
+-- === Behavioral Change from Math.round ===
+-- toCents(1.005):
+--   Old (Math.round): 1.005 * 100 = 100.4999... → 100
+--   New (Decimal):    Decimal("1.005") * 100 = 100.5 → 101
+-- This is the ONLY value that changes. The new behaviour is
+-- mathematically correct.
+
+-- === Adoption ===
+-- All monetary arithmetic across the codebase routes through
+-- this module. No raw `* 100`, `/ 100`, or `Math.round` on
+-- money values outside this module.

@@ -8,6 +8,7 @@ import {
   users,
 } from "@/db/schema";
 import { createSmoobuBooking } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCreateBooking";
+import { centsToUnit } from "@/modules/money/money";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
@@ -261,7 +262,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         adults: meta.adults ? Number(meta.adults) : undefined,
         children: meta.children ? Number(meta.children) : undefined,
         notice: meta.guestNote || undefined,
-        price: Number(meta.totalPriceCents) / 100,
+        price: centsToUnit(Number(meta.totalPriceCents)),
         priceStatus: 1,
       });
 

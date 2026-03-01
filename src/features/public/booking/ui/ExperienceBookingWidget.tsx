@@ -1,5 +1,6 @@
 import { formatPrice } from "@/features/public/booking/domain/dateUtils";
 import type { ExperienceAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
+import { centsToUnit } from "@/modules/money/money";
 import { useExperienceBooking } from "@/features/public/booking/hooks/useExperienceBooking";
 import { useExperienceCheckout } from "@/features/public/booking/hooks/useExperienceCheckout";
 import { ExperienceCalendarPopover } from "@/features/public/booking/ui/ExperienceCalendarPopover";
@@ -107,7 +108,7 @@ function BookingFlow({
 
   const priceLineItems = [
     {
-      label: `${symbol}${(basePrice / 100).toLocaleString()} x ${booking.participants} participant${booking.participants !== 1 ? "s" : ""}`,
+      label: `${symbol}${centsToUnit(basePrice).toLocaleString()} x ${booking.participants} participant${booking.participants !== 1 ? "s" : ""}`,
       amountCents: booking.baseTotalCents,
     },
     ...booking.additionalCostItems,
@@ -121,7 +122,7 @@ function BookingFlow({
             Price per person
           </span>
           <span className="text-lg font-bold text-foreground">
-            {formatPrice(basePrice / 100, currency)}
+            {formatPrice(centsToUnit(basePrice), currency)}
           </span>
         </div>
 

@@ -8,6 +8,7 @@ import { useCityTaxDefault } from "@/features/broker/property/hooks/useCityTaxDe
 import { useUpsertCityTax } from "@/features/broker/property/hooks/useUpsertCityTax";
 import { useProperty } from "@/features/broker/property/queries/useProperty";
 import { useUpdateProperty } from "@/features/broker/property/queries/useUpdateProperty";
+import { CentsHint } from "@/modules/ui/react/CentsHint";
 import { getFacilityOptions } from "@/modules/constants";
 import {
   AdditionalCostsEditor,
@@ -586,6 +587,7 @@ function CityTaxSection({ city, country }: { city: string; country: string }) {
                 min={0}
                 className="input"
               />
+              <CentsHint cents={values.amount} />
             </div>
             <div>
               <label

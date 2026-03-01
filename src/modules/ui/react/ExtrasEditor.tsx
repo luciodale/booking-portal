@@ -1,5 +1,6 @@
 import type { PropertyExtra } from "@/features/public/booking/domain/pricingTypes";
 import { cn } from "@/modules/utils/cn";
+import { CentsHint } from "./CentsHint";
 import { IconPicker } from "./IconPicker";
 import { AddRowButton, RemoveRowButton } from "./ListEditorButtons";
 
@@ -102,6 +103,7 @@ export function ExtrasEditor({
                     showErrors && row.amount <= 0 && "border-error"
                   )}
                 />
+                <CentsHint cents={row.amount} />
               </div>
 
               <div className="w-44">

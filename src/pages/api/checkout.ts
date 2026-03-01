@@ -1,26 +1,26 @@
 import { getDb } from "@/db";
 import { assets, cityTaxDefaults, pmsIntegrations } from "@/db/schema";
+import { getApplicationFeePercent } from "@/features/admin/settings/domain/getApplicationFeePercent";
+import { resolveConnectAccount } from "@/features/broker/connect/domain/resolveConnectAccount";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
+import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
 import {
   computeExtrasTotal,
   computePropertyAdditionalCosts,
 } from "@/features/public/booking/domain/computeAdditionalCosts";
-import { toCents } from "@/features/public/booking/domain/computeStayPrice";
+import { computePaymentSplit } from "@/features/public/booking/domain/computePaymentSplit";
+import { multiplyCents, sumCents, toCents } from "@/modules/money/money";
+import { localePath } from "@/i18n/locale-path";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
+import type { Locale } from "@/i18n/types";
 import { requireAuth } from "@/modules/auth/auth";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 import Stripe from "stripe";
-import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
-import { getRequestLocale } from "@/i18n/request-locale";
-import { t } from "@/i18n/t";
-import { localePath } from "@/i18n/locale-path";
-import type { Locale } from "@/i18n/types";
 import { z } from "zod";
-import { resolveConnectAccount } from "@/features/broker/connect/domain/resolveConnectAccount";
-import { getApplicationFeePercent } from "@/features/admin/settings/domain/getApplicationFeePercent";
-import { computePaymentSplit } from "@/features/public/booking/domain/computePaymentSplit";
 
 const checkoutBodySchema = z.object({
   propertyId: z.string().min(1),
@@ -95,10 +95,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .limit(1);
 
     if (!asset || !asset.smoobuPropertyId) {
-      return jsonResponse(
-        { error: t(locale, "error.propertyNotFound") },
-        404
-      );
+      return jsonResponse({ error: t(locale, "error.propertyNotFound") }, 404);
     }
 
     const [integration] = await db
@@ -145,7 +142,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
         });
         return jsonResponse(
           {
-            error: t(locale, "error.minStay", { nights: errorInfo.minimumLengthOfStay }),
+            error: t(locale, "error.minStay", {
+              nights: errorInfo.minimumLengthOfStay,
+            }),
           },
           400
         );
@@ -155,11 +154,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
         log.error({
           source: "checkout",
           message: `Max occupancy exceeded for property ${propertyId}: ${guests} guests, max ${errorInfo.numberOfGuest ?? "?"}`,
-          metadata: { propertyId, checkIn, checkOut, guests, maxGuests: errorInfo.numberOfGuest },
+          metadata: {
+            propertyId,
+            checkIn,
+            checkOut,
+            guests,
+            maxGuests: errorInfo.numberOfGuest,
+          },
         });
         return jsonResponse(
           {
-            error: t(locale, "error.maxGuests", { count: errorInfo.numberOfGuest ?? guests }),
+            error: t(locale, "error.maxGuests", {
+              count: errorInfo.numberOfGuest ?? guests,
+            }),
           },
           400
         );
@@ -188,7 +195,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (clientDates.length !== nights) {
       return jsonResponse(
         {
-          error: t(locale, "error.nightPriceMismatch", { expected: nights, received: clientDates.length }),
+          error: t(locale, "error.nightPriceMismatch", {
+            expected: nights,
+            received: clientDates.length,
+          }),
         },
         400
       );
@@ -246,10 +256,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           message: `Night price mismatch for ${date}: client=${clientCents}¢, server=${serverCents}¢`,
           metadata: { propertyId, date, clientCents, serverCents },
         });
-        return jsonResponse(
-          { error: t(locale, "error.priceChanged") },
-          409
-        );
+        return jsonResponse({ error: t(locale, "error.priceChanged") }, 409);
       }
       serverPriceCents += serverCents;
     }
@@ -259,9 +266,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
       asset.additionalCosts ?? null,
       { nights, guests, currency: currency.toLowerCase() }
     );
-    const additionalTotalCents = additionalCostItems.reduce(
-      (sum, item) => sum + item.amountCents,
-      0
+    const additionalTotalCents = sumCents(
+      additionalCostItems.map((item) => item.amountCents)
     );
 
     // Compute extras server-side
@@ -273,9 +279,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
             currency: currency.toLowerCase(),
           })
         : [];
-    const extrasTotalCents = extrasItems.reduce(
-      (sum, item) => sum + item.amountCents,
-      0
+    const extrasTotalCents = sumCents(
+      extrasItems.map((item) => item.amountCents)
     );
 
     // Compute city tax server-side
@@ -293,9 +298,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     const serverCityTaxCents =
       cityTaxRow && cityTaxRow.amount > 0
-        ? cityTaxRow.amount *
-          Math.min(nights, cityTaxRow.maxNights ?? nights) *
-          guests
+        ? multiplyCents(
+            multiplyCents(
+              cityTaxRow.amount,
+              Math.min(nights, cityTaxRow.maxNights ?? nights)
+            ),
+            guests
+          )
         : 0;
 
     if (cityTaxCents !== serverCityTaxCents) {
@@ -304,22 +313,19 @@ export const POST: APIRoute = async ({ request, locals }) => {
         message: `City tax mismatch: client=${cityTaxCents}¢, server=${serverCityTaxCents}¢`,
         metadata: { propertyId, cityTaxCents, serverCityTaxCents },
       });
-      return jsonResponse(
-        { error: t(locale, "error.cityTaxChanged") },
-        409
-      );
+      return jsonResponse({ error: t(locale, "error.cityTaxChanged") }, 409);
     }
 
     // Compute payment split with proper fee base and withholding
     const feePercent = await getApplicationFeePercent(db, asset.userId);
-    const isItalianProperty = asset.country?.toLowerCase() === "italy";
+
     const split = computePaymentSplit({
       nightlyTotalCents: serverPriceCents,
       additionalCostsCents: additionalTotalCents,
       extrasCents: extrasTotalCents,
       cityTaxCents: serverCityTaxCents,
       feePercent,
-      withholdingPercent: isItalianProperty ? 21 : 0,
+      withholdingPercent: 21,
     });
 
     const origin = new URL(request.url).origin;

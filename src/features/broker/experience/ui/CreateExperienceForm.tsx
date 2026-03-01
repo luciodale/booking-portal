@@ -3,6 +3,7 @@
  */
 
 import { experienceCategories } from "@/features/broker/experience/constants/categoryLabels";
+import { CentsHint } from "@/modules/ui/react/CentsHint";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
 import { IconSelectInput } from "@/modules/ui/react/form-inputs/IconSelectInput";
@@ -17,7 +18,7 @@ import { TextareaInput } from "@/modules/ui/react/form-inputs/TextareaInput";
 import type { CreateExperienceInput } from "@/schemas/experience";
 import { createExperienceSchema } from "@/schemas/experience";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 export interface CreateExperienceFormData extends CreateExperienceInput {
@@ -59,6 +60,7 @@ export function CreateExperienceForm({
   const images = watch("images");
   const additionalCosts = watch("additionalCosts") ?? [];
   const instantBook = watch("instantBook") ?? false;
+  const basePriceValue = useWatch({ control, name: "basePrice" });
 
   const categoryDefaultOptions = experienceCategories.map((c) => ({
     value: c.id,
@@ -153,6 +155,7 @@ export function CreateExperienceForm({
           required
           description="Price per person in cents (e.g., 25000 = 250.00 EUR)"
           min={100}
+          labelSuffix={<CentsHint cents={basePriceValue} />}
         />
 
         <SelectInput
