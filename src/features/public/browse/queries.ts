@@ -1,6 +1,6 @@
 import { assets, images } from "@/db/schema";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
-import { and, count, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, isNotNull, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type * as schema from "@/db/schema";
 
@@ -134,4 +134,66 @@ export async function fetchPropertiesByCity(
   );
 
   return { properties, totalCount, totalPages };
+}
+
+export async function fetchAllCities(db: Db): Promise<string[]> {
+  const cityRows = await db
+    .select({ city: assets.city })
+    .from(assets)
+    .where(
+      and(
+        eq(assets.status, "published"),
+        sql`${assets.city} IS NOT NULL AND ${assets.city} != ''`
+      )
+    )
+    .groupBy(assets.city)
+    .orderBy(assets.city);
+
+  return cityRows
+    .map((row) => row.city)
+    .filter((city): city is string => city != null);
+}
+
+export type SearchPropertyItem = {
+  asset: typeof assets.$inferSelect;
+  imageUrl: string;
+  latitude: number;
+  longitude: number;
+};
+
+export async function fetchSearchProperties(
+  db: Db,
+  city: string
+): Promise<SearchPropertyItem[]> {
+  const cityLower = city.toLowerCase();
+
+  const propertiesRaw = await db
+    .select()
+    .from(assets)
+    .where(
+      and(
+        eq(assets.status, "published"),
+        sql`lower(${assets.city}) = ${cityLower}`,
+        isNotNull(assets.latitude),
+        isNotNull(assets.longitude)
+      )
+    )
+    .orderBy(desc(assets.createdAt));
+
+  return Promise.all(
+    propertiesRaw.map(async (asset) => {
+      const [primaryImage] = await db
+        .select()
+        .from(images)
+        .where(and(eq(images.assetId, asset.id), eq(images.isPrimary, true)))
+        .limit(1);
+
+      return {
+        asset,
+        imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
+        latitude: Number(asset.latitude),
+        longitude: Number(asset.longitude),
+      };
+    })
+  );
 }

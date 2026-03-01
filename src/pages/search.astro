@@ -1,0 +1,52 @@
+---
+import { getDb } from "@/db";
+import {
+  fetchAllCities,
+  fetchSearchProperties,
+} from "@/features/public/browse/queries";
+import { SearchView } from "@/features/public/search/ui/SearchView";
+import { t } from "@/i18n/t";
+import type { Locale } from "@/i18n/types";
+import { defaultLocale } from "@/i18n/types";
+import PageLayout from "@/layouts/PageLayout.astro";
+
+export const prerender = false;
+
+const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
+const db = getDb(Astro.locals.runtime.env.DB);
+
+const city = Astro.url.searchParams.get("city");
+const checkIn = Astro.url.searchParams.get("checkIn");
+const checkOut = Astro.url.searchParams.get("checkOut");
+const guests = Astro.url.searchParams.get("guests");
+
+if (!city) {
+  const url = new URL(Astro.request.url);
+  url.searchParams.set("city", "Rome");
+  return Astro.redirect(url.pathname + url.search);
+}
+
+const [properties, cities] = await Promise.all([
+  fetchSearchProperties(db, city),
+  fetchAllCities(db),
+]);
+---
+
+<PageLayout
+  title={city
+    ? t(locale, "search.cityTitle", { city })
+    : t(locale, "search.pageTitle")}
+  description={t(locale, "search.description")}
+  fullHeight
+>
+  <SearchView
+    client:only="react"
+    properties={properties}
+    cities={cities}
+    city={city}
+    checkIn={checkIn}
+    checkOut={checkOut}
+    guests={guests}
+    locale={locale}
+  />
+</PageLayout>

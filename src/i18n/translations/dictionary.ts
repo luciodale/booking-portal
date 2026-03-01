@@ -10,6 +10,7 @@ import { errors as enErrors } from "./en/errors";
 import { experiences as enExperiences } from "./en/experiences";
 import { home as enHome } from "./en/home";
 import { property as enProperty } from "./en/property";
+import { search as enSearch } from "./en/search";
 import { standard as enStandard } from "./en/standard";
 import { about as itAbout } from "./it/about";
 import { auth as itAuth } from "./it/auth";
@@ -22,6 +23,7 @@ import { errors as itErrors } from "./it/errors";
 import { experiences as itExperiences } from "./it/experiences";
 import { home as itHome } from "./it/home";
 import { property as itProperty } from "./it/property";
+import { search as itSearch } from "./it/search";
 import { standard as itStandard } from "./it/standard";
 
 const en = {
@@ -31,6 +33,7 @@ const en = {
   ...enStandard,
   ...enExperiences,
   ...enProperty,
+  ...enSearch,
   ...enAbout,
   ...enBooking,
   ...enBookings,
@@ -46,6 +49,7 @@ const it = {
   ...itStandard,
   ...itExperiences,
   ...itProperty,
+  ...itSearch,
   ...itAbout,
   ...itBooking,
   ...itBookings,

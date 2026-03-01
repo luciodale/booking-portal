@@ -1,0 +1,210 @@
+-- Search View
+-- City-based property search with map + list split view.
+-- Search bar sits above the split (centered, max-w-3xl).
+-- Desktop split: list (flex-1) left, map (w-5/12) right.
+-- Covers tier filtering, price loading, and pin interaction.
+
+value SearchParams {
+    city: string
+    checkIn: Date?
+    checkOut: Date?
+    guests: number?             -- 1..10 dropdown; filters by maxOccupancy
+}
+
+value PropertyPin {
+    propertyId: string
+    latitude: number
+    longitude: number
+    tier: elite | standard
+
+    -- Pin shows price pill when dates provided and price loaded,
+    -- otherwise shows home icon (w-10 h-10, svg 20x20)
+    display: price_pill | home_icon
+}
+
+value PopupCard {
+    -- Compact card matching list-card style (badge + title + features + price)
+    image: url                  -- w-24 h-20 rounded-lg
+    badge: elite | standard
+    title: string               -- font-semibold, truncate
+    features: icon+label[]      -- bed / bath / guest icons
+    price: formatted?           -- font-bold sm + /night muted
+}
+
+value ListCard {
+    -- Larger card with more info (shortDescription, sqMeters, instantBook badge)
+    image: url                  -- w-44 h-32 / sm:w-52 sm:h-36
+    badge: elite | standard
+    instantBook: boolean        -- shows Zap icon when true
+    title: string               -- text-base font-semibold
+    address: string
+    shortDescription: string?   -- 2-line clamp
+    features: icon+label[]      -- bed / bath / guests / sqMeters
+    price: formatted?           -- text-base font-bold right-aligned
+}
+
+value PropertyPrice {
+    avgNightlyRate: number
+    currency: string
+    loading: boolean
+    error: boolean
+}
+
+entity SearchView {
+    params: SearchParams
+    properties: PropertyPin[]
+    prices: Map<string, PropertyPrice>
+
+    -- Tier filter
+    tierFilter: all | elite | standard
+    -- Filtering: tier then guests (maxOccupancy >= guests or null)
+    filteredProperties: properties filtered by tierFilter and guests
+
+    -- Selection
+    selectedId: string?
+
+    -- Derived
+    hasResults: filteredProperties is not empty
+    hasDates: params.checkIn != null and params.checkOut != null
+}
+
+given {
+    view: SearchView
+}
+
+-- === Tier Filtering ===
+
+rule ApplyTierFilter {
+    when: UserSelectsTier(view, tier)
+
+    ensures: view.tierFilter = tier
+    ensures: view.filteredProperties = view.properties filtered by tier
+    ensures: view.selectedId = null
+}
+
+-- === Pin Interaction ===
+
+rule SelectProperty {
+    when: UserClicksPin(view, propertyId)
+    requires: view.selectedId != propertyId
+
+    ensures: view.selectedId = propertyId
+    ensures: PinShowsPopup(propertyId)
+    ensures: ListScrollsToCard(propertyId)
+}
+
+rule DeselectProperty {
+    when: UserClicksPin(view, propertyId)
+    requires: view.selectedId = propertyId
+
+    ensures: view.selectedId = null
+}
+
+rule SelectFromCard {
+    when: UserClicksCard(view, propertyId)
+
+    -- Same toggle behavior as pin click
+    ensures: view.selectedId = if view.selectedId = propertyId then null else propertyId
+}
+
+-- === Price Loading ===
+
+rule LoadPrices {
+    when: view.hasDates
+    requires: view.filteredProperties is not empty
+
+    ensures: for each property in view.filteredProperties:
+        FetchPropertyRates(property.propertyId, view.params.checkIn, view.params.checkOut)
+}
+
+rule PriceLoaded {
+    when: RatesReturned(propertyId, rates, currency)
+
+    ensures: view.prices[propertyId] = PropertyPrice(
+        avgNightlyRate: average of rates,
+        currency: currency,
+        loading: false,
+        error: false
+    )
+    ensures: Pin(propertyId).display = price_pill
+}
+
+rule PriceFailed {
+    when: RatesFailed(propertyId)
+
+    ensures: view.prices[propertyId].error = true
+    ensures: view.prices[propertyId].loading = false
+    ensures: Pin(propertyId).display = home_icon
+}
+
+-- === Surfaces ===
+
+surface SearchMapSurface {
+    facing visitor: Guest
+
+    context view: SearchView
+
+    exposes:
+        view.filteredProperties as pins
+        view.prices
+        view.selectedId
+
+    provides:
+        UserClicksPin(view, propertyId)
+
+    guarantee:
+        -- Selected pin always has popup open
+        if view.selectedId != null:
+            PinShowsPopup(view.selectedId)
+
+        -- Price pins only shown when price is loaded and valid
+        for each pin in view.filteredProperties:
+            if pin.display = price_pill:
+                view.prices[pin.propertyId].loading = false
+                and view.prices[pin.propertyId].error = false
+                and view.prices[pin.propertyId].avgNightlyRate > 0
+}
+
+surface SearchListSurface {
+    facing visitor: Guest
+
+    context view: SearchView
+
+    exposes:
+        view.filteredProperties as cards
+        view.prices
+        view.selectedId
+        view.tierFilter
+
+    provides:
+        UserClicksCard(view, propertyId)
+        UserSelectsTier(view, tier)
+
+    guarantee:
+        -- Selected card is highlighted and visible
+        if view.selectedId != null:
+            CardIsHighlighted(view.selectedId)
+            CardIsScrolledIntoView(view.selectedId)
+}
+
+-- === Guest Filtering ===
+
+rule ApplyGuestFilter {
+    when: UserSelectsGuests(view, guests)
+
+    ensures: view.params.guests = guests
+    ensures: view.filteredProperties = view.properties filtered by
+        tier and maxOccupancy >= guests (null maxOccupancy passes)
+}
+
+-- === Layout ===
+-- Search bar: above split, centered, hero variant reused from home
+-- Map: right side, sticky (lg:sticky lg:top-0), w-5/12
+-- List: left side, scrollable, flex-1
+-- Price pin: bubble with caret, bold price, theme-aware bg/border
+-- Non-instant-booking properties always shown regardless of date range
+
+-- === Resolved Decisions ===
+-- 1. Map re-fits bounds when tier filter reduces visible properties.
+-- 2. No max-properties cap; parallel Smoobu calls are uncapped.
+-- 3. Guest filter uses maxOccupancy; null maxOccupancy always passes.

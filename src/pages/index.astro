@@ -7,6 +7,8 @@ import { getDb } from "@/db";
 import { assets, images } from "@/db/schema";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
+import { fetchAllCities } from "@/features/public/browse/queries";
+import { SearchBarIsland } from "@/features/public/search/ui/SearchBarIsland";
 import Button from "@/modules/ui/astro/Button.astro";
 import Heading from "@/modules/ui/astro/Heading.astro";
 import Hero from "@/modules/ui/astro/Hero.astro";
@@ -42,9 +44,10 @@ async function fetchProperties(tier: "elite" | "standard", limit: number) {
   );
 }
 
-const [eliteProperties, standardProperties] = await Promise.all([
+const [eliteProperties, standardProperties, cities] = await Promise.all([
   fetchProperties("elite", 2),
   fetchProperties("standard", 3),
+  fetchAllCities(db),
 ]);
 ---
 
@@ -55,7 +58,11 @@ const [eliteProperties, standardProperties] = await Promise.all([
     titleGradient={t(locale, "home.titleGradient")}
     subtitle={t(locale, "home.subtitle")}
     backgroundImage="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80"
-  />
+  >
+    <div class="mt-8 w-full max-w-2xl mx-auto animate-slide-up opacity-0" style="animation-delay: 0.8s">
+      <SearchBarIsland client:only="react" locale={locale} cities={cities} />
+    </div>
+  </Hero>
 
   <section class="py-20 px-6">
     <div class="container mx-auto">
