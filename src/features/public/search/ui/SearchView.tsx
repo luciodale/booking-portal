@@ -75,7 +75,7 @@ function SearchViewInner({
           <SearchBar
             variant="hero"
             cities={cities}
-            defaultCity={city}
+            defaultCity={city ?? undefined}
             defaultCheckIn={checkIn ?? ""}
             defaultCheckOut={checkOut ?? ""}
             defaultGuests={guests ?? ""}
@@ -103,7 +103,7 @@ function SearchViewInner({
         <div className="flex-1 lg:order-1 overflow-y-auto">
           <div className="sticky top-0 bg-background z-10 px-4 py-3 border-b border-border">
             <SearchFilters
-              city={city}
+              city={city ?? ""}
               resultCount={filteredProperties.length}
               tierFilter={tierFilter}
               onTierChange={setTierFilter}

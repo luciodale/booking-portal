@@ -4,6 +4,9 @@ import { eventsRoute } from "@/features/admin/events/routes/events";
 import { settingsRoute } from "@/features/admin/settings/routes/settings";
 import { bookingsRoute } from "@/features/broker/bookings/routes/bookings";
 import { connectRoute } from "@/features/broker/connect/routes/connect";
+import { experiencesRoute } from "@/features/broker/experience/routes/experiences";
+import { editExperienceRoute } from "@/features/broker/experience/routes/experiences.$id.edit";
+import { createExperienceRoute } from "@/features/broker/experience/routes/experiences.new";
 import { integrationsRoute } from "@/features/broker/pms/routes/integrations";
 import { createPropertyRoute } from "@/features/broker/pms/routes/createProperty";
 import { rootRoute } from "@/features/broker/property/routes/BackofficeRoot";
@@ -24,6 +27,9 @@ const routeTree = rootRoute.addChildren([
   bookingsRoute,
   connectRoute,
   integrationsRoute,
+  experiencesRoute,
+  createExperienceRoute,
+  editExperienceRoute,
 ]);
 
 const router = createRouter({
