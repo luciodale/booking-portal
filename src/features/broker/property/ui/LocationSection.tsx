@@ -4,16 +4,19 @@
  */
 
 import { usePhotonAddressSearch } from "@/features/broker/property/hooks/usePhotonAddressSearch";
+import { COUNTRY_NAMES } from "@/modules/countries";
 import { cn } from "@/modules/utils/cn";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
 import { TextInput } from "@/modules/ui/react/form-inputs/TextInput";
 import type { CreatePropertyInput } from "@/schemas/property";
 import { SearchableDropdown } from "@luciodale/react-searchable-dropdown";
 import { ChevronDown, MapPin } from "lucide-react";
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import type { Control, UseFormSetValue } from "react-hook-form";
-import { Controller } from "react-hook-form";
+import { Controller, useWatch } from "react-hook-form";
 import type { CreatePropertyFormData } from "./CreatePropertyForm";
+
+const countryOptions = [...COUNTRY_NAMES];
 
 interface LocationSectionProps {
   control: Control<CreatePropertyFormData>;
@@ -47,6 +50,12 @@ export function LocationSection({
   renderLink,
 }: LocationSectionProps) {
   const { query, setQuery, suggestions } = usePhotonAddressSearch();
+  const countryValue = useWatch({ control, name: "country" }) ?? "";
+  const [countryQuery, setCountryQuery] = useState(countryValue);
+
+  useEffect(() => {
+    setCountryQuery(countryValue);
+  }, [countryValue]);
 
   const options = useMemo(
     () => suggestions.map((s) => s.label),
@@ -172,12 +181,39 @@ export function LocationSection({
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <TextInput
+        <Controller
           name="country"
           control={control}
-          label="Country"
-          placeholder="Italy"
-          labelSuffix={renderLink("country")}
+          render={({ field }) => (
+            <div>
+              <span className="block text-sm font-medium text-foreground mb-1">
+                Country
+                {renderLink("country")}
+              </span>
+              <SearchableDropdown
+                options={countryOptions}
+                value={field.value || undefined}
+                setValue={(v) => {
+                  field.onChange(v ?? "");
+                  setCountryQuery(v ?? "");
+                }}
+                searchQuery={countryQuery}
+                onSearchQueryChange={(q) => setCountryQuery(q ?? "")}
+                placeholder="Select a country..."
+                classNameSearchableDropdownContainer="relative"
+                DropdownIcon={({ toggled }: { toggled: boolean }) => (
+                  <ChevronDown
+                    className={cn("w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform", toggled && "rotate-180")}
+                  />
+                )}
+                classNameSearchQueryInput="input pr-9"
+                classNameDropdownOptions="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden max-h-60 overflow-y-auto"
+                classNameDropdownOption="px-3 py-2 text-sm text-foreground cursor-pointer"
+                classNameDropdownOptionFocused="bg-secondary"
+                classNameDropdownOptionNoMatch="px-3 py-2 text-sm text-muted-foreground"
+              />
+            </div>
+          )}
         />
         <TextInput
           name="latitude"

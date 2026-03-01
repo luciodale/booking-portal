@@ -15,6 +15,7 @@ import { localePath } from "@/i18n/locale-path";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
+import { isItalyCountry } from "@/modules/countries";
 import { requireAuth } from "@/modules/auth/auth";
 import { createEventLogger } from "@/modules/logging/eventLogger";
 import type { APIRoute } from "astro";
@@ -96,6 +97,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     if (!asset || !asset.smoobuPropertyId) {
       return jsonResponse({ error: t(locale, "error.propertyNotFound") }, 404);
+    }
+
+    if (!isItalyCountry(asset.country)) {
+      return jsonResponse({ error: t(locale, "error.instantBookNotAvailable") }, 403);
     }
 
     const [integration] = await db

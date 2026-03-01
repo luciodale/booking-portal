@@ -4,12 +4,15 @@
  */
 
 import { usePhotonAddressSearch } from "@/features/broker/property/hooks/usePhotonAddressSearch";
+import { COUNTRY_NAMES } from "@/modules/countries";
 import { cn } from "@/modules/utils/cn";
 import type { UpdatePropertyInput } from "@/schemas/property";
 import { SearchableDropdown } from "@luciodale/react-searchable-dropdown";
 import { ChevronDown } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EditableSectionField } from "./EditableField";
+
+const countryOptions = [...COUNTRY_NAMES];
 
 type LocationValues = {
   street: string;
@@ -74,6 +77,11 @@ function LocationFields({
   disabled: boolean;
 }) {
   const { query, setQuery, suggestions } = usePhotonAddressSearch();
+  const [countryQuery, setCountryQuery] = useState(values.country);
+
+  useEffect(() => {
+    setCountryQuery(values.country);
+  }, [values.country]);
 
   const options = useMemo(
     () => suggestions.map((s) => s.label),
@@ -198,14 +206,28 @@ function LocationFields({
           >
             Country
           </label>
-          <input
-            id="edit-country"
-            type="text"
-            value={values.country}
-            onChange={(e) => updateField("country", e.target.value)}
+          <SearchableDropdown
+            options={countryOptions}
+            value={values.country || undefined}
+            setValue={(v) => {
+              updateField("country", v ?? "");
+              setCountryQuery(v ?? "");
+            }}
+            searchQuery={countryQuery}
+            onSearchQueryChange={(q) => setCountryQuery(q ?? "")}
+            placeholder="Select a country..."
             disabled={disabled}
-            placeholder="Italy"
-            className="input"
+            classNameSearchableDropdownContainer="relative"
+            DropdownIcon={({ toggled }: { toggled: boolean }) => (
+              <ChevronDown
+                className={cn("w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform", toggled && "rotate-180")}
+              />
+            )}
+            classNameSearchQueryInput="input pr-9"
+            classNameDropdownOptions="absolute z-50 w-full mt-1 bg-card border border-border rounded-lg shadow-lg overflow-hidden max-h-60 overflow-y-auto"
+            classNameDropdownOption="px-3 py-2 text-sm text-foreground cursor-pointer"
+            classNameDropdownOptionFocused="bg-secondary"
+            classNameDropdownOptionNoMatch="px-3 py-2 text-sm text-muted-foreground"
           />
         </div>
         <div>

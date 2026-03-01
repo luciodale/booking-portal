@@ -1,3 +1,4 @@
+import { COUNTRY_MAP } from "@/modules/countries";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface PhotonSuggestion {
@@ -19,6 +20,8 @@ interface PhotonProperties {
   city?: string;
   state?: string;
   country?: string;
+  countrycode?: string;
+  type?: string;
 }
 
 interface PhotonFeature {
@@ -50,16 +53,19 @@ function buildLabel(props: PhotonProperties): string {
 function mapFeature(feature: PhotonFeature): PhotonSuggestion {
   const { properties, geometry } = feature;
   const label = buildLabel(properties);
+  const rawStreet = properties.street ?? (properties.type === "street" ? properties.name : undefined) ?? "";
   const street = properties.housenumber
-    ? `${properties.street ?? ""} ${properties.housenumber}`.trim()
-    : (properties.street ?? "");
+    ? `${rawStreet} ${properties.housenumber}`.trim()
+    : rawStreet;
   return {
     label,
     value: label,
     street,
     zip: properties.postcode ?? "",
     city: properties.city ?? "",
-    country: properties.country ?? "",
+    country: (properties.countrycode && COUNTRY_MAP[properties.countrycode.toUpperCase()])
+      ?? properties.country
+      ?? "",
     latitude: String(geometry.coordinates[1]),
     longitude: String(geometry.coordinates[0]),
   };

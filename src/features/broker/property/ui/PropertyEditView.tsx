@@ -5,6 +5,7 @@
 
 import { propertyQueryKeys } from "@/features/broker/property/constants/queryKeys";
 import { useCityTaxDefault } from "@/features/broker/property/hooks/useCityTaxDefault";
+import { isItalyCountry } from "@/modules/countries";
 import { useUpsertCityTax } from "@/features/broker/property/hooks/useUpsertCityTax";
 import { useProperty } from "@/features/broker/property/queries/useProperty";
 import { useUpdateProperty } from "@/features/broker/property/queries/useUpdateProperty";
@@ -77,6 +78,8 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
       </div>
     );
   }
+
+  const isItaly = isItalyCountry(property.country);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -387,13 +390,13 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
           values={{
             checkIn: property.checkIn ?? "",
             checkOut: property.checkOut ?? "",
-            instantBook: property.instantBook ? "yes" : "no",
+            instantBook: isItaly && property.instantBook ? "yes" : "no",
           }}
           onSave={(data) =>
             saveFields({
               checkIn: data.checkIn || null,
               checkOut: data.checkOut || null,
-              instantBook: data.instantBook === "yes",
+              instantBook: isItaly && data.instantBook === "yes",
             })
           }
           renderFields={({ values, onChange, disabled }) => (
@@ -454,16 +457,21 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
                 </label>
                 <select
                   id="edit-instantBook"
-                  value={values.instantBook}
+                  value={isItaly ? values.instantBook : "no"}
                   onChange={(e) =>
                     onChange({ ...values, instantBook: e.target.value })
                   }
-                  disabled={disabled}
+                  disabled={disabled || !isItaly}
                   className="input"
                 >
                   <option value="yes">Yes</option>
                   <option value="no">No</option>
                 </select>
+                {!isItaly && (
+                  <p className="text-sm text-warning mt-1">
+                    Instant book is currently available only for properties in Italy.
+                  </p>
+                )}
               </div>
             </div>
           )}

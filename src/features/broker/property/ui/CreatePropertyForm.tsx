@@ -8,6 +8,7 @@ import {
   syncFeatureFields,
 } from "@/features/broker/property/domain/sync-features";
 import { useCityTaxDefault } from "@/features/broker/property/hooks/useCityTaxDefault";
+import { isItalyCountry } from "@/modules/countries";
 import type { Feature } from "@/modules/constants";
 import { getFacilityOptions } from "@/modules/constants";
 import { CentsHint } from "@/modules/ui/react/CentsHint";
@@ -124,7 +125,16 @@ export function CreatePropertyForm({
   const views = watch("views") ?? [];
   const city = watch("city") ?? "";
   const country = watch("country") ?? "";
+  const isItaly = isItalyCountry(country);
   const cityTaxAmountValue = useWatch({ control, name: "cityTaxAmount" });
+
+  const prevIsItalyRef = useRef(isItaly);
+  useEffect(() => {
+    if (prevIsItalyRef.current && !isItaly) {
+      setValue("instantBook", false, { shouldDirty: true });
+    }
+    prevIsItalyRef.current = isItaly;
+  }, [isItaly, setValue]);
 
   const cityTaxQuery = useCityTaxDefault(city, country);
   const cityTaxPrefilled = useRef(false);
@@ -429,7 +439,7 @@ export function CreatePropertyForm({
             type="checkbox"
             checked={instantBook}
             onChange={(e) => setValue("instantBook", e.target.checked, { shouldDirty: true })}
-            disabled={isLoading}
+            disabled={isLoading || !isItaly}
             className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
           />
           <div>
@@ -439,6 +449,11 @@ export function CreatePropertyForm({
             <p className="text-sm text-muted-foreground">
               Allow guests to book without requiring host approval.
             </p>
+            {!isItaly && (
+              <p className="text-sm text-warning">
+                Instant book is currently available only for properties in Italy.
+              </p>
+            )}
           </div>
         </label>
       </FormSection>

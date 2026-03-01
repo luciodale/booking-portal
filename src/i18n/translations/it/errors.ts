@@ -46,4 +46,5 @@ export const errors: Record<keyof typeof en, string> = {
   "error.cannotCancelBooking": "Impossibile cancellare la prenotazione con stato \"{status}\"",
   "error.failedToCancelBooking": "Impossibile cancellare la prenotazione",
   "error.failedToListBookings": "Impossibile elencare le prenotazioni",
+  "error.instantBookNotAvailable": "La prenotazione online non è disponibile per questa proprietà",
 };

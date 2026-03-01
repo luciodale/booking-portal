@@ -41,4 +41,5 @@ export const errors = {
   "error.cannotCancelBooking": "Cannot cancel booking with status \"{status}\"",
   "error.failedToCancelBooking": "Failed to cancel booking",
   "error.failedToListBookings": "Failed to list bookings",
+  "error.instantBookNotAvailable": "Online booking is not available for this property",
 } as const;

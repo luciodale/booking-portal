@@ -12,6 +12,7 @@ import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
 import PageLayout from "@/layouts/PageLayout.astro";
+import { isItalyCountry } from "@/modules/countries";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import Badge from "@/modules/ui/astro/Badge.astro";
 import ExtrasSection from "@/modules/ui/astro/ExtrasSection.astro";
@@ -69,6 +70,8 @@ const property = {
   highlights: asset.highlights ?? [],
   views: asset.views ?? [],
 };
+
+const effectiveInstantBook = isItalyCountry(asset.country) && asset.instantBook;
 
 const [ownerWhatsapp, cityTax] = await Promise.all([
   fetchOwnerWhatsapp(db, asset.userId),
@@ -250,7 +253,7 @@ const [ownerWhatsapp, cityTax] = await Promise.all([
         propertyId={property.id}
         smoobuPropertyId={asset.smoobuPropertyId ?? null}
         maxGuests={property.maxGuests}
-        instantBook={asset.instantBook}
+        instantBook={effectiveInstantBook}
         additionalCosts={asset.additionalCosts ?? null}
         extras={asset.extras ?? null}
         cityTax={cityTax}
@@ -368,7 +371,7 @@ const [ownerWhatsapp, cityTax] = await Promise.all([
               propertyId={property.id}
               smoobuPropertyId={asset.smoobuPropertyId ?? null}
               maxGuests={property.maxGuests}
-              instantBook={asset.instantBook}
+              instantBook={effectiveInstantBook}
               additionalCosts={asset.additionalCosts ?? null}
               extras={asset.extras ?? null}
               cityTax={cityTax}
