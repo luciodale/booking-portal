@@ -20,6 +20,7 @@ import type { Locale } from "@/i18n/types";
 import { z } from "zod";
 import { resolveConnectAccount } from "@/features/broker/connect/domain/resolveConnectAccount";
 import { getApplicationFeePercent } from "@/features/admin/settings/domain/getApplicationFeePercent";
+import { computePaymentSplit } from "@/features/public/booking/domain/computePaymentSplit";
 
 const checkoutBodySchema = z.object({
   propertyId: z.string().min(1),
@@ -145,6 +146,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
         return jsonResponse(
           {
             error: t(locale, "error.minStay", { nights: errorInfo.minimumLengthOfStay }),
+          },
+          400
+        );
+      }
+
+      if (errorInfo?.errorCode === 2) {
+        log.error({
+          source: "checkout",
+          message: `Max occupancy exceeded for property ${propertyId}: ${guests} guests, max ${errorInfo.numberOfGuest ?? "?"}`,
+          metadata: { propertyId, checkIn, checkOut, guests, maxGuests: errorInfo.numberOfGuest },
+        });
+        return jsonResponse(
+          {
+            error: t(locale, "error.maxGuests", { count: errorInfo.numberOfGuest ?? guests }),
           },
           400
         );
@@ -295,14 +310,17 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    const grandTotalCents =
-      serverPriceCents + additionalTotalCents + extrasTotalCents + serverCityTaxCents;
-
-    // Compute application fee for Stripe Connect
+    // Compute payment split with proper fee base and withholding
     const feePercent = await getApplicationFeePercent(db, asset.userId);
-    const applicationFeeAmount = Math.round(
-      (grandTotalCents * feePercent) / 100
-    );
+    const isItalianProperty = asset.country?.toLowerCase() === "italy";
+    const split = computePaymentSplit({
+      nightlyTotalCents: serverPriceCents,
+      additionalCostsCents: additionalTotalCents,
+      extrasCents: extrasTotalCents,
+      cityTaxCents: serverCityTaxCents,
+      feePercent,
+      withholdingPercent: isItalianProperty ? 21 : 0,
+    });
 
     const origin = new URL(request.url).origin;
 
@@ -315,7 +333,14 @@ export const POST: APIRoute = async ({ request, locals }) => {
       nights: String(nights),
       guests: String(guests),
       currency: currency.toLowerCase(),
-      totalPriceCents: String(grandTotalCents),
+      totalPriceCents: String(split.guestTotalCents),
+      nightlyTotalCents: String(serverPriceCents),
+      additionalCostsCents: String(additionalTotalCents),
+      extrasCents: String(extrasTotalCents),
+      cityTaxCents: String(serverCityTaxCents),
+      platformFeeCents: String(split.platformFeeCents),
+      withholdingTaxCents: String(split.withholdingTaxCents),
+      applicationFeeCents: String(split.applicationFeeCents),
       guestNote: guestInfo.guestNote ?? "",
       guestFirstName: guestInfo.firstName,
       guestLastName: guestInfo.lastName,
@@ -323,7 +348,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
       guestPhone: guestInfo.phone ?? "",
       adults: String(guestInfo.adults),
       children: String(guestInfo.children),
-      applicationFeeAmount: String(applicationFeeAmount),
     };
 
     const stripe = new Stripe(stripeKey);
@@ -384,7 +408,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       line_items: lineItems,
       metadata,
       payment_intent_data: {
-        application_fee_amount: applicationFeeAmount,
+        application_fee_amount: split.applicationFeeCents,
         on_behalf_of: connectedAccountId,
         transfer_data: {
           destination: connectedAccountId,

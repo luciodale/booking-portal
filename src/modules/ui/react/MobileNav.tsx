@@ -16,7 +16,6 @@ import {
 } from "@luciodale/swipe-bar";
 import {
   Building2,
-  Compass,
   Crown,
   Home,
   Info,
@@ -64,12 +63,6 @@ function getNavLinks(locale: Locale): NavLink[] {
       label: t(locale, "nav.standard"),
       matchPath: "/standard",
       icon: <Building2 size={18} />,
-    },
-    {
-      href: localePath(locale, "/experiences"),
-      label: t(locale, "nav.experiences"),
-      matchPath: "/experiences",
-      icon: <Compass size={18} />,
     },
     {
       href: localePath(locale, "/about"),

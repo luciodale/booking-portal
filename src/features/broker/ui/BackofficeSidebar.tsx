@@ -12,7 +12,6 @@ import {
   Building2,
   Calendar,
   CalendarDays,
-  Compass,
   Link2,
   LogOut,
   Monitor,
@@ -83,12 +82,6 @@ export function BackofficeSidebar({ isAdmin }: { isAdmin: boolean }) {
       label: "Properties",
       icon: <Building2 size={18} />,
       testId: "nav-properties",
-    },
-    {
-      to: "/experiences",
-      label: "Experiences",
-      icon: <Compass size={18} />,
-      testId: "nav-experiences",
     },
     { to: "/bookings", label: "Bookings", icon: <CalendarDays size={18} /> },
     {

@@ -1,9 +1,15 @@
-export interface BackofficeBooking {
+export type BackofficeBooking = {
   id: string;
   checkIn: string;
   checkOut: string;
   nights: number;
   guests: number;
+  baseTotal: number;
+  additionalCostsCents: number;
+  extrasCents: number;
+  cityTaxCents: number;
+  platformFeeCents: number;
+  withholdingTaxCents: number;
   totalPrice: number;
   currency: string;
   status: "pending" | "confirmed" | "cancelled" | "completed";
@@ -13,12 +19,12 @@ export interface BackofficeBooking {
   propertyId: string;
   guestName: string | null;
   guestEmail: string;
-}
+};
 
-export interface BackofficeBookingsResponse {
+export type BackofficeBookingsResponse = {
   bookings: BackofficeBooking[];
   total: number;
-}
+};
 
 export async function queryBookings(params?: {
   propertyId?: string;

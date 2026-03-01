@@ -1,6 +1,9 @@
-import { GET } from "@/features/broker/experience/api/server-handler/GETExperiences";
-import { POST } from "@/features/broker/experience/api/server-handler/POSTExperience";
+import type { APIRoute } from "astro";
 
 export const prerender = false;
 
-export { GET, POST };
+const notFound: APIRoute = () =>
+  new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+
+export const GET = notFound;
+export const POST = notFound;

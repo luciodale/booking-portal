@@ -59,13 +59,13 @@ function BookingWidgetInner({
   locale = "en",
 }: BookingWidgetProps) {
   const isMobile = useIsMobile();
-  const calendar = useBookingCalendar(propertyId, smoobuPropertyId);
+  const [guestCount, setGuestCount] = useState<number | null>(null);
+  const calendar = useBookingCalendar(propertyId, smoobuPropertyId, guestCount);
   const { minStayNights } = useMinStayNotice(
     calendar.rateMap,
     calendar.checkIn
   );
   const { isSignedIn } = useAuth();
-  const [guestCount, setGuestCount] = useState<number | null>(null);
   const [selectedExtras, setSelectedExtras] = useState<Set<number>>(new Set());
   const formValuesRef = useRef<Partial<BookingGuestInput>>({});
   const handleFormValuesChange = useCallback(
@@ -212,7 +212,7 @@ function BookingWidgetInner({
           onRetry={calendar.retryDates}
         />
 
-        {calendar.isAvailable && extras && extras.length > 0 && (
+        {calendar.checkIn && calendar.checkOut && extras && extras.length > 0 && (
           <>
             <div className="border-t border-border" />
             <h3 className="text-sm font-semibold text-foreground">
@@ -287,7 +287,7 @@ function BookingWidgetInner({
           </>
         )}
 
-        {calendar.isAvailable && (
+        {calendar.checkIn && calendar.checkOut && (
           <>
             <div className="border-t border-border" />
             <h3 className="text-sm font-semibold text-foreground">

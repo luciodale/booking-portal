@@ -18,8 +18,9 @@ export const bookings: Record<keyof typeof en, string> = {
   "bookings.nightsLabel": "Notti",
   "bookings.guestsLabel": "Ospiti",
   "bookings.accommodation": "Alloggio",
-  "bookings.cleaningFee": "Pulizia",
-  "bookings.serviceFee": "Costo del servizio",
+  "bookings.additionalCosts": "Costi aggiuntivi",
+  "bookings.extras": "Extra",
+  "bookings.cityTax": "Tassa di soggiorno",
   "bookings.total": "Totale",
   "bookings.yourNote": "La tua nota",
   "bookings.cancellationNotice":

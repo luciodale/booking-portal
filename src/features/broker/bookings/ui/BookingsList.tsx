@@ -8,7 +8,7 @@ import { cn } from "@/modules/utils/cn";
 import { SearchableDropdown } from "@luciodale/react-searchable-dropdown";
 import type { TObjectDropdownOption } from "@luciodale/react-searchable-dropdown";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 const STATUS_STYLES: Record<string, string> = {
@@ -44,6 +44,66 @@ function usePropertyOptions() {
   }
 
   return options;
+}
+
+function PricingBreakdown({ booking }: { booking: BackofficeBooking }) {
+  const fmt = (cents: number) => formatCents(cents, booking.currency);
+  const hostPayout =
+    booking.totalPrice -
+    booking.platformFeeCents -
+    booking.withholdingTaxCents;
+
+  return (
+    <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm py-3 px-6 max-w-md">
+      <span className="text-muted-foreground">Nightly total</span>
+      <span className="text-foreground text-right">{fmt(booking.baseTotal)}</span>
+
+      {booking.additionalCostsCents > 0 && (
+        <>
+          <span className="text-muted-foreground">Additional costs</span>
+          <span className="text-foreground text-right">{fmt(booking.additionalCostsCents)}</span>
+        </>
+      )}
+
+      {booking.extrasCents > 0 && (
+        <>
+          <span className="text-muted-foreground">Extras</span>
+          <span className="text-foreground text-right">{fmt(booking.extrasCents)}</span>
+        </>
+      )}
+
+      {booking.cityTaxCents > 0 && (
+        <>
+          <span className="text-muted-foreground">City tax</span>
+          <span className="text-foreground text-right">{fmt(booking.cityTaxCents)}</span>
+        </>
+      )}
+
+      <div className="col-span-2 border-t border-border my-1" />
+
+      <span className="text-muted-foreground">Guest total</span>
+      <span className="text-foreground font-medium text-right">{fmt(booking.totalPrice)}</span>
+
+      {booking.platformFeeCents > 0 && (
+        <>
+          <span className="text-muted-foreground">Platform fee</span>
+          <span className="text-error text-right">-{fmt(booking.platformFeeCents)}</span>
+        </>
+      )}
+
+      {booking.withholdingTaxCents > 0 && (
+        <>
+          <span className="text-muted-foreground">Withholding tax</span>
+          <span className="text-error text-right">-{fmt(booking.withholdingTaxCents)}</span>
+        </>
+      )}
+
+      <div className="col-span-2 border-t border-border my-1" />
+
+      <span className="text-muted-foreground font-medium">Host payout</span>
+      <span className="text-foreground font-medium text-right">{fmt(hostPayout)}</span>
+    </div>
+  );
 }
 
 function CancelButton({ booking }: { booking: BackofficeBooking }) {
@@ -106,6 +166,80 @@ function useBookingsFilters() {
     isLoading,
     error,
   };
+}
+
+function BookingRow({ booking }: { booking: BackofficeBooking }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <>
+      <tr
+        className="hover:bg-secondary/50 transition-colors cursor-pointer"
+        onClick={() => setExpanded((prev) => !prev)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setExpanded((prev) => !prev);
+          }
+        }}
+      >
+        <td className="px-6 py-4">
+          <div className="flex items-center gap-2">
+            <ChevronRight
+              className={cn(
+                "w-4 h-4 shrink-0 text-muted-foreground transition-transform",
+                expanded && "rotate-90"
+              )}
+            />
+            <div>
+              <div className="text-sm font-medium text-foreground">
+                {booking.guestName ?? "\u2014"}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {booking.guestEmail}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td className="px-6 py-4 text-sm text-foreground max-w-[200px] truncate">
+          {booking.propertyTitle}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+          {booking.checkIn}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+          {booking.checkOut}
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap">
+          <span
+            className={cn(
+              "px-2.5 py-1 inline-flex text-xs leading-5 font-medium rounded-full",
+              STATUS_STYLES[booking.status]
+            )}
+          >
+            {booking.status}
+          </span>
+        </td>
+        <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
+          {formatCents(booking.totalPrice, booking.currency)}
+        </td>
+        <td
+          className="px-6 py-4 whitespace-nowrap"
+          onClick={(e) => e.stopPropagation()}
+          onKeyDown={(e) => e.stopPropagation()}
+        >
+          <CancelButton booking={booking} />
+        </td>
+      </tr>
+      {expanded && (
+        <tr className="bg-secondary/30">
+          <td colSpan={7}>
+            <PricingBreakdown booking={booking} />
+          </td>
+        </tr>
+      )}
+    </>
+  );
 }
 
 export function BookingsList() {
@@ -203,44 +337,7 @@ export function BookingsList() {
               </tr>
             ) : (
               data.bookings.map((booking) => (
-                <tr
-                  key={booking.id}
-                  className="hover:bg-secondary/50 transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <div className="text-sm font-medium text-foreground">
-                      {booking.guestName ?? "—"}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {booking.guestEmail}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-foreground max-w-[200px] truncate">
-                    {booking.propertyTitle}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                    {booking.checkIn}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                    {booking.checkOut}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={cn(
-                        "px-2.5 py-1 inline-flex text-xs leading-5 font-medium rounded-full",
-                        STATUS_STYLES[booking.status]
-                      )}
-                    >
-                      {booking.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                    {formatCents(booking.totalPrice, booking.currency)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <CancelButton booking={booking} />
-                  </td>
-                </tr>
+                <BookingRow key={booking.id} booking={booking} />
               ))
             )}
           </tbody>

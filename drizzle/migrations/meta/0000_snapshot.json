@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9d5520d1-4d81-4b08-b915-ae8935a01248",
+  "id": "642bb5ad-8aac-4d29-83e0-2a7db4a57a71",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "asset_experiences": {
@@ -479,16 +479,40 @@
           "notNull": true,
           "autoincrement": false
         },
-        "cleaning_fee": {
-          "name": "cleaning_fee",
+        "additional_costs_cents": {
+          "name": "additional_costs_cents",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
           "default": 0
         },
-        "service_fee": {
-          "name": "service_fee",
+        "extras_cents": {
+          "name": "extras_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "city_tax_cents": {
+          "name": "city_tax_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "platform_fee_cents": {
+          "name": "platform_fee_cents",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "withholding_tax_cents": {
+          "name": "withholding_tax_cents",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

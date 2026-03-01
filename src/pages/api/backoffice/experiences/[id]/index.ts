@@ -1,10 +1,11 @@
-import { DELETE } from "@/features/broker/experience/api/server-handler/DELETEExperienceById";
-import { GET } from "@/features/broker/experience/api/server-handler/GETExperienceById";
-import { PATCH } from "@/features/broker/experience/api/server-handler/PATCHExperienceById";
+import type { APIRoute } from "astro";
 
 export const prerender = false;
 
-export { GET };
-export { PATCH };
-export { PATCH as PUT };
-export { DELETE };
+const notFound: APIRoute = () =>
+  new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+
+export const GET = notFound;
+export const PATCH = notFound;
+export const PUT = notFound;
+export const DELETE = notFound;

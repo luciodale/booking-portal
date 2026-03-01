@@ -15,8 +15,9 @@ export const bookings = {
   "bookings.nightsLabel": "Nights",
   "bookings.guestsLabel": "Guests",
   "bookings.accommodation": "Accommodation",
-  "bookings.cleaningFee": "Cleaning fee",
-  "bookings.serviceFee": "Service fee",
+  "bookings.additionalCosts": "Additional costs",
+  "bookings.extras": "Extras",
+  "bookings.cityTax": "City tax",
   "bookings.total": "Total",
   "bookings.yourNote": "Your note",
   "bookings.cancellationNotice":

@@ -130,16 +130,22 @@ function formatCents(cents: number, currency: string) {
           <span class="text-muted-foreground">{t(locale, "bookings.accommodation")}</span>
           <span class="text-foreground">{formatCents(booking.baseTotal, booking.currency)}</span>
         </div>
-        {booking.cleaningFee > 0 && (
+        {booking.additionalCostsCents > 0 && (
           <div class="flex justify-between text-sm">
-            <span class="text-muted-foreground">{t(locale, "bookings.cleaningFee")}</span>
-            <span class="text-foreground">{formatCents(booking.cleaningFee, booking.currency)}</span>
+            <span class="text-muted-foreground">{t(locale, "bookings.additionalCosts")}</span>
+            <span class="text-foreground">{formatCents(booking.additionalCostsCents, booking.currency)}</span>
           </div>
         )}
-        {booking.serviceFee > 0 && (
+        {booking.extrasCents > 0 && (
           <div class="flex justify-between text-sm">
-            <span class="text-muted-foreground">{t(locale, "bookings.serviceFee")}</span>
-            <span class="text-foreground">{formatCents(booking.serviceFee, booking.currency)}</span>
+            <span class="text-muted-foreground">{t(locale, "bookings.extras")}</span>
+            <span class="text-foreground">{formatCents(booking.extrasCents, booking.currency)}</span>
+          </div>
+        )}
+        {booking.cityTaxCents > 0 && (
+          <div class="flex justify-between text-sm">
+            <span class="text-muted-foreground">{t(locale, "bookings.cityTax")}</span>
+            <span class="text-foreground">{formatCents(booking.cityTaxCents, booking.currency)}</span>
           </div>
         )}
 

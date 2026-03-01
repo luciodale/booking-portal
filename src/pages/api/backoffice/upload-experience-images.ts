@@ -1,5 +1,8 @@
-import { POST } from "@/features/broker/experience/api/server-handler/POSTUploadExperienceImages";
+import type { APIRoute } from "astro";
 
 export const prerender = false;
 
-export { POST };
+const notFound: APIRoute = () =>
+  new Response(JSON.stringify({ error: "Not found" }), { status: 404 });
+
+export const POST = notFound;

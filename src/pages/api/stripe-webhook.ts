@@ -188,7 +188,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     // Create booking from session metadata
     const bookingId = nanoid();
-    const totalPriceCents = Number(meta.totalPriceCents);
 
     await db.insert(bookings).values({
       id: bookingId,
@@ -198,10 +197,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
       checkOut: meta.checkOut ?? "",
       nights: Number(meta.nights),
       guests: Number(meta.guests),
-      baseTotal: totalPriceCents,
-      cleaningFee: 0,
-      serviceFee: 0,
-      totalPrice: totalPriceCents,
+      baseTotal: Number(meta.nightlyTotalCents),
+      additionalCostsCents: Number(meta.additionalCostsCents),
+      extrasCents: Number(meta.extrasCents),
+      cityTaxCents: Number(meta.cityTaxCents),
+      platformFeeCents: Number(meta.platformFeeCents),
+      withholdingTaxCents: Number(meta.withholdingTaxCents),
+      totalPrice: Number(meta.totalPriceCents),
       currency: meta.currency ?? "eur",
       status: "confirmed",
       stripeSessionId: session.id,
@@ -259,7 +261,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         adults: meta.adults ? Number(meta.adults) : undefined,
         children: meta.children ? Number(meta.children) : undefined,
         notice: meta.guestNote || undefined,
-        price: totalPriceCents / 100,
+        price: Number(meta.totalPriceCents) / 100,
         priceStatus: 1,
       });
 

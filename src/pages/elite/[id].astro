@@ -5,7 +5,6 @@ import { kebabToDisplay } from "@/features/broker/property/domain/sync-features"
 import { BookingWidget } from "@/features/public/booking/ui/BookingWidget";
 import {
   fetchCityTax,
-  fetchLinkedExperiences,
   fetchOwnerWhatsapp,
 } from "@/features/public/browse/property-detail-queries";
 import { localePath } from "@/i18n/locale-path";
@@ -15,7 +14,6 @@ import { defaultLocale } from "@/i18n/types";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import Badge from "@/modules/ui/astro/Badge.astro";
-import ExperienceCard from "@/modules/ui/astro/ExperienceCard.astro";
 import ExtrasSection from "@/modules/ui/astro/ExtrasSection.astro";
 import ImageGallery from "@/modules/ui/astro/ImageGallery.astro";
 import PropertyMap from "@/modules/ui/astro/PropertyMap.astro";
@@ -72,8 +70,7 @@ const property = {
   views: asset.views ?? [],
 };
 
-const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
-  fetchLinkedExperiences(db, asset.id),
+const [ownerWhatsapp, cityTax] = await Promise.all([
   fetchOwnerWhatsapp(db, asset.userId),
   fetchCityTax(db, asset.userId, asset.city, asset.country),
 ]);
@@ -382,37 +379,6 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
       </div>
     </div>
   </section>
-
-  {
-    linkedExperiences.length > 0 && (
-      <section class="py-20 px-6 bg-card/50">
-        <div class="container mx-auto">
-          <div class="text-center mb-12">
-            <div class="text-primary uppercase tracking-widest text-sm font-medium mb-3">
-              {t(locale, "property.curatedForYou")}
-            </div>
-            <h2 class="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {t(locale, "property.exclusiveExperiences")}
-            </h2>
-            <p class="text-muted-foreground max-w-2xl mx-auto">
-              {t(locale, "property.exclusiveExperiencesDesc")}
-            </p>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {linkedExperiences.map((exp) => (
-              <ExperienceCard
-                experience={exp}
-                propertyTitle={property.title}
-                ownerWhatsapp={ownerWhatsapp}
-                variant="elite"
-                locale={locale}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-    )
-  }
 
   <section class="py-20 px-6">
     <div class="container mx-auto">

@@ -14,8 +14,9 @@ export type BookingDetail = {
   nights: number;
   guests: number;
   baseTotal: number;
-  cleaningFee: number;
-  serviceFee: number;
+  additionalCostsCents: number;
+  extrasCents: number;
+  cityTaxCents: number;
   totalPrice: number;
   currency: string;
   status: "pending" | "confirmed" | "cancelled" | "completed";
@@ -44,8 +45,9 @@ export async function fetchBookingById(
       nights: bookings.nights,
       guests: bookings.guests,
       baseTotal: bookings.baseTotal,
-      cleaningFee: bookings.cleaningFee,
-      serviceFee: bookings.serviceFee,
+      additionalCostsCents: bookings.additionalCostsCents,
+      extrasCents: bookings.extrasCents,
+      cityTaxCents: bookings.cityTaxCents,
       totalPrice: bookings.totalPrice,
       currency: bookings.currency,
       status: bookings.status,
@@ -77,8 +79,9 @@ export async function fetchBookingById(
     nights: row.nights,
     guests: row.guests,
     baseTotal: row.baseTotal,
-    cleaningFee: row.cleaningFee,
-    serviceFee: row.serviceFee,
+    additionalCostsCents: row.additionalCostsCents,
+    extrasCents: row.extrasCents,
+    cityTaxCents: row.cityTaxCents,
     totalPrice: row.totalPrice,
     currency: row.currency,
     status: row.status,

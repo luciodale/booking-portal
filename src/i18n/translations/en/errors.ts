@@ -19,6 +19,7 @@ export const errors = {
   "error.experienceNotFound": "Experience not found",
   "error.experienceNotBookable":
     "This experience does not support online booking",
+  "error.maxGuests": "Maximum {count} guests allowed for this property",
   "error.maxParticipants": "Maximum {count} participants allowed",
   "error.failedToFetchBookings": "Failed to fetch bookings",
   "error.recordAlreadyExists": "This record already exists",

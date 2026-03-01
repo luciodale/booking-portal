@@ -1,0 +1,108 @@
+-- Payment Splitting: Italian Tax Withholding & Fee Base
+-- Defines how guest payments are split between platform fee,
+-- tax withholding, and host payout.
+
+value PaymentSplitInput {
+    nightlyTotalCents: integer
+    additionalCostsCents: integer   -- cleaning, linen (part of rental service)
+    extrasCents: integer            -- taxi, tours (pass-through)
+    cityTaxCents: integer           -- tourist tax (pass-through)
+    feePercent: number              -- broker-specific, default 10
+    withholdingPercent: number      -- 21 for Italy (Cedolare Secca), 0 otherwise
+
+    requires: nightlyTotalCents >= 0
+    requires: additionalCostsCents >= 0
+    requires: extrasCents >= 0
+    requires: cityTaxCents >= 0
+    requires: feePercent >= 0 and feePercent <= 100
+    requires: withholdingPercent >= 0 and withholdingPercent <= 100
+}
+
+value PaymentSplit {
+    taxableBaseCents: integer       -- nightly + additional costs
+    platformFeeCents: integer       -- feePercent% of taxable base
+    withholdingTaxCents: integer    -- withholdingPercent% of taxable base
+    applicationFeeCents: integer    -- platformFee + withholding (Stripe keeps)
+    guestTotalCents: integer        -- what guest pays at checkout
+    hostPayoutCents: integer        -- what broker receives after deductions
+
+    requires: taxableBaseCents >= 0
+    requires: platformFeeCents >= 0
+    requires: withholdingTaxCents >= 0
+    requires: applicationFeeCents >= 0
+    requires: guestTotalCents >= 0
+    requires: hostPayoutCents >= 0
+}
+
+given {
+    input: PaymentSplitInput
+}
+
+-- === Classification ===
+-- Taxable: nightly rates + additional costs (inseparable from rental)
+-- Pass-through: extras + city tax (no fee, no withholding)
+
+rule ComputeTaxableBase {
+    ensures: split.taxableBaseCents =
+        input.nightlyTotalCents + input.additionalCostsCents
+}
+
+-- === Fee & Withholding ===
+
+rule ComputePlatformFee {
+    ensures: split.platformFeeCents =
+        round(split.taxableBaseCents * input.feePercent / 100)
+}
+
+rule ComputeWithholding {
+    -- 21% Cedolare Secca for Italian properties, 0% otherwise
+    ensures: split.withholdingTaxCents =
+        round(split.taxableBaseCents * input.withholdingPercent / 100)
+}
+
+rule ComputeApplicationFee {
+    -- Combined amount Stripe retains for platform
+    ensures: split.applicationFeeCents =
+        split.platformFeeCents + split.withholdingTaxCents
+}
+
+-- === Totals ===
+
+rule ComputeGuestTotal {
+    -- Guest pays everything: taxable base + pass-through amounts
+    ensures: split.guestTotalCents =
+        input.nightlyTotalCents
+        + input.additionalCostsCents
+        + input.extrasCents
+        + input.cityTaxCents
+}
+
+rule ComputeHostPayout {
+    -- Host receives guest total minus application fee
+    ensures: split.hostPayoutCents =
+        split.guestTotalCents - split.applicationFeeCents
+}
+
+-- === Invariants ===
+
+invariant GuestTotalBreakdown {
+    split.guestTotalCents =
+        split.taxableBaseCents + input.extrasCents + input.cityTaxCents
+}
+
+invariant ApplicationFeeBreakdown {
+    split.applicationFeeCents =
+        split.platformFeeCents + split.withholdingTaxCents
+}
+
+invariant PayoutBalance {
+    split.hostPayoutCents = split.guestTotalCents - split.applicationFeeCents
+}
+
+-- === Resolved Decisions ===
+-- 1. Extras (taxi, tours) are pass-through: no fee, no withholding.
+-- 2. City tax is pass-through: no fee, no withholding.
+-- 3. Additional costs (cleaning, linen) are taxable: fee + withholding apply.
+-- 4. Withholding is 21% Cedolare Secca for Italian properties only.
+-- 5. Smoobu price field unchanged: totalPriceCents / 100 (no breakdown support).
+-- 6. Experiences unchanged in this iteration.

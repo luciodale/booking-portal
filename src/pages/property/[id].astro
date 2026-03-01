@@ -5,7 +5,6 @@ import { kebabToDisplay } from "@/features/broker/property/domain/sync-features"
 import { BookingWidget } from "@/features/public/booking/ui/BookingWidget";
 import {
   fetchCityTax,
-  fetchLinkedExperiences,
   fetchOwnerWhatsapp,
 } from "@/features/public/browse/property-detail-queries";
 import { localePath } from "@/i18n/locale-path";
@@ -15,7 +14,6 @@ import { defaultLocale } from "@/i18n/types";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import Badge from "@/modules/ui/astro/Badge.astro";
-import ExperienceCard from "@/modules/ui/astro/ExperienceCard.astro";
 import ExtrasSection from "@/modules/ui/astro/ExtrasSection.astro";
 import ImageGallery from "@/modules/ui/astro/ImageGallery.astro";
 import PropertyMap from "@/modules/ui/astro/PropertyMap.astro";
@@ -72,8 +70,7 @@ const property = {
   views: asset.views ?? [],
 };
 
-const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
-  fetchLinkedExperiences(db, asset.id),
+const [ownerWhatsapp, cityTax] = await Promise.all([
   fetchOwnerWhatsapp(db, asset.userId),
   fetchCityTax(db, asset.userId, asset.city, asset.country),
 ]);
@@ -267,28 +264,6 @@ const [linkedExperiences, ownerWhatsapp, cityTax] = await Promise.all([
       </div>
     </div>
   </section>
-
-  {linkedExperiences.length > 0 && (
-    <section class="py-16 px-6 bg-card/50">
-      <div class="container mx-auto">
-        <div class="mb-8">
-          <h2 class="text-2xl font-bold text-foreground mb-2">{t(locale, "property.enhanceYourStay")}</h2>
-          <p class="text-muted-foreground">{t(locale, "property.enhanceDescription")}</p>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {linkedExperiences.map((exp) => (
-            <ExperienceCard
-              experience={exp}
-              propertyTitle={property.title}
-              ownerWhatsapp={ownerWhatsapp}
-              variant="standard"
-              locale={locale}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  )}
 
   <section class="py-16 px-6">
     <div class="container mx-auto">

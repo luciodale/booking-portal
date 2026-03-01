@@ -23,6 +23,7 @@ export const errors: Record<keyof typeof en, string> = {
   "error.experienceNotFound": "Esperienza non trovata",
   "error.experienceNotBookable":
     "Questa esperienza non supporta la prenotazione online",
+  "error.maxGuests": "Massimo {count} ospiti consentiti per questa proprietà",
   "error.maxParticipants": "Massimo {count} partecipanti consentiti",
   "error.failedToFetchBookings":
     "Impossibile caricare le prenotazioni",

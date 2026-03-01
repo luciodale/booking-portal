@@ -241,10 +241,13 @@ export const bookings = sqliteTable(
     guests: integer("guests").notNull().default(1),
 
     // Pricing breakdown
-    baseTotal: integer("base_total").notNull(),
-    cleaningFee: integer("cleaning_fee").notNull().default(0),
-    serviceFee: integer("service_fee").notNull().default(0),
-    totalPrice: integer("total_price").notNull(), // Final price in cents
+    baseTotal: integer("base_total").notNull(), // Nightly rates sum in cents
+    additionalCostsCents: integer("additional_costs_cents").notNull().default(0),
+    extrasCents: integer("extras_cents").notNull().default(0),
+    cityTaxCents: integer("city_tax_cents").notNull().default(0),
+    platformFeeCents: integer("platform_fee_cents").notNull().default(0),
+    withholdingTaxCents: integer("withholding_tax_cents").notNull().default(0),
+    totalPrice: integer("total_price").notNull(), // Guest total in cents
     currency: text("currency").notNull().default("eur"),
 
     // Status

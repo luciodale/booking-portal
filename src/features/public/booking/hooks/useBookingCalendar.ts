@@ -17,11 +17,12 @@ import type {
   SmoobuAvailabilityResponse,
   SmoobuRateDay,
 } from "@/schemas/smoobu";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export function useBookingCalendar(
   propertyId: string,
-  smoobuPropertyId: number | null
+  smoobuPropertyId: number | null,
+  guests: number | null
 ) {
   const {
     checkIn,
@@ -93,7 +94,7 @@ export function useBookingCalendar(
     setPendingUrlCheck(false);
     setAvailLoading(true);
     availabilityMutation.mutate(
-      { arrivalDate: checkIn, departureDate: checkOut },
+      { arrivalDate: checkIn, departureDate: checkOut, guests: guests ?? undefined },
       {
         onSuccess: (data) => {
           setAvailData(data);
@@ -105,7 +106,29 @@ export function useBookingCalendar(
         },
       }
     );
-  }, [pendingUrlCheck, checkIn, checkOut, availabilityMutation.mutate]);
+  }, [pendingUrlCheck, checkIn, checkOut, guests, availabilityMutation.mutate]);
+
+  // Re-check availability when guest count changes with dates already selected
+  const prevGuestsRef = useRef(guests);
+  useEffect(() => {
+    if (prevGuestsRef.current === guests) return;
+    prevGuestsRef.current = guests;
+    if (!checkIn || !checkOut) return;
+    setAvailLoading(true);
+    availabilityMutation.mutate(
+      { arrivalDate: checkIn, departureDate: checkOut, guests: guests ?? undefined },
+      {
+        onSuccess: (data) => {
+          setAvailData(data);
+          setAvailLoading(false);
+        },
+        onError: (error) => {
+          setAvailError(error);
+          setAvailLoading(false);
+        },
+      }
+    );
+  }, [guests, checkIn, checkOut, availabilityMutation.mutate]);
 
   const goNextMonth = useCallback(() => {
     setCurrentMonth((m) => addMonths(m, 1));
@@ -127,7 +150,7 @@ export function useBookingCalendar(
       }
       setAvailLoading(true);
       availabilityMutation.mutate(
-        { arrivalDate: checkIn, departureDate: dateStr },
+        { arrivalDate: checkIn, departureDate: dateStr, guests: guests ?? undefined },
         {
           onSuccess: (data) => {
             setAvailData(data);
