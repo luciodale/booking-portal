@@ -5,6 +5,7 @@
 
 import { cn } from "@/modules/utils/cn";
 import {
+  FloatingPortal,
   autoUpdate,
   flip,
   offset,
@@ -24,7 +25,9 @@ export interface SelectOption {
   label: string;
 }
 
-interface SelectProps {
+type SelectVariant = "default" | "inline";
+
+type SelectProps = {
   value: string;
   onChange: (value: string) => void;
   options: SelectOption[];
@@ -33,7 +36,8 @@ interface SelectProps {
   className?: string;
   error?: boolean;
   id?: string;
-}
+  variant?: SelectVariant;
+};
 
 export function Select({
   value,
@@ -44,6 +48,7 @@ export function Select({
   className,
   error = false,
   id,
+  variant = "default",
 }: SelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -54,6 +59,7 @@ export function Select({
     open: isOpen,
     onOpenChange: setIsOpen,
     whileElementsMounted: autoUpdate,
+    strategy: "fixed",
     middleware: [
       offset(8),
       flip(),
@@ -98,7 +104,9 @@ export function Select({
         ref={refs.setReference}
         disabled={disabled}
         className={cn(
-          "input w-full flex items-center justify-between",
+          "w-full flex items-center justify-between transition-all duration-200",
+          variant === "default" && "input",
+          variant === "inline" && "rounded-xl border-0 bg-secondary/50 shadow-none text-base px-4 py-3",
           error && "border-error",
           disabled && "opacity-50 cursor-not-allowed",
           !selectedOption && "text-muted-foreground",
@@ -116,43 +124,45 @@ export function Select({
       </button>
 
       {isOpen && (
-        <div
-          ref={refs.setFloating}
-          style={floatingStyles}
-          className="z-50 bg-card border border-border rounded-lg shadow-lg overflow-hidden"
-          {...getFloatingProps()}
-        >
-          <div className="max-h-60 overflow-y-auto py-2">
-            {options.map((option, index) => {
-              const isSelected = option.value === value;
-              const isActive = activeIndex === index;
+        <FloatingPortal>
+          <div
+            ref={refs.setFloating}
+            style={floatingStyles}
+            className="z-50 bg-card border border-border rounded-lg shadow-lg overflow-hidden"
+            {...getFloatingProps()}
+          >
+            <div className="max-h-60 overflow-y-auto py-2">
+              {options.map((option, index) => {
+                const isSelected = option.value === value;
+                const isActive = activeIndex === index;
 
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  ref={(node) => {
-                    listRef.current[index] = node;
-                  }}
-                  aria-selected={isSelected}
-                  tabIndex={isActive ? 0 : -1}
-                  className={cn(
-                    "w-full text-left px-4 py-3 transition-colors",
-                    isSelected && "bg-primary/10 text-primary font-medium",
-                    isActive && !isSelected && "bg-secondary",
-                    !isSelected && !isActive && "text-foreground",
-                    "hover:bg-secondary cursor-pointer"
-                  )}
-                  {...getItemProps({
-                    onClick: () => handleSelect(option.value),
-                  })}
-                >
-                  {option.label}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    ref={(node) => {
+                      listRef.current[index] = node;
+                    }}
+                    aria-selected={isSelected}
+                    tabIndex={isActive ? 0 : -1}
+                    className={cn(
+                      "w-full text-left px-4 py-3 transition-colors",
+                      isSelected && "bg-primary/10 text-primary font-medium",
+                      isActive && !isSelected && "bg-secondary",
+                      !isSelected && !isActive && "text-foreground",
+                      "hover:bg-secondary cursor-pointer"
+                    )}
+                    {...getItemProps({
+                      onClick: () => handleSelect(option.value),
+                    })}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        </FloatingPortal>
       )}
     </>
   );

@@ -146,10 +146,10 @@ function MonthGrid({
               disabled={ds.unavailable}
               onClick={() => onDateClick(dateStr)}
               className={cn(
-                "relative flex flex-col items-center justify-center py-1.5 rounded-lg text-xs transition-colors min-h-[44px]",
+                "relative flex flex-col items-center justify-center rounded-full text-xs size-[44px] mx-auto",
                 ds.unavailable ? "text-muted-foreground/40 cursor-not-allowed line-through" : "hover:bg-primary/20 cursor-pointer",
-                ds.isCheckIn && "bg-primary text-primary-foreground rounded-r-none",
-                ds.isCheckOut && "bg-primary text-primary-foreground rounded-l-none",
+                ds.isCheckIn && "bg-primary text-primary-foreground",
+                ds.isCheckOut && "bg-primary text-primary-foreground",
                 ds.inRange && "bg-primary/10"
               )}
             >

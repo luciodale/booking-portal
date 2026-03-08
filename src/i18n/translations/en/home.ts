@@ -1,9 +1,13 @@
 export const home = {
   "home.badge": "Premium Collection",
-  "home.title": "Discover Extraordinary Places to Stay",
-  "home.titleGradient": "Extraordinary",
+  "home.title": "Your Next Escape",
+  "home.titleLine2": "Starts Here",
+  "home.titleGradient": "Escape",
   "home.subtitle":
     "Direct access to the world's most exclusive properties. No intermediaries, just you and your perfect escape.",
+  "home.searchHeading": "Find Your Perfect Stay",
+  "home.searchSubtitle":
+    "Search hundreds of handpicked properties by destination, dates, and guests.",
   "home.eliteHeading": "{gradient} Collection",
   "home.eliteGradient": "Elite",
   "home.eliteDescription":

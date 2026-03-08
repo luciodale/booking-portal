@@ -2,10 +2,14 @@ import type { home as en } from "../en/home";
 
 export const home: Record<keyof typeof en, string> = {
   "home.badge": "Collezione Premium",
-  "home.title": "Scopri Luoghi Straordinari dove Soggiornare",
-  "home.titleGradient": "Straordinari",
+  "home.title": "La Tua Prossima Fuga",
+  "home.titleLine2": "Inizia Qui",
+  "home.titleGradient": "Fuga",
   "home.subtitle":
     "Accesso diretto alle proprietà più esclusive al mondo. Nessun intermediario, solo tu e la tua fuga perfetta.",
+  "home.searchHeading": "Trova il Tuo Soggiorno Ideale",
+  "home.searchSubtitle":
+    "Cerca tra centinaia di proprietà selezionate per destinazione, date e ospiti.",
   "home.eliteHeading": "Collezione {gradient}",
   "home.eliteGradient": "Elite",
   "home.eliteDescription":

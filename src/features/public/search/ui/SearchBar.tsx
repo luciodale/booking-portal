@@ -74,8 +74,8 @@ export function SearchBar({
     <form
       onSubmit={handleSubmit}
       className={cn(
-        "bg-card border border-border rounded-2xl shadow-lg",
-        isHero ? "p-3 max-w-2xl mx-auto" : "p-2"
+        "bg-card rounded-2xl ring-2 ring-amber-500/50",
+        isHero ? "p-3 max-w-3xl mx-auto" : "p-2"
       )}
     >
       <div
@@ -87,21 +87,19 @@ export function SearchBar({
         )}
       >
         {/* City select */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-[2] min-w-0">
           <Select
             value={city}
             onChange={setCity}
             options={cityOptions}
             placeholder={t("search.cityPlaceholder")}
-            className={cn(
-              "!rounded-xl !border-0 !bg-secondary/50 !shadow-none !text-sm",
-              isHero ? "!h-12" : "!h-10"
-            )}
+            variant="inline"
+            className={isHero ? "h-12" : "h-10"}
           />
         </div>
 
-        {/* Date picker trigger — 2x width of other dropdowns */}
-        <div className="flex-[2] min-w-0">
+        {/* Date picker */}
+        <div className="flex-[3] min-w-0">
           {isMobile ? (
             <MobileDatePicker calendar={calendar} isHero={isHero} />
           ) : (
@@ -110,16 +108,14 @@ export function SearchBar({
         </div>
 
         {/* Guests dropdown */}
-        <div className="flex-1 min-w-0">
+        <div className="flex-[1.5] min-w-0">
           <Select
             value={guests}
             onChange={setGuests}
             options={GUEST_OPTIONS}
             placeholder={t("search.guestsPlaceholder")}
-            className={cn(
-              "!rounded-xl !border-0 !bg-secondary/50 !shadow-none !text-sm",
-              isHero ? "!h-12" : "!h-10"
-            )}
+            variant="inline"
+            className={isHero ? "h-12" : "h-10"}
           />
         </div>
 
@@ -127,10 +123,16 @@ export function SearchBar({
         <button
           type="submit"
           className={cn(
-            "shrink-0 rounded-xl bg-primary text-primary-foreground font-semibold transition-colors hover:bg-primary-hover text-sm px-6",
-            isHero ? "h-12" : "h-10"
+            "shrink-0 rounded-xl font-semibold transition-all text-sm text-white",
+            "bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70",
+            "shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/30 hover:scale-[1.02]",
+            isHero ? "h-12 px-8 gap-2 inline-flex items-center" : "h-10 px-6"
           )}
         >
+          <svg aria-hidden="true" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" x2="16.65" y1="21" y2="16.65" />
+          </svg>
           {t("search.searchButton")}
         </button>
       </div>
@@ -281,7 +283,7 @@ function DateTriggerCompact({
   checkOut,
 }: { checkIn: string | null; checkOut: string | null }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 whitespace-nowrap">
       <svg
         aria-hidden="true"
         className="w-4 h-4 text-muted-foreground shrink-0"
@@ -299,16 +301,16 @@ function DateTriggerCompact({
       </svg>
       <span
         className={cn(
-          "text-sm",
+          "text-base",
           checkIn ? "text-foreground" : "text-muted-foreground"
         )}
       >
         {checkIn ?? "Check-in"}
       </span>
-      <span className="text-muted-foreground text-xs">→</span>
+      <span className="text-muted-foreground text-base">→</span>
       <span
         className={cn(
-          "text-sm",
+          "text-base",
           checkOut ? "text-foreground" : "text-muted-foreground"
         )}
       >
