@@ -1,23 +1,13 @@
 export const home = {
-  "home.badge": "Premium Collection",
   "home.title": "Your Next Escape",
   "home.titleLine2": "Starts Here",
-  "home.titleGradient": "Escape",
-  "home.subtitle":
-    "Direct access to the world's most exclusive properties. No intermediaries, just you and your perfect escape.",
   "home.searchHeading": "Find Your Perfect Stay",
   "home.searchSubtitle":
     "Search hundreds of handpicked properties by destination, dates, and guests.",
-  "home.eliteHeading": "{gradient} Collection",
-  "home.eliteGradient": "Elite",
   "home.eliteDescription":
     "Curated luxury properties for the discerning traveler",
   "home.eliteTagline": "Where luxury meets perfection",
-  "home.eliteFeature1": "Hand-selected properties",
-  "home.eliteFeature2": "Concierge service",
-  "home.eliteFeature3": "Premium amenities",
   "home.eliteCta": "Explore Elite",
-  "home.standardHeading": "Standard Collection",
   "home.standardDescription": "Quality stays at exceptional value",
   "home.standardTagline": "Comfort without compromise",
   "home.standardFeature1": "Verified quality",
