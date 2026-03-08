@@ -1,13 +1,13 @@
 ---
 import { getDb } from "@/db";
 import {
-  fetchCityCards,
+  fetchCitiesByTier,
   fetchPropertiesByCity,
 } from "@/features/public/browse/queries";
+import { localePath } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { t } from "@/i18n/t";
-import { localePath } from "@/i18n/locale-path";
 import PageLayout from "@/layouts/PageLayout.astro";
 import Hero from "@/modules/ui/astro/Hero.astro";
 import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
@@ -17,16 +17,21 @@ export const prerender = false;
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 const db = getDb(Astro.locals.runtime.env.DB);
 const cityParam = Astro.url.searchParams.get("city");
-const currentPage = Math.max(1, Number(Astro.url.searchParams.get("page") || "1"));
+const currentPage = Math.max(
+  1,
+  Number(Astro.url.searchParams.get("page") || "1"),
+);
 
-const cityCards = cityParam ? [] : await fetchCityCards(db, "elite");
+const cities = cityParam ? [] : await fetchCitiesByTier(db, "elite");
 const { properties, totalCount, totalPages } = cityParam
   ? await fetchPropertiesByCity(db, "elite", cityParam, currentPage)
   : { properties: [], totalCount: 0, totalPages: 0 };
 ---
 
 <PageLayout
-  title={cityParam ? t(locale, "elite.cityTitle", { city: cityParam }) : t(locale, "elite.pageTitle")}
+  title={cityParam
+    ? t(locale, "elite.cityTitle", { city: cityParam })
+    : t(locale, "elite.pageTitle")}
   description={t(locale, "elite.description")}
   showMarble
 >
@@ -41,27 +46,30 @@ const { properties, totalCount, totalPages } = cityParam
 
   {
     !cityParam ? (
-      <section class="py-16 px-6">
-        <div class="container mx-auto">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {cityCards.map((card, index) => (
+      <section class="py-20 px-6">
+        <div class="container mx-auto max-w-5xl">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+            {cities.map((city, index) => (
               <a
-                href={`${localePath(locale, "/elite")}?city=${encodeURIComponent(card.city)}`}
-                class="group relative block rounded-2xl overflow-hidden aspect-4/3 card-hover"
-                style={`animation-delay: ${0.1 + index * 0.1}s`}
+                href={`${localePath(locale, "/elite")}?city=${encodeURIComponent(city)}`}
+                class="group relative aspect-4/3 rounded-2xl overflow-hidden animate-slide-up opacity-0 cursor-pointer border border-primary/15 transition-[border-color] duration-500 hover:border-primary/40"
+                style={`animation-delay: ${0.1 + index * 0.06}s`}
               >
-                <img
-                  src={card.imageUrl}
-                  alt={card.city}
-                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  loading="lazy"
-                />
-                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/40 to-black/20" />
-                <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-                  <h3 class="text-3xl md:text-4xl font-bold text-white">{card.city}</h3>
-                  <p class="text-white/70 text-lg mt-1">
-                    {card.count} {card.count === 1 ? t(locale, "common.property") : t(locale, "common.properties")}
-                  </p>
+                <div class="absolute inset-0 bg-city-card" />
+
+                <div class="absolute top-4 right-4 w-10 h-10 rounded-full bg-primary transition-transform duration-700 ease-[cubic-bezier(0.4,0,0,1)] group-hover:scale-[18] z-10" />
+
+                <div class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center z-20">
+                  <i
+                    data-lucide="arrow-up-right"
+                    class="w-5 h-5 text-primary-foreground"
+                  />
+                </div>
+
+                <div class="absolute bottom-0 left-0 right-0 p-5 z-20">
+                  <h3 class="text-3xl md:text-4xl font-light tracking-tight leading-none text-city-card-foreground transition-colors duration-500 group-hover:text-primary-foreground">
+                    {city}
+                  </h3>
                 </div>
               </a>
             ))}
@@ -82,7 +90,10 @@ const { properties, totalCount, totalPages } = cityParam
             <span>/</span>
             <span class="text-foreground">{cityParam}</span>
             <span class="ml-auto">
-              {totalCount} {totalCount === 1 ? t(locale, "common.property") : t(locale, "common.properties")}
+              {totalCount}{" "}
+              {totalCount === 1
+                ? t(locale, "common.property")
+                : t(locale, "common.properties")}
             </span>
           </div>
 
@@ -120,7 +131,7 @@ const { properties, totalCount, totalPages } = cityParam
                   >
                     {page}
                   </a>
-                )
+                ),
               )}
               {currentPage < totalPages && (
                 <a

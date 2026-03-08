@@ -3,52 +3,15 @@ import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
 import { t } from "@/i18n/t";
 import { localePath } from "@/i18n/locale-path";
-import { getDb } from "@/db";
-import { assets, images } from "@/db/schema";
 import PageLayout from "@/layouts/PageLayout.astro";
-import { generateImageUrl } from "@/modules/r2/r2-helpers";
-import { fetchAllCities } from "@/features/public/browse/queries";
 import { SearchBarIsland } from "@/features/public/search/ui/SearchBarIsland";
 import Button from "@/modules/ui/astro/Button.astro";
 import Heading from "@/modules/ui/astro/Heading.astro";
 import Hero from "@/modules/ui/astro/Hero.astro";
-import PropertyCard from "@/modules/ui/astro/PropertyCard.astro";
-import { and, desc, eq } from "drizzle-orm";
 
-export const prerender = false;
+export const prerender = true;
 
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
-const db = getDb(Astro.locals.runtime.env.DB);
-
-async function fetchProperties(tier: "elite" | "standard", limit: number) {
-  const rows = await db
-    .select()
-    .from(assets)
-    .where(and(eq(assets.status, "published"), eq(assets.tier, tier)))
-    .orderBy(desc(assets.createdAt))
-    .limit(limit);
-
-  return Promise.all(
-    rows.map(async (asset) => {
-      const [primaryImage] = await db
-        .select()
-        .from(images)
-        .where(and(eq(images.assetId, asset.id), eq(images.isPrimary, true)))
-        .limit(1);
-
-      return {
-        asset,
-        imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
-      };
-    })
-  );
-}
-
-const [eliteProperties, standardProperties, cities] = await Promise.all([
-  fetchProperties("elite", 2),
-  fetchProperties("standard", 3),
-  fetchAllCities(db),
-]);
 ---
 
 <PageLayout title={t(locale, "home.pageTitle")}>
@@ -57,77 +20,120 @@ const [eliteProperties, standardProperties, cities] = await Promise.all([
     title={t(locale, "home.title")}
     titleGradient={t(locale, "home.titleGradient")}
     subtitle={t(locale, "home.subtitle")}
-    backgroundImage="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1920&q=80"
+    backgroundVideo="/hero-video.mp4"
+    backgroundImage="/images/home/hero-fallback.webp"
   >
     <div class="mt-8 w-full max-w-2xl mx-auto animate-slide-up opacity-0" style="animation-delay: 0.8s">
-      <SearchBarIsland client:only="react" locale={locale} cities={cities} />
+      <SearchBarIsland client:only="react" locale={locale} />
     </div>
   </Hero>
 
-  <section class="py-20 px-6">
-    <div class="container mx-auto">
-      <div class="flex items-center justify-between mb-12">
-        <div>
-          <Heading level={2}>
-            <span class="text-gradient">{t(locale, "home.eliteGradient")}</span> {t(locale, "home.eliteHeading", { gradient: "" }).trim()}
-          </Heading>
-          <p class="text-muted-foreground mt-2">
-            {t(locale, "home.eliteDescription")}
-          </p>
-        </div>
+  <!-- Elite Collection — Full-bleed cinematic section -->
+  <section class="relative h-screen flex items-center justify-center overflow-hidden">
+    <img
+      src="/images/home/elite-villa.webp"
+      alt=""
+      class="absolute inset-0 w-full h-full object-cover"
+      loading="lazy"
+    />
+    <div class="absolute inset-0 bg-black/50"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30"></div>
+
+    <div class="relative z-10 text-center px-6 max-w-3xl mx-auto">
+      <span class="badge-elite mb-8 inline-flex animate-fade-in opacity-0" style="animation-delay: 0.2s">
+        <i data-lucide="crown" class="w-3.5 h-3.5 fill-current"></i>
+        Elite
+      </span>
+      <h2 class="text-4xl sm:text-5xl md:text-7xl font-bold text-white tracking-tight leading-[1.1] animate-slide-up opacity-0" style="animation-delay: 0.4s">
+        {t(locale, "home.eliteTagline")}
+      </h2>
+      <p class="mt-6 text-lg md:text-xl text-white/70 max-w-xl mx-auto leading-relaxed animate-slide-up opacity-0" style="animation-delay: 0.6s">
+        {t(locale, "home.eliteDescription")}
+      </p>
+      <div class="mt-10 animate-slide-up opacity-0" style="animation-delay: 0.8s">
         <a
           href={localePath(locale, "/elite")}
-          class="hidden md:flex items-center gap-2 text-primary hover:text-primary-hover transition-colors group"
+          class="inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold rounded-full bg-white text-black hover:bg-white/90 transition-all duration-200 hover:scale-105"
         >
-          {t(locale, "common.viewAll")}
-          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+          {t(locale, "home.eliteCta")}
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
         </a>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {eliteProperties.map((property) => (
-          <PropertyCard {...property} locale={locale} />
-        ))}
       </div>
     </div>
   </section>
 
-  <section class="py-20 px-6 bg-card">
-    <div class="container mx-auto">
-      <div class="flex items-center justify-between mb-12">
-        <div>
-          <Heading level={2}>{t(locale, "home.standardHeading")}</Heading>
-          <p class="text-muted-foreground mt-2">
+  <!-- Standard Collection — Marketing -->
+  <section class="py-24 px-6 bg-card relative overflow-hidden">
+    <div class="container mx-auto relative z-10">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <!-- Copy side -->
+        <div class="flex flex-col lg:order-1 lg:pr-8">
+          <p class="text-sm font-semibold tracking-widest uppercase text-primary mb-4">Standard Collection</p>
+          <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.1] mb-6">
+            {t(locale, "home.standardTagline")}
+          </h2>
+          <p class="text-lg text-muted-foreground leading-relaxed mb-10 max-w-md">
             {t(locale, "home.standardDescription")}
           </p>
-        </div>
-        <a
-          href={localePath(locale, "/standard")}
-          class="hidden md:flex items-center gap-2 text-primary hover:text-primary-hover transition-colors group"
-        >
-          {t(locale, "common.viewAll")}
-          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
-        </a>
-      </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {standardProperties.map((property) => (
-          <PropertyCard {...property} locale={locale} />
-        ))}
+          <div class="flex flex-col gap-6 mb-12">
+            {[
+              { icon: "shield-check", text: t(locale, "home.standardFeature1") },
+              { icon: "badge-percent", text: t(locale, "home.standardFeature2") },
+              { icon: "calendar-check", text: t(locale, "home.standardFeature3") },
+            ].map((feature) => (
+              <div class="flex items-center gap-4">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <i data-lucide={feature.icon} class="w-5 h-5 text-primary"></i>
+                </div>
+                <span class="text-[15px] font-medium">{feature.text}</span>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <a
+              href={localePath(locale, "/standard")}
+              class="inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold rounded-full border border-border bg-background hover:border-primary hover:text-primary transition-all duration-200 group"
+            >
+              {t(locale, "home.standardCta")}
+              <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Visual side -->
+        <div class="relative lg:order-2">
+          <div class="grid grid-cols-2 gap-4">
+            <div class="aspect-[3/4] rounded-2xl overflow-hidden shadow-lg translate-y-8">
+              <img
+                src="/images/home/standard-interior.webp"
+                alt="Standard property interior"
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div class="aspect-[3/4] rounded-2xl overflow-hidden shadow-lg -translate-y-8">
+              <img
+                src="/images/home/standard-living.webp"
+                alt="Standard property living room"
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          </div>
+          <div class="absolute -bottom-6 -right-6 w-32 h-32 rounded-full bg-secondary blur-2xl opacity-50"></div>
+          <div class="absolute -top-6 -left-6 w-24 h-24 rounded-full bg-muted blur-2xl opacity-50"></div>
+        </div>
       </div>
     </div>
   </section>
 
+  <!-- CTA Section -->
   <section class="py-24 px-6 relative overflow-hidden">
     <div class="absolute inset-0">
-      <div
-        class="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-primary/10 blur-[100px]"
-      >
-      </div>
-      <div
-        class="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-accent/10 blur-[100px]"
-      >
-      </div>
+      <div class="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-primary/10 blur-[100px]"></div>
+      <div class="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-accent/10 blur-[100px]"></div>
     </div>
 
     <div class="container mx-auto relative z-10 text-center">

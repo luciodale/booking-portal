@@ -1,0 +1,90 @@
+-- Homepage
+-- Marketing-focused landing page. No property listings.
+-- Video hero with search bar, two marketing collection sections, host CTA.
+
+view HeroSection {
+    height: 85vh
+    background: video "/hero-video.mp4" loop autoplay muted
+               | fallback image (unsplash luxury-home)
+    overlay: gradient from-background via-background/95 to-background/80
+    orbs: 2x animated gradient blurs (primary/20, accent/20)
+
+    content (centered) {
+        badge: "Premium Collection" (badge-elite style, star icon)
+        h1: "Discover {Extraordinary} Places to Stay"
+             -- {Extraordinary} = text-gradient span
+        subtitle: muted-foreground, max-w-2xl
+        SearchBarIsland: mt-8, max-w-2xl, client:only="react"
+    }
+
+    scroll-indicator: bottom-8, bounce animation (full height only)
+}
+
+view EliteMarketingSection {
+    height: 100vh (full-bleed cinematic)
+    background: full-cover image (luxury villa exterior)
+    overlays: bg-black/50, gradient-to-t from-black/70 via-transparent to-black/30
+
+    content (centered, max-w-3xl) {
+        badge-elite: crown icon + "Elite", staggered fade-in
+        h2: "Where luxury meets perfection"
+            -- text-4xl sm:5xl md:7xl, font-bold, white, tight tracking
+            -- staggered slide-up animation
+        description: text-lg md:xl, white/70, max-w-xl
+        cta: rounded-full, bg-white text-black, hover:scale-105
+             -> /elite, "Explore Elite" + arrow-right
+    }
+
+    -- Apple-style: minimal text, massive imagery, breathing room
+}
+
+view StandardMarketingSection {
+    padding: py-24 px-6
+    background: bg-card
+
+    layout: grid 1col -> lg:2col, gap-16, items-center
+    -- Copy on left (lg:order-1), visual on right (lg:order-2)
+
+    left (lg:order-1): copy {
+        eyebrow: uppercase tracking-widest text-sm text-primary, "Standard Collection"
+        heading: text-3xl sm:4xl md:5xl, tight tracking, leading-[1.1]
+                 uses home.standardTagline ("Comfort without compromise")
+        description: text-lg, muted-foreground, max-w-md, mb-10
+        features: 3x minimal rows (no card borders) {
+            -- shield-check: "Verified quality"
+            -- badge-percent: "Best price guarantee"
+            -- calendar-check: "Flexible cancellation"
+            icon: w-10 h-10 rounded-full bg-primary/10 text-primary
+            text: text-[15px] font-medium
+        }
+        cta: rounded-full outlined pill, border-border hover:border-primary
+             -> /standard, "Explore Standard" + arrow-right (slides on hover)
+    }
+
+    right (lg:order-2): visual {
+        grid 2col, gap-4
+        left-image: aspect-3/4, translate-y-8 (stagger offset)
+        right-image: aspect-3/4, -translate-y-8 (stagger offset)
+        decorative: blurred circles at corners
+    }
+}
+
+view HostCtaSection {
+    padding: py-24 px-6
+    orbs: 2x blurred gradient circles (primary/10, accent/10)
+    content (centered) {
+        heading: h2 "Ready to list your {property?}" -- property? = text-gradient
+        description: text-lg, muted-foreground, max-w-xl
+        buttons: row {
+            btn-primary -> /backoffice: "Become a Host"
+            btn-secondary -> /about: "Learn More"
+        }
+    }
+}
+
+-- SSG: prerender = true. Page is fully static.
+-- Images: local webp files in public/images/home/.
+-- SearchBarIsland fetches cities client-side from GET /api/cities.
+-- API: /api/cities returns string[] with Cache-Control: public, max-age=300.
+-- No DB queries at build time.
+-- i18n: all copy via t(locale, "home.*") keys.

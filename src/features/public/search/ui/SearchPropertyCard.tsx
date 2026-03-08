@@ -45,7 +45,7 @@ export function SearchPropertyCard({
       <img
         src={imageUrl}
         alt={asset.title ?? ""}
-        className="w-44 h-32 sm:w-52 sm:h-36 object-cover rounded-lg shrink-0"
+        className="w-44 sm:w-52 object-cover rounded-lg shrink-0"
         loading="lazy"
       />
       <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">

@@ -7,12 +7,6 @@ import type * as schema from "@/db/schema";
 type Db = DrizzleD1Database<typeof schema>;
 type Tier = "elite" | "standard";
 
-export type CityCard = {
-  city: string;
-  count: number;
-  imageUrl: string;
-};
-
 export type PropertyItem = {
   asset: typeof assets.$inferSelect;
   imageUrl: string;
@@ -26,15 +20,12 @@ export type PaginatedProperties = {
 
 const PER_PAGE = 5;
 
-export async function fetchCityCards(
+export async function fetchCitiesByTier(
   db: Db,
   tier: Tier
-): Promise<CityCard[]> {
+): Promise<string[]> {
   const cityRows = await db
-    .select({
-      city: assets.city,
-      count: count(),
-    })
+    .select({ city: assets.city })
     .from(assets)
     .where(
       and(
@@ -44,41 +35,11 @@ export async function fetchCityCards(
       )
     )
     .groupBy(assets.city)
-    .orderBy(desc(count()));
+    .orderBy(assets.city);
 
-  const validRows = cityRows.filter(
-    (row): row is typeof row & { city: string } => row.city != null
-  );
-
-  return Promise.all(
-    validRows.map(async (row) => {
-      const [firstAsset] = await db
-        .select({ id: assets.id })
-        .from(assets)
-        .where(
-          and(
-            eq(assets.tier, tier),
-            eq(assets.status, "published"),
-            eq(assets.city, row.city)
-          )
-        )
-        .limit(1);
-
-      let imageUrl = "";
-      if (firstAsset) {
-        const [img] = await db
-          .select()
-          .from(images)
-          .where(
-            and(eq(images.assetId, firstAsset.id), eq(images.isPrimary, true))
-          )
-          .limit(1);
-        if (img) imageUrl = generateImageUrl(img.r2Key);
-      }
-
-      return { city: row.city, count: row.count, imageUrl };
-    })
-  );
+  return cityRows
+    .map((row) => row.city)
+    .filter((city): city is string => city != null);
 }
 
 export async function fetchPropertiesByCity(

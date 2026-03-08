@@ -8,8 +8,18 @@ export const home = {
   "home.eliteGradient": "Elite",
   "home.eliteDescription":
     "Curated luxury properties for the discerning traveler",
+  "home.eliteTagline": "Where luxury meets perfection",
+  "home.eliteFeature1": "Hand-selected properties",
+  "home.eliteFeature2": "Concierge service",
+  "home.eliteFeature3": "Premium amenities",
+  "home.eliteCta": "Explore Elite",
   "home.standardHeading": "Standard Collection",
   "home.standardDescription": "Quality stays at exceptional value",
+  "home.standardTagline": "Comfort without compromise",
+  "home.standardFeature1": "Verified quality",
+  "home.standardFeature2": "Best price guarantee",
+  "home.standardFeature3": "Flexible cancellation",
+  "home.standardCta": "Explore Standard",
   "home.ctaHeading": "Ready to list your {gradient}",
   "home.ctaGradient": "property?",
   "home.ctaDescription":

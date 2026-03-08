@@ -33,7 +33,7 @@ value PopupCard {
 
 value ListCard {
     -- Larger card with more info (shortDescription, sqMeters, instantBook badge)
-    image: url                  -- w-44 h-32 / sm:w-52 sm:h-36
+    image: url                  -- w-44  / sm:w-52
     badge: elite | standard
     instantBook: boolean        -- shows Zap icon when true
     title: string               -- text-base font-semibold

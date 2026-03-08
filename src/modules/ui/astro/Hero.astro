@@ -6,6 +6,7 @@ interface Props {
   subtitle?: string;
   cityName?: string | null;
   backgroundImage?: string;
+  backgroundVideo?: string;
   height?: "full" | "medium" | "small";
 }
 
@@ -16,6 +17,7 @@ const {
   subtitle,
   cityName,
   backgroundImage,
+  backgroundVideo,
   height = "full",
 } = Astro.props;
 
@@ -39,7 +41,21 @@ const heightClasses = {
     >
     </div>
     {
-      backgroundImage && (
+      backgroundVideo && (
+        <video
+          class="absolute inset-0 w-full h-full object-cover"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="auto"
+        >
+          <source src={backgroundVideo} type="video/mp4" />
+        </video>
+      )
+    }
+    {
+      !backgroundVideo && backgroundImage && (
         <div
           class="absolute inset-0 bg-cover bg-center opacity-30"
           style={`background-image: url('${backgroundImage}')`}
