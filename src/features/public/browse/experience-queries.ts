@@ -5,6 +5,7 @@ import {
   experienceImages,
   experiences,
   images,
+  users,
 } from "@/db/schema";
 import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
@@ -54,9 +55,11 @@ export async function fetchExperienceCityCards(
       count: count(),
     })
     .from(experiences)
+    .innerJoin(users, eq(experiences.userId, users.id))
     .where(
       and(
         eq(experiences.status, "published"),
+        eq(users.stripeSetupComplete, true),
         sql`${experiences.city} IS NOT NULL AND ${experiences.city} != ''`
       )
     )
@@ -72,9 +75,11 @@ export async function fetchExperienceCityCards(
       const [firstExp] = await db
         .select({ id: experiences.id, imageUrl: experiences.imageUrl })
         .from(experiences)
+        .innerJoin(users, eq(experiences.userId, users.id))
         .where(
           and(
             eq(experiences.status, "published"),
+            eq(users.stripeSetupComplete, true),
             eq(experiences.city, row.city)
           )
         )
@@ -118,9 +123,11 @@ export async function fetchExperiencesByCity(
   const [countRow] = await db
     .select({ count: count() })
     .from(experiences)
+    .innerJoin(users, eq(experiences.userId, users.id))
     .where(
       and(
         eq(experiences.status, "published"),
+        eq(users.stripeSetupComplete, true),
         sql`lower(${experiences.city}) = ${cityLower}`
       )
     );
@@ -130,11 +137,13 @@ export async function fetchExperiencesByCity(
   const offset = (page - 1) * PER_PAGE;
 
   const rows = await db
-    .select()
+    .select({ experiences })
     .from(experiences)
+    .innerJoin(users, eq(experiences.userId, users.id))
     .where(
       and(
         eq(experiences.status, "published"),
+        eq(users.stripeSetupComplete, true),
         sql`lower(${experiences.city}) = ${cityLower}`
       )
     )
@@ -143,7 +152,8 @@ export async function fetchExperiencesByCity(
     .offset(offset);
 
   const items = await Promise.all(
-    rows.map(async (exp) => {
+    rows.map(async (row) => {
+      const exp = row.experiences;
       const [primaryImg] = await db
         .select()
         .from(experienceImages)
@@ -185,13 +195,21 @@ export async function fetchExperienceById(
   db: Db,
   id: string
 ): Promise<ExperienceDetail | null> {
-  const [exp] = await db
-    .select()
+  const [expRow] = await db
+    .select({ experiences })
     .from(experiences)
-    .where(and(eq(experiences.id, id), eq(experiences.status, "published")))
+    .innerJoin(users, eq(experiences.userId, users.id))
+    .where(
+      and(
+        eq(experiences.id, id),
+        eq(experiences.status, "published"),
+        eq(users.stripeSetupComplete, true)
+      )
+    )
     .limit(1);
 
-  if (!exp) return null;
+  if (!expRow) return null;
+  const exp = expRow.experiences;
 
   const expImages = await db
     .select()

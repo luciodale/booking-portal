@@ -1,4 +1,4 @@
-import { assets, images } from "@/db/schema";
+import { assets, images, users } from "@/db/schema";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import { and, count, desc, eq, isNotNull, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
@@ -20,17 +20,16 @@ export type PaginatedProperties = {
 
 const PER_PAGE = 5;
 
-export async function fetchCitiesByTier(
-  db: Db,
-  tier: Tier
-): Promise<string[]> {
+export async function fetchCitiesByTier(db: Db, tier: Tier): Promise<string[]> {
   const cityRows = await db
     .select({ city: assets.city })
     .from(assets)
+    .innerJoin(users, eq(assets.userId, users.id))
     .where(
       and(
         eq(assets.tier, tier),
         eq(assets.status, "published"),
+        eq(users.stripeSetupComplete, true),
         sql`${assets.city} IS NOT NULL AND ${assets.city} != ''`
       )
     )
@@ -53,10 +52,12 @@ export async function fetchPropertiesByCity(
   const [countRow] = await db
     .select({ count: count() })
     .from(assets)
+    .innerJoin(users, eq(assets.userId, users.id))
     .where(
       and(
         eq(assets.tier, tier),
         eq(assets.status, "published"),
+        eq(users.stripeSetupComplete, true),
         sql`lower(${assets.city}) = ${cityLower}`
       )
     );
@@ -66,12 +67,14 @@ export async function fetchPropertiesByCity(
   const offset = (page - 1) * PER_PAGE;
 
   const propertiesRaw = await db
-    .select()
+    .select({ assets })
     .from(assets)
+    .innerJoin(users, eq(assets.userId, users.id))
     .where(
       and(
         eq(assets.tier, tier),
         eq(assets.status, "published"),
+        eq(users.stripeSetupComplete, true),
         sql`lower(${assets.city}) = ${cityLower}`
       )
     )
@@ -80,15 +83,17 @@ export async function fetchPropertiesByCity(
     .offset(offset);
 
   const properties = await Promise.all(
-    propertiesRaw.map(async (asset) => {
+    propertiesRaw.map(async (row) => {
       const [primaryImage] = await db
         .select()
         .from(images)
-        .where(and(eq(images.assetId, asset.id), eq(images.isPrimary, true)))
+        .where(
+          and(eq(images.assetId, row.assets.id), eq(images.isPrimary, true))
+        )
         .limit(1);
 
       return {
-        asset,
+        asset: row.assets,
         imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
       };
     })

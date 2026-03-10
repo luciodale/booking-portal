@@ -1,6 +1,6 @@
 ---
 import { getDb } from "@/db";
-import { assets, images } from "@/db/schema";
+import { assets, images, users } from "@/db/schema";
 import { kebabToDisplay } from "@/features/broker/property/domain/sync-features";
 import { BookingWidget } from "@/features/public/booking/ui/BookingWidget";
 import {
@@ -41,6 +41,20 @@ if (!asset) return Astro.redirect("/");
 if (asset.tier === "elite") return Astro.redirect(`/elite/${asset.id}`);
 
 if (asset.status !== "published") {
+  const auth = Astro.locals.auth();
+  if (!auth.userId || auth.userId !== asset.userId) {
+    return Astro.redirect("/");
+  }
+}
+
+// Hide property if owner hasn't completed Stripe setup
+const [owner] = await db
+  .select({ stripeSetupComplete: users.stripeSetupComplete })
+  .from(users)
+  .where(eq(users.id, asset.userId))
+  .limit(1);
+
+if (!owner?.stripeSetupComplete) {
   const auth = Astro.locals.auth();
   if (!auth.userId || auth.userId !== asset.userId) {
     return Astro.redirect("/");

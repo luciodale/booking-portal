@@ -102,6 +102,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
       .limit(1);
 
     if (user) {
+      const stripeSetupComplete =
+        (account.charges_enabled ?? false) &&
+        (account.payouts_enabled ?? false);
+
+      await db
+        .update(users)
+        .set({
+          stripeSetupComplete,
+          updatedAt: new Date().toISOString(),
+        })
+        .where(eq(users.id, user.id));
+
       log.info({
         source: "stripe-webhook",
         message: `Connected account ${account.id} updated: charges_enabled=${account.charges_enabled}, payouts_enabled=${account.payouts_enabled}`,
@@ -111,6 +123,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
           chargesEnabled: account.charges_enabled,
           payoutsEnabled: account.payouts_enabled,
           detailsSubmitted: account.details_submitted,
+          stripeSetupComplete,
         },
       });
     }

@@ -268,5 +268,6 @@ CREATE TABLE `users` (
 	`verified` integer DEFAULT false NOT NULL,
 	`created_at` text DEFAULT CURRENT_TIMESTAMP,
 	`stripe_connected_account_id` text,
+	`stripe_setup_complete` integer DEFAULT false NOT NULL,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP
 );

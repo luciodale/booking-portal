@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "5a81efb8-d471-413a-aea3-4014ebf8dfd0",
+  "id": "792db703-0842-45ea-b640-e0d9684875e0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "asset_experiences": {
@@ -1916,6 +1916,14 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
+        },
+        "stripe_setup_complete": {
+          "name": "stripe_setup_complete",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
         },
         "updated_at": {
           "name": "updated_at",

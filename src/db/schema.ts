@@ -17,6 +17,9 @@ export const users = sqliteTable("users", {
   verified: integer("verified", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
   stripeConnectedAccountId: text("stripe_connected_account_id"),
+  stripeSetupComplete: integer("stripe_setup_complete", { mode: "boolean" })
+    .notNull()
+    .default(false),
   updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
 });
 
