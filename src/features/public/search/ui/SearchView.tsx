@@ -58,7 +58,7 @@ function SearchViewInner({
   } = useSearchFilters({ properties, prices, checkIn, checkOut, guests });
 
   return (
-    <div className="flex flex-col h-content-fit">
+    <div data-search-view className="flex flex-col h-content-fit">
       {/* Search bar — above the split, centered, z-20 so dropdown floats above split */}
       <div className="bg-background z-20 relative px-4 py-4 border-b border-border flex justify-center">
         <div className="w-full max-w-3xl">

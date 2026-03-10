@@ -5,12 +5,14 @@ import { useMemo } from "react";
 
 function computeRatesSummary(
   ratesData: Record<string, Record<string, { price: number | null; available: number }>>,
+  checkOut: string,
 ): { avg: number; count: number; available: boolean } {
   let total = 0;
   let count = 0;
   let available = true;
   for (const dates of Object.values(ratesData)) {
-    for (const day of Object.values(dates)) {
+    for (const [date, day] of Object.entries(dates)) {
+      if (date === checkOut) continue;
       if (day.available === 0) {
         available = false;
       }
@@ -51,7 +53,7 @@ export function useSearchPrices(
       } else if (query.isError) {
         map.set(propertyId, { avgNightlyRate: 0, currency: "EUR", loading: false, error: true, available: true });
       } else if (query.data) {
-        const { avg, available } = computeRatesSummary(query.data.rates.data);
+        const { avg, available } = computeRatesSummary(query.data.rates.data, checkOut ?? "");
         map.set(propertyId, {
           avgNightlyRate: Math.round(avg),
           currency: query.data.currency,
