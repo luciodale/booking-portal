@@ -169,6 +169,7 @@ export function LocationSection({
           name="zip"
           control={control}
           label="ZIP Code"
+          required
           placeholder="84011"
           labelSuffix={renderLink("zip")}
         />
@@ -176,6 +177,7 @@ export function LocationSection({
           name="city"
           control={control}
           label="City"
+          required
           placeholder="Amalfi"
           labelSuffix={renderLink("city")}
         />
@@ -188,7 +190,7 @@ export function LocationSection({
           render={({ field }) => (
             <div>
               <span className="block text-sm font-medium text-foreground mb-1">
-                Country
+                Country<span className="text-error ml-1">*</span>
                 {renderLink("country")}
               </span>
               <SearchableDropdown
@@ -220,6 +222,7 @@ export function LocationSection({
           name="latitude"
           control={control}
           label="Latitude"
+          required
           placeholder="40.6331"
           labelSuffix={renderLink("latitude")}
         />
@@ -229,6 +232,7 @@ export function LocationSection({
         name="longitude"
         control={control}
         label="Longitude"
+        required
         placeholder="14.6028"
         labelSuffix={renderLink("longitude")}
       />

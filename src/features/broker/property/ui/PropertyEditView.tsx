@@ -16,10 +16,6 @@ import {
   validateAdditionalCosts,
 } from "@/modules/ui/react/AdditionalCostsEditor";
 import { ExtrasEditor, validateExtras } from "@/modules/ui/react/ExtrasEditor";
-import type {
-  PropertyAdditionalCost,
-  PropertyExtra,
-} from "@/features/public/booking/domain/pricingTypes";
 import type { UpdatePropertyInput } from "@/schemas/property";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -328,8 +324,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
           title="Additional Costs"
           description="Optional fees charged on top of the nightly rate (amounts in cents)."
           values={{
-            additionalCosts: (property.additionalCosts ??
-              []) as PropertyAdditionalCost[],
+            additionalCosts: property.additionalCosts ?? [],
           }}
           onSave={(data) => saveField("additionalCosts", data.additionalCosts)}
           validate={(data) => validateAdditionalCosts(data.additionalCosts)}
@@ -344,7 +339,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
               ]}
               showMaxNights
               onChange={(costs) =>
-                onChange({ additionalCosts: costs as PropertyAdditionalCost[] })
+                onChange({ additionalCosts: costs })
               }
               disabled={disabled}
               showErrors={showErrors}
@@ -358,7 +353,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
         <EditableSectionField
           title="Extras"
           description="Optional add-ons guests can select during booking (amounts in cents)."
-          values={{ extras: (property.extras ?? []) as PropertyExtra[] }}
+          values={{ extras: property.extras ?? [] }}
           onSave={(data) => saveField("extras", data.extras)}
           validate={(data) => validateExtras(data.extras)}
           renderFields={({ values, onChange, disabled, showErrors }) => (

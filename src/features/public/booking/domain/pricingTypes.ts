@@ -1,28 +1,19 @@
-export type PropertyAdditionalCost = {
-  label: string;
-  amount: number;
-  per: "stay" | "night" | "guest" | "night_per_guest";
-  maxNights?: number;
-};
+import type { Asset, Experience } from "@/db/schema";
 
-export type ExperienceAdditionalCost = {
-  label: string;
-  amount: number;
-  per: "booking" | "participant";
-};
+export type PropertyAdditionalCost = NonNullable<
+  Asset["additionalCosts"]
+>[number];
+
+export type PropertyExtra = NonNullable<Asset["extras"]>[number];
+
+export type ExperienceAdditionalCost = NonNullable<
+  Experience["additionalCosts"]
+>[number];
 
 export type PriceLineItem = {
   label: string;
   amountCents: number;
   detail?: string;
-};
-
-export type PropertyExtra = {
-  name: string;
-  icon: string;
-  amount: number;
-  per: "stay" | "night" | "guest" | "night_per_guest";
-  maxNights?: number;
 };
 
 export type CityTax = {

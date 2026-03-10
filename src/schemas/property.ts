@@ -9,6 +9,12 @@ import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // ============================================================================
+// Shared Zod schemas (mirrors DB $type shapes)
+// ============================================================================
+
+const featureSchema = z.object({ name: z.string(), icon: z.string() });
+
+// ============================================================================
 // Auto-generated Base Schemas from Drizzle
 // ============================================================================
 
@@ -50,8 +56,9 @@ const propertyFieldsSchema = baseAssetInsertSchema
       .max(500),
 
     street: z.string().min(1, "Street address is required"),
-    city: z.string().min(2).optional(),
-    country: z.string().min(2).optional(),
+    zip: z.string().min(1, "Postal code is required"),
+    city: z.string().min(2, "City is required"),
+    country: z.string().min(2, "Country is required"),
 
     // Room details - can be pre-filled from Smoobu
     maxOccupancy: z.number().int().min(1).max(50).optional(),
@@ -68,9 +75,9 @@ const propertyFieldsSchema = baseAssetInsertSchema
     queenSizeBeds: z.number().int().min(0).optional().nullable(),
     kingSizeBeds: z.number().int().min(0).optional().nullable(),
 
-    amenities: z.array(z.object({ name: z.string(), icon: z.string() })).optional(),
-    views: z.array(z.object({ name: z.string(), icon: z.string() })).optional(),
-    highlights: z.array(z.object({ name: z.string(), icon: z.string() })).optional(),
+    amenities: z.array(featureSchema).optional(),
+    views: z.array(featureSchema).optional(),
+    highlights: z.array(featureSchema).optional(),
 
     checkIn: z
       .string()
