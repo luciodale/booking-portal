@@ -52,7 +52,7 @@ function SearchViewInner({
 
   const guestsNum = guests ? Number(guests) : null;
 
-  const filteredProperties = useMemo(() => {
+  const guestFiltered = useMemo(() => {
     let result = [...properties];
     if (tierFilter !== "all") {
       result = result.filter((p) => p.asset.tier === tierFilter);
@@ -65,7 +65,16 @@ function SearchViewInner({
     return result;
   }, [properties, tierFilter, guestsNum]);
 
-  const prices = useSearchPrices(filteredProperties, checkIn, checkOut);
+  const prices = useSearchPrices(guestFiltered, checkIn, checkOut);
+
+  const filteredProperties = useMemo(() => {
+    if (!checkIn || !checkOut) return guestFiltered;
+    return guestFiltered.filter((p) => {
+      const price = prices.get(p.asset.id);
+      if (!price || price.loading) return true;
+      return price.available;
+    });
+  }, [guestFiltered, prices, checkIn, checkOut]);
 
   return (
     <div className="flex flex-col h-content-fit">

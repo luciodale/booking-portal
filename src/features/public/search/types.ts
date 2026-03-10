@@ -14,4 +14,5 @@ export type PropertyPrice = {
   currency: string;
   loading: boolean;
   error: boolean;
+  available: boolean;
 };

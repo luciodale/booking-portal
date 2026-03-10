@@ -3,20 +3,24 @@ import type { PropertyPrice, SearchProperty } from "@/features/public/search/typ
 import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 
-function computeAvgNightlyRate(
+function computeRatesSummary(
   ratesData: Record<string, Record<string, { price: number | null; available: number }>>,
-): { avg: number; count: number } {
+): { avg: number; count: number; available: boolean } {
   let total = 0;
   let count = 0;
+  let available = true;
   for (const dates of Object.values(ratesData)) {
     for (const day of Object.values(dates)) {
+      if (day.available === 0) {
+        available = false;
+      }
       if (day.price != null) {
         total += day.price;
         count++;
       }
     }
   }
-  return { avg: count > 0 ? total / count : 0, count };
+  return { avg: count > 0 ? total / count : 0, count, available };
 }
 
 export function useSearchPrices(
@@ -43,16 +47,17 @@ export function useSearchPrices(
 
       const propertyId = properties[i].asset.id;
       if (query.isLoading) {
-        map.set(propertyId, { avgNightlyRate: 0, currency: "EUR", loading: true, error: false });
+        map.set(propertyId, { avgNightlyRate: 0, currency: "EUR", loading: true, error: false, available: true });
       } else if (query.isError) {
-        map.set(propertyId, { avgNightlyRate: 0, currency: "EUR", loading: false, error: true });
+        map.set(propertyId, { avgNightlyRate: 0, currency: "EUR", loading: false, error: true, available: true });
       } else if (query.data) {
-        const { avg } = computeAvgNightlyRate(query.data.rates.data);
+        const { avg, available } = computeRatesSummary(query.data.rates.data);
         map.set(propertyId, {
           avgNightlyRate: Math.round(avg),
           currency: query.data.currency,
           loading: false,
           error: false,
+          available,
         });
       }
     }
