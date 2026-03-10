@@ -19,19 +19,29 @@ function tileUrl(dark: boolean) {
   return `https://{s}.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}{r}.png`;
 }
 
-function createPriceIcon(price: string, selected: boolean) {
+function createPriceIcon(price: string, selected: boolean, unavailable: boolean) {
+  const cls = [
+    "search-pin search-pin--price",
+    selected ? "search-pin--selected" : "",
+    unavailable ? "search-pin--unavailable" : "",
+  ].filter(Boolean).join(" ");
   return L.divIcon({
     className: "search-pin-wrapper",
-    html: `<div class="search-pin search-pin--price${selected ? " search-pin--selected" : ""}">${price}</div>`,
+    html: `<div class="${cls}">${price}</div>`,
     iconSize: [80, 32],
     iconAnchor: [40, 32],
   });
 }
 
-function createHomeIcon(selected: boolean) {
+function createHomeIcon(selected: boolean, unavailable: boolean) {
+  const cls = [
+    "search-pin search-pin--home",
+    selected ? "search-pin--selected" : "",
+    unavailable ? "search-pin--unavailable" : "",
+  ].filter(Boolean).join(" ");
   return L.divIcon({
     className: "search-pin-wrapper",
-    html: `<div class="search-pin search-pin--home${selected ? " search-pin--selected" : ""}">
+    html: `<div class="${cls}">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
       </svg>
@@ -80,19 +90,29 @@ function createPopupContent(
       `<span class="search-popup-feature">${guestIcon} ${asset.maxOccupancy}</span>`
     );
 
+  const unavailable = price != null && !price.loading && !price.available;
+
   const priceHtml =
     price && !price.loading && !price.error && price.avgNightlyRate > 0
       ? `<div class="search-popup-price"><span class="search-popup-price-value">${formatPrice(price.avgNightlyRate, price.currency)}</span><span class="search-popup-price-unit">/night</span></div>`
       : "";
 
+  const unavailableHtml = unavailable
+    ? `<div class="search-popup-unavailable">Unavailable for selected dates</div>`
+    : "";
+
   return `
     <a href="${detailPath}" class="search-popup-card" target="_blank" rel="noopener">
-      <img src="${imageUrl}" alt="${asset.title ?? ""}" class="search-popup-img" />
+      <div class="search-popup-img-wrap">
+        <img src="${imageUrl}" alt="${asset.title ?? ""}" class="search-popup-img" />
+        ${unavailable ? `<span class="search-popup-unavailable-badge">Unavailable</span>` : ""}
+      </div>
       <div class="search-popup-info">
         <span class="search-popup-badge ${badgeClass}">${badgeLabel}</span>
         <div class="search-popup-title">${asset.title ?? ""}</div>
         ${features.length > 0 ? `<div class="search-popup-features">${features.join("")}</div>` : ""}
         ${priceHtml}
+        ${unavailableHtml}
       </div>
     </a>
   `;
@@ -179,13 +199,15 @@ export function SearchMap({
       const price = prices.get(asset.id);
       const hasPrices =
         price && !price.loading && !price.error && price.avgNightlyRate > 0;
+      const unavailable = price != null && !price.loading && !price.available;
 
       const icon = hasPrices
         ? createPriceIcon(
             formatPrice(price.avgNightlyRate, price.currency),
-            isSelected
+            isSelected,
+            unavailable
           )
-        : createHomeIcon(isSelected);
+        : createHomeIcon(isSelected, unavailable);
 
       const marker = L.marker([latitude, longitude], {
         icon,

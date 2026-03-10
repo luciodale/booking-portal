@@ -1,13 +1,10 @@
 import { useMapInteraction } from "@/features/public/search/hooks/useMapInteraction";
+import { useSearchFilters } from "@/features/public/search/hooks/useSearchFilters";
 import { useSearchPrices } from "@/features/public/search/hooks/useSearchPrices";
-import type {
-  SearchProperty,
-  TierFilter,
-} from "@/features/public/search/types";
+import type { SearchProperty } from "@/features/public/search/types";
 import { LocaleProvider, useLocale } from "@/i18n/react/LocaleProvider";
 import type { Locale } from "@/i18n/types";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
 import { SearchBar } from "./SearchBar";
 import { SearchFilters } from "./SearchFilters";
 import { SearchMap } from "./SearchMap";
@@ -46,35 +43,19 @@ function SearchViewInner({
   guests,
 }: SearchViewProps) {
   const { t } = useLocale();
-  const [tierFilter, setTierFilter] = useState<TierFilter>("all");
   const { selectedId, focusId, selectProperty, focusProperty, setPropertyRef } =
     useMapInteraction();
 
-  const guestsNum = guests ? Number(guests) : null;
+  const prices = useSearchPrices(properties, checkIn, checkOut);
 
-  const guestFiltered = useMemo(() => {
-    let result = [...properties];
-    if (tierFilter !== "all") {
-      result = result.filter((p) => p.asset.tier === tierFilter);
-    }
-    if (guestsNum != null && guestsNum > 0) {
-      result = result.filter(
-        (p) => p.asset.maxOccupancy == null || p.asset.maxOccupancy >= guestsNum
-      );
-    }
-    return result;
-  }, [properties, tierFilter, guestsNum]);
-
-  const prices = useSearchPrices(guestFiltered, checkIn, checkOut);
-
-  const filteredProperties = useMemo(() => {
-    if (!checkIn || !checkOut) return guestFiltered;
-    return guestFiltered.filter((p) => {
-      const price = prices.get(p.asset.id);
-      if (!price || price.loading) return true;
-      return price.available;
-    });
-  }, [guestFiltered, prices, checkIn, checkOut]);
+  const {
+    filtered: filteredProperties,
+    tierFilter,
+    setTierFilter,
+    onlyAvailable,
+    setOnlyAvailable,
+    hasDates,
+  } = useSearchFilters({ properties, prices, checkIn, checkOut, guests });
 
   return (
     <div className="flex flex-col h-content-fit">
@@ -116,6 +97,9 @@ function SearchViewInner({
               resultCount={filteredProperties.length}
               tierFilter={tierFilter}
               onTierChange={setTierFilter}
+              onlyAvailable={onlyAvailable}
+              onOnlyAvailableChange={setOnlyAvailable}
+              showAvailabilityToggle={hasDates}
             />
           </div>
 

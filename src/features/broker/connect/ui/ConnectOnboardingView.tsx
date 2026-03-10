@@ -41,7 +41,10 @@ export function ConnectOnboardingView() {
       <div className="max-w-lg mx-auto py-8 px-6">
         <div className="rounded-lg border border-green-600/40 bg-green-100 dark:border-green-500/30 dark:bg-green-950/20 p-6">
           <div className="flex items-center gap-3 mb-2">
-            <CheckCircle className="text-green-700 dark:text-green-400" size={24} />
+            <CheckCircle
+              className="text-green-700 dark:text-green-400"
+              size={24}
+            />
             <h2 className="text-lg font-semibold text-green-800 dark:text-green-400">
               Payouts Enabled
             </h2>

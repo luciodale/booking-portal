@@ -17,5 +17,5 @@ export function formatAddress(data: {
   if (data.showFullAddress && data.street) {
     return [data.street, data.zip, data.city].filter(Boolean).join(", ");
   }
-  return data.city ?? "Location TBD";
+  return [data.city, data.country].filter(Boolean).join(", ") || "Location TBD";
 }

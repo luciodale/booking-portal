@@ -18,4 +18,6 @@ export const search = {
   "search.searchButton": "Cerca",
   "search.viewOnMap": "Vedi su mappa",
   "search.viewProperty": "Vedi proprietà",
+  "search.unavailable": "Non disponibile",
+  "search.onlyAvailable": "Solo disponibili",
 } as const;

@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "leaflet/dist/leaflet.css";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ===== Light / Dark Color Tokens ===== */
 
 :root {
@@ -530,6 +532,23 @@
     @apply text-[11px] font-normal ml-0.5;
     color: var(--muted-foreground);
   }
+
+  .search-popup-img-wrap {
+    @apply relative shrink-0;
+  }
+
+  .search-popup-img-wrap .search-popup-img {
+    @apply w-28 object-cover aspect-square;
+  }
+
+  .search-popup-unavailable-badge {
+    @apply absolute top-1.5 left-1.5 px-1.5 py-0.5 text-[9px] font-semibold rounded bg-red-600 text-white;
+  }
+
+  .search-popup-unavailable {
+    @apply text-[11px] font-medium mt-0.5;
+    color: var(--destructive, #dc2626);
+  }
 }
 
 /* === Leaflet overrides — must be unlayered to beat Leaflet's own CSS === */
@@ -590,6 +609,10 @@
 
 .search-pin--selected.search-pin--price::after {
   border-top-color: var(--primary);
+}
+
+.search-pin--unavailable {
+  opacity: 0.45;
 }
 
 .search-pin--home {

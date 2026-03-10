@@ -127,6 +127,27 @@ export type SearchPropertyItem = {
   longitude: number;
 };
 
+/**
+ * Deterministic offset (~300-500m) derived from the property ID
+ * so the approximate pin is stable across page loads.
+ */
+function obfuscateCoordinates(
+  id: string,
+  lat: number,
+  lng: number
+): { latitude: number; longitude: number } {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  }
+  const angle = ((hash & 0xffff) / 0xffff) * Math.PI * 2;
+  const radius = 0.003 + ((hash >>> 16) & 0xfff) / 0xfff * 0.002;
+  return {
+    latitude: lat + Math.sin(angle) * radius,
+    longitude: lng + Math.cos(angle) * radius,
+  };
+}
+
 export async function fetchSearchProperties(
   db: Db,
   city: string
@@ -136,9 +157,11 @@ export async function fetchSearchProperties(
   const propertiesRaw = await db
     .select()
     .from(assets)
+    .innerJoin(users, eq(assets.userId, users.id))
     .where(
       and(
         eq(assets.status, "published"),
+        eq(users.stripeSetupComplete, true),
         sql`lower(${assets.city}) = ${cityLower}`,
         isNotNull(assets.latitude),
         isNotNull(assets.longitude)
@@ -147,18 +170,28 @@ export async function fetchSearchProperties(
     .orderBy(desc(assets.createdAt));
 
   return Promise.all(
-    propertiesRaw.map(async (asset) => {
+    propertiesRaw.map(async (row) => {
+      const asset = row.assets;
       const [primaryImage] = await db
         .select()
         .from(images)
         .where(and(eq(images.assetId, asset.id), eq(images.isPrimary, true)))
         .limit(1);
 
+      const lat = Number(asset.latitude);
+      const lng = Number(asset.longitude);
+      const coords = asset.showFullAddress
+        ? { latitude: lat, longitude: lng }
+        : obfuscateCoordinates(asset.id, lat, lng);
+
+      const sanitizedAsset = asset.showFullAddress
+        ? asset
+        : { ...asset, street: null, zip: null };
+
       return {
-        asset,
+        asset: sanitizedAsset,
         imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
-        latitude: Number(asset.latitude),
-        longitude: Number(asset.longitude),
+        ...coords,
       };
     })
   );

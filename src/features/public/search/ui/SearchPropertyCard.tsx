@@ -34,20 +34,29 @@ export function SearchPropertyCard({
   const detailPath = localePath(
     asset.tier === "elite" ? `/elite/${asset.id}` : `/property/${asset.id}`
   );
+  const unavailable = price != null && !price.loading && !price.available;
 
   return (
     <div
       className={cn(
         "flex gap-4 p-3 rounded-xl border transition-all w-full text-left",
-        isSelected ? "border-primary bg-primary/5 shadow-md" : "border-border"
+        isSelected ? "border-primary bg-primary/5 shadow-md" : "border-border",
+        unavailable && "opacity-60"
       )}
     >
-      <img
-        src={imageUrl}
-        alt={asset.title ?? ""}
-        className="w-44 sm:w-52 object-cover rounded-lg shrink-0"
-        loading="lazy"
-      />
+      <div className="relative w-44 sm:w-52 shrink-0">
+        <img
+          src={imageUrl}
+          alt={asset.title ?? ""}
+          className="w-full h-full object-cover rounded-lg"
+          loading="lazy"
+        />
+        {unavailable && (
+          <span className="absolute top-2 left-2 px-2 py-0.5 text-[10px] font-medium rounded-md bg-red-600 text-white">
+            {t("search.unavailable")}
+          </span>
+        )}
+      </div>
       <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
         <div>
           <div className="flex items-center gap-2 mb-1.5">
