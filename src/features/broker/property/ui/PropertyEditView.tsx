@@ -175,118 +175,74 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
             bedrooms: property.bedrooms ?? undefined,
             bathrooms: property.bathrooms ?? undefined,
             sqMeters: property.sqMeters ?? undefined,
+            doubleBeds: property.doubleBeds ?? undefined,
+            singleBeds: property.singleBeds ?? undefined,
+            queenSizeBeds: property.queenSizeBeds ?? undefined,
+            kingSizeBeds: property.kingSizeBeds ?? undefined,
+            sofaBeds: property.sofaBeds ?? undefined,
+            couches: property.couches ?? undefined,
+            childBeds: property.childBeds ?? undefined,
           }}
           onSave={(data) => saveFields(data)}
-          renderFields={({ values, onChange, disabled }) => (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div>
-                <label
-                  htmlFor="edit-maxOccupancy"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Max Occupancy
-                </label>
-                <input
-                  id="edit-maxOccupancy"
-                  type="number"
-                  value={values.maxOccupancy ?? ""}
-                  onChange={(e) =>
-                    onChange({
-                      ...values,
-                      maxOccupancy:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    })
-                  }
-                  disabled={disabled}
-                  min={1}
-                  max={50}
-                  className="input"
-                />
-              </div>
+          renderFields={({ values, onChange, disabled }) => {
+            function numField(
+              id: string,
+              label: string,
+              field: keyof typeof values,
+              opts?: { min?: number; max?: number }
+            ) {
+              return (
+                <div>
+                  <label
+                    htmlFor={id}
+                    className="block text-sm font-medium text-foreground mb-1"
+                  >
+                    {label}
+                  </label>
+                  <input
+                    id={id}
+                    type="number"
+                    value={values[field] ?? ""}
+                    onChange={(e) =>
+                      onChange({
+                        ...values,
+                        [field]:
+                          e.target.value === ""
+                            ? undefined
+                            : Number(e.target.value),
+                      })
+                    }
+                    disabled={disabled}
+                    min={opts?.min ?? 0}
+                    max={opts?.max}
+                    className="input"
+                  />
+                </div>
+              );
+            }
 
-              <div>
-                <label
-                  htmlFor="edit-bedrooms"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Bedrooms
-                </label>
-                <input
-                  id="edit-bedrooms"
-                  type="number"
-                  value={values.bedrooms ?? ""}
-                  onChange={(e) =>
-                    onChange({
-                      ...values,
-                      bedrooms:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    })
-                  }
-                  disabled={disabled}
-                  min={0}
-                  max={20}
-                  className="input"
-                />
+            return (
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  {numField("edit-maxOccupancy", "Max Occupancy", "maxOccupancy", { min: 1, max: 50 })}
+                  {numField("edit-bedrooms", "Bedrooms", "bedrooms", { max: 20 })}
+                  {numField("edit-bathrooms", "Bathrooms", "bathrooms", { max: 20 })}
+                  {numField("edit-sqMeters", "Size (m²)", "sqMeters", { min: 10 })}
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                  {numField("edit-doubleBeds", "Double Beds", "doubleBeds")}
+                  {numField("edit-singleBeds", "Single Beds", "singleBeds")}
+                  {numField("edit-queenSizeBeds", "Queen Beds", "queenSizeBeds")}
+                  {numField("edit-kingSizeBeds", "King Beds", "kingSizeBeds")}
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                  {numField("edit-sofaBeds", "Sofa Beds", "sofaBeds")}
+                  {numField("edit-couches", "Couches", "couches")}
+                  {numField("edit-childBeds", "Child Beds", "childBeds")}
+                </div>
               </div>
-
-              <div>
-                <label
-                  htmlFor="edit-bathrooms"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Bathrooms
-                </label>
-                <input
-                  id="edit-bathrooms"
-                  type="number"
-                  value={values.bathrooms ?? ""}
-                  onChange={(e) =>
-                    onChange({
-                      ...values,
-                      bathrooms:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    })
-                  }
-                  disabled={disabled}
-                  min={0}
-                  max={20}
-                  className="input"
-                />
-              </div>
-
-              <div>
-                <label
-                  htmlFor="edit-sqMeters"
-                  className="block text-sm font-medium text-foreground mb-1"
-                >
-                  Size (m²)
-                </label>
-                <input
-                  id="edit-sqMeters"
-                  type="number"
-                  value={values.sqMeters ?? ""}
-                  onChange={(e) =>
-                    onChange({
-                      ...values,
-                      sqMeters:
-                        e.target.value === ""
-                          ? undefined
-                          : Number(e.target.value),
-                    })
-                  }
-                  disabled={disabled}
-                  min={10}
-                  className="input"
-                />
-              </div>
-            </div>
-          )}
+            );
+          }}
         />
       </section>
 
