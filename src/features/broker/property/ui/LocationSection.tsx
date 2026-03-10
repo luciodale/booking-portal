@@ -159,6 +159,7 @@ export function LocationSection({
         name="street"
         control={control}
         label="Street Address"
+        required
         placeholder="Via Cristoforo Colombo 12"
         labelSuffix={renderLink("street")}
       />

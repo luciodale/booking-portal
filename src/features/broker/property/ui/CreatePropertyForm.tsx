@@ -142,9 +142,13 @@ export function CreatePropertyForm({
   useEffect(() => {
     if (cityTaxQuery.data && !cityTaxPrefilled.current) {
       cityTaxPrefilled.current = true;
-      setValue("cityTaxAmount", cityTaxQuery.data.amount, { shouldDirty: true });
+      setValue("cityTaxAmount", cityTaxQuery.data.amount, {
+        shouldDirty: true,
+      });
       if (cityTaxQuery.data.maxNights != null) {
-        setValue("cityTaxMaxNights", cityTaxQuery.data.maxNights, { shouldDirty: true });
+        setValue("cityTaxMaxNights", cityTaxQuery.data.maxNights, {
+          shouldDirty: true,
+        });
       }
     }
   }, [cityTaxQuery.data, setValue]);
@@ -169,7 +173,10 @@ export function CreatePropertyForm({
   }
 
   // Synced change handler for amenities/highlights/views
-  function handleSyncedChange(fieldName: FeatureFieldName, newValue: Feature[]) {
+  function handleSyncedChange(
+    fieldName: FeatureFieldName,
+    newValue: Feature[]
+  ) {
     const synced = syncFeatureFields(
       { amenities, highlights, views },
       fieldName,
@@ -319,7 +326,7 @@ export function CreatePropertyForm({
         <NumberInput
           name="sqMeters"
           control={control}
-          label="Size (m\u00B2)"
+          label="Size (m²)"
           min={10}
         />
       </FormSection>
@@ -373,7 +380,9 @@ export function CreatePropertyForm({
             { value: "night_per_guest", label: "Per Night Per Guest" },
           ]}
           showMaxNights
-          onChange={(costs) => setValue("additionalCosts", costs, { shouldDirty: true })}
+          onChange={(costs) =>
+            setValue("additionalCosts", costs, { shouldDirty: true })
+          }
           disabled={isLoading}
         />
       </FormSection>
@@ -393,7 +402,8 @@ export function CreatePropertyForm({
       {/* City Tax */}
       <FormSection title="City Tax">
         <p className="text-sm text-muted-foreground">
-          Tourist tax per person per night (in cents). Saved as a default for this city.
+          Tourist tax per person per night (in cents). Saved as a default for
+          this city.
         </p>
         {cityTaxQuery.data && (
           <p className="text-xs text-primary">
@@ -438,7 +448,9 @@ export function CreatePropertyForm({
           <input
             type="checkbox"
             checked={instantBook}
-            onChange={(e) => setValue("instantBook", e.target.checked, { shouldDirty: true })}
+            onChange={(e) =>
+              setValue("instantBook", e.target.checked, { shouldDirty: true })
+            }
             disabled={isLoading || !isItaly}
             className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
           />
@@ -451,7 +463,8 @@ export function CreatePropertyForm({
             </p>
             {!isItaly && (
               <p className="text-sm text-warning">
-                Instant book is currently available only for properties in Italy.
+                Instant book is currently available only for properties in
+                Italy.
               </p>
             )}
           </div>

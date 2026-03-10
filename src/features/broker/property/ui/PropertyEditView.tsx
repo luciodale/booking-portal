@@ -327,7 +327,10 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
         <EditableSectionField
           title="Additional Costs"
           description="Optional fees charged on top of the nightly rate (amounts in cents)."
-          values={{ additionalCosts: (property.additionalCosts ?? []) as PropertyAdditionalCost[] }}
+          values={{
+            additionalCosts: (property.additionalCosts ??
+              []) as PropertyAdditionalCost[],
+          }}
           onSave={(data) => saveField("additionalCosts", data.additionalCosts)}
           validate={(data) => validateAdditionalCosts(data.additionalCosts)}
           renderFields={({ values, onChange, disabled, showErrors }) => (
@@ -469,7 +472,8 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
                 </select>
                 {!isItaly && (
                   <p className="text-sm text-warning mt-1">
-                    Instant book is currently available only for properties in Italy.
+                    Instant book is currently available only for properties in
+                    Italy.
                   </p>
                 )}
               </div>
