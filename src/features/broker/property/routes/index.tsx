@@ -23,7 +23,7 @@ function Dashboard() {
       {isLoading ? (
         <div className="fixed inset-0 bg-background/50 flex items-center justify-center z-50">
           <div className="flex flex-col items-center gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-[1.5px] border-zinc-800/20 border-t-zinc-900" />
+            <div className="h-8 w-8 animate-spin rounded-full border-[1.5px] border-muted-foreground/20 border-t-foreground" />
             <p className="text-sm text-muted-foreground">
               Checking integration...
             </p>

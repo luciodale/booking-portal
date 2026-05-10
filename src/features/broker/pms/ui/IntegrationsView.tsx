@@ -19,10 +19,10 @@ export function IntegrationsView() {
 
       {isIntegrated ? (
         <>
-          <div className="rounded-lg border border-green-500/30 bg-green-50 dark:bg-green-950/20 p-6">
+          <div className="rounded-lg border border-success/30 bg-success/10 p-6">
             <div className="flex items-center gap-3 mb-2">
-              <CheckCircle className="text-green-600" size={24} />
-              <h2 className="text-lg font-semibold text-green-700 dark:text-green-400">
+              <CheckCircle className="text-success" size={24} />
+              <h2 className="text-lg font-semibold text-success">
                 Smoobu Connected
               </h2>
             </div>

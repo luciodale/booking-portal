@@ -1,28 +1,41 @@
-/**
- * ImagesManager - Standalone image CRUD component
- * Direct API calls for upload/delete/setPrimary - no form integration
- */
-
-import type { Image } from "@/db/schema";
 import { processImage } from "@/modules/images/processImage";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import { cn } from "@/modules/utils/cn";
 import { ImagePlus, Loader2, Star, Trash2, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
-interface ImagesManagerProps {
-  propertyId: string;
-  images: Image[];
+type ImageRecord = {
+  id: string;
+  r2Key: string;
+  alt: string | null;
+  isPrimary: boolean;
+};
+
+type ImagesManagerEndpoints = {
+  upload: string;
+  delete: (id: string) => string;
+  setPrimary: (id: string) => string;
+};
+
+type ImagesManagerProps = {
+  entityId: string;
+  entityIdField: string;
+  images: ImageRecord[];
   onRefresh: () => void;
-}
+  endpoints: ImagesManagerEndpoints;
+  title?: string;
+};
 
 export function ImagesManager({
-  propertyId,
+  entityId,
+  entityIdField,
   images,
   onRefresh,
+  endpoints,
+  title = "Images",
 }: ImagesManagerProps) {
   const [uploadingSlot, setUploadingSlot] = useState<"primary" | "gallery" | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -34,7 +47,7 @@ export function ImagesManager({
   const primaryImage = images.find((img) => img.isPrimary);
   const galleryImages = images.filter((img) => !img.isPrimary);
 
-  const validateFile = (file: File): string | null => {
+  function validateFile(file: File): string | null {
     if (!ACCEPTED_TYPES.includes(file.type)) {
       return "Invalid file type. Accepted: JPG, PNG, WebP";
     }
@@ -43,9 +56,9 @@ export function ImagesManager({
       return `File too large. Maximum: ${maxMB}MB`;
     }
     return null;
-  };
+  }
 
-  const handleUpload = async (files: FileList | null, isPrimary: boolean) => {
+  async function handleUpload(files: FileList | null, isPrimary: boolean) {
     if (!files || files.length === 0) return;
 
     const file = files[0];
@@ -62,13 +75,13 @@ export function ImagesManager({
       const processed = await processImage(file);
 
       const formData = new FormData();
-      formData.append("assetId", propertyId);
+      formData.append(entityIdField, entityId);
       formData.append("images", processed);
       if (isPrimary) {
         formData.append("isPrimary", "0");
       }
 
-      const response = await fetch("/api/backoffice/upload-images", {
+      const response = await fetch(endpoints.upload, {
         method: "POST",
         body: formData,
       });
@@ -80,7 +93,6 @@ export function ImagesManager({
         throw new Error(data.error || "Upload failed");
       }
 
-      // If setting as primary, also call setPrimary endpoint
       if (isPrimary) {
         const uploadData = (await response.json()) as {
           data?: { images?: Array<{ id: string }> };
@@ -88,7 +100,7 @@ export function ImagesManager({
         const uploadedId = uploadData.data?.images?.[0]?.id;
         if (uploadedId) {
           await handleSetPrimary(uploadedId);
-          return; // onRefresh called in handleSetPrimary
+          return;
         }
       }
 
@@ -101,14 +113,14 @@ export function ImagesManager({
         fileInputRef.current.value = "";
       }
     }
-  };
+  }
 
-  const handleDelete = async (imageId: string) => {
+  async function handleDelete(imageId: string) {
     setDeletingId(imageId);
     setError(null);
 
     try {
-      const response = await fetch(`/api/backoffice/images/${imageId}`, {
+      const response = await fetch(endpoints.delete(imageId), {
         method: "DELETE",
       });
 
@@ -125,19 +137,16 @@ export function ImagesManager({
     } finally {
       setDeletingId(null);
     }
-  };
+  }
 
-  const handleSetPrimary = async (imageId: string) => {
+  async function handleSetPrimary(imageId: string) {
     setSettingPrimaryId(imageId);
     setError(null);
 
     try {
-      const response = await fetch(
-        `/api/backoffice/images/${imageId}/primary`,
-        {
-          method: "PUT",
-        }
-      );
+      const response = await fetch(endpoints.setPrimary(imageId), {
+        method: "PUT",
+      });
 
       if (!response.ok) {
         const data = (await response.json().catch(() => ({}))) as {
@@ -152,13 +161,13 @@ export function ImagesManager({
     } finally {
       setSettingPrimaryId(null);
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-foreground">
-          Property Images
+          {title}
         </h3>
         <p className="text-sm text-muted-foreground mt-1">
           Upload high-quality images. The main image will be used as the cover
@@ -166,7 +175,6 @@ export function ImagesManager({
         </p>
       </div>
 
-      {/* Error Display */}
       {error && (
         <div className="p-3 rounded-lg bg-error/10 border border-error/20">
           <p className="text-sm text-error">{error}</p>
@@ -187,7 +195,7 @@ export function ImagesManager({
           <div className="relative group rounded-xl overflow-hidden border-2 border-primary/30 bg-card">
             <img
               src={generateImageUrl(primaryImage.r2Key)}
-              alt={primaryImage.alt || "Main property"}
+              alt={primaryImage.alt || "Main image"}
               className="w-full h-64 object-cover"
             />
             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
@@ -271,8 +279,7 @@ export function ImagesManager({
             Gallery Images
           </span>
           <span className="text-xs text-muted-foreground">
-            ({galleryImages.length} image{galleryImages.length !== 1 ? "s" : ""}
-            )
+            ({galleryImages.length} image{galleryImages.length !== 1 ? "s" : ""})
           </span>
         </div>
 

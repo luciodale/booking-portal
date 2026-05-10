@@ -1,6 +1,5 @@
-import { formatPrice } from "@/features/public/booking/domain/dateUtils";
 import type { ExperienceAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
-import { centsToUnit } from "@/modules/money/money";
+import { centsToUnit, formatPrice } from "@/modules/money/money";
 import { useExperienceBooking } from "@/features/public/booking/hooks/useExperienceBooking";
 import { useExperienceCheckout } from "@/features/public/booking/hooks/useExperienceCheckout";
 import { ExperienceCalendarPopover } from "@/features/public/booking/ui/ExperienceCalendarPopover";
@@ -203,8 +202,8 @@ function BookingFlow({
 
         {/* Availability error */}
         {booking.availabilityError && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 space-y-2">
-            <p className="text-sm text-red-400 font-medium">
+          <div className="p-3 rounded-xl bg-error/10 border border-error/20 space-y-2">
+            <p className="text-sm text-error font-medium">
               Something didn't work
             </p>
             <p className="text-xs text-muted-foreground">
@@ -224,8 +223,8 @@ function BookingFlow({
 
         {/* Full date warning */}
         {booking.isSelectedDateFull && (
-          <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-            <p className="text-sm text-red-400 font-medium">
+          <div className="p-3 rounded-xl bg-error/10 border border-error/20">
+            <p className="text-sm text-error font-medium">
               This date is fully booked
             </p>
             <p className="text-xs text-muted-foreground mt-1">

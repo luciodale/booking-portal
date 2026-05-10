@@ -1,4 +1,4 @@
-import { formatPrice } from "@/features/public/booking/domain/dateUtils";
+import { formatPrice } from "@/modules/money/money";
 import type {
   PropertyPrice,
   SearchProperty,

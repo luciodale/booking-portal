@@ -30,7 +30,7 @@ export function MobileExperienceCalendarBottomSheet({
 }: ExperienceCalendarPopoverProps) {
   const { closeSidebar, isBottomOpen } = useSwipeBarContext();
   const [sheetHeight] = useState(() =>
-    typeof window !== "undefined" ? Math.round(window.innerHeight * 0.85) : 600
+    typeof window !== "undefined" ? Math.round(window.innerHeight * 0.9) : 600
   );
 
   const prevIsOpenRef = useRef(isOpen);

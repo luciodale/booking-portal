@@ -2,12 +2,12 @@ import {
   addMonths,
   formatDate,
   formatMonthYear,
-  formatPrice,
   getDayDisplayState,
   getMonthDays,
   getStartPadding,
   todayStr,
 } from "@/features/public/booking/domain/dateUtils";
+import { formatPrice } from "@/modules/money/money";
 import { cn } from "@/modules/utils/cn";
 import type { SmoobuRateDay } from "@/schemas/smoobu";
 

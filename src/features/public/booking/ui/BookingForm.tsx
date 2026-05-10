@@ -77,7 +77,7 @@ export function BookingForm({
             className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           />
           {errors.firstName && (
-            <p className="text-xs text-red-400 mt-1">
+            <p className="text-xs text-error mt-1">
               {errors.firstName.message}
             </p>
           )}
@@ -96,7 +96,7 @@ export function BookingForm({
             className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           />
           {errors.lastName && (
-            <p className="text-xs text-red-400 mt-1">
+            <p className="text-xs text-error mt-1">
               {errors.lastName.message}
             </p>
           )}
@@ -118,7 +118,7 @@ export function BookingForm({
           className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
         />
         {errors.email && (
-          <p className="text-xs text-red-400 mt-1">{errors.email.message}</p>
+          <p className="text-xs text-error mt-1">{errors.email.message}</p>
         )}
       </div>
 
@@ -156,7 +156,7 @@ export function BookingForm({
             className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           />
           {errors.adults && (
-            <p className="text-xs text-red-400 mt-1">{errors.adults.message}</p>
+            <p className="text-xs text-error mt-1">{errors.adults.message}</p>
           )}
         </div>
         <div>

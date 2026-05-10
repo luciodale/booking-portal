@@ -1,4 +1,4 @@
-import { formatPrice } from "@/features/public/booking/domain/dateUtils";
+import { formatPrice } from "@/modules/money/money";
 import type {
   CityTax,
   PropertyAdditionalCost,
@@ -47,7 +47,7 @@ export function PriceDisplay({ onRetry, ...props }: PriceDisplayProps) {
     case "error":
       return (
         <div className="space-y-3">
-          <p className="text-sm text-red-400 font-medium">
+          <p className="text-sm text-error font-medium">
             Something didn't work
           </p>
           <p className="text-xs text-muted-foreground">
@@ -76,7 +76,7 @@ export function PriceDisplay({ onRetry, ...props }: PriceDisplayProps) {
     case "unavailable":
       return (
         <div className="space-y-2">
-          <div className="text-sm text-red-400 font-medium">
+          <div className="text-sm text-error font-medium">
             {state.message}
           </div>
           <div className="text-xs text-muted-foreground">

@@ -29,6 +29,19 @@ export function divideCents(total: number, divisor: number): number {
   return new Decimal(total).dividedBy(divisor).toDecimalPlaces(0).toNumber();
 }
 
+export function formatPrice(price: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+  } catch {
+    return `${currency} ${price.toLocaleString()}`;
+  }
+}
+
 export function formatCentsAsPrice(cents: number, currency: string): string {
   try {
     return new Intl.NumberFormat("en-US", {

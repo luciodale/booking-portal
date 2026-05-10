@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { centsToUnit } from "../money";
-import { formatPrice } from "@/features/public/booking/domain/dateUtils";
+import { centsToUnit, formatPrice } from "../money";
 import { formatPriceShort } from "@/modules/ui/calendar/utils/calendar-utils";
 
 describe("formatted display output", () => {

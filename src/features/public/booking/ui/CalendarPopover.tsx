@@ -27,6 +27,7 @@ export type CalendarPopoverProps = {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onConfirm: () => void;
+  renderTrigger?: (props: { ref: React.Ref<HTMLButtonElement>; getReferenceProps: () => Record<string, unknown> }) => React.ReactNode;
 };
 
 export function CalendarPopover({
@@ -42,6 +43,7 @@ export function CalendarPopover({
   onPrevMonth,
   onNextMonth,
   onConfirm,
+  renderTrigger,
 }: CalendarPopoverProps) {
   const { refs, floatingStyles, context } = useFloating({
     open: isOpen,
@@ -61,14 +63,18 @@ export function CalendarPopover({
 
   return (
     <>
-      <button
-        ref={refs.setReference}
-        type="button"
-        className="w-full text-left"
-        {...getReferenceProps()}
-      >
-        <DateTrigger checkIn={checkIn} checkOut={checkOut} />
-      </button>
+      {renderTrigger ? (
+        renderTrigger({ ref: refs.setReference, getReferenceProps })
+      ) : (
+        <button
+          ref={refs.setReference}
+          type="button"
+          className="w-full text-left"
+          {...getReferenceProps()}
+        >
+          <DateTrigger checkIn={checkIn} checkOut={checkOut} />
+        </button>
+      )}
 
       {isOpen && (
         <FloatingPortal>

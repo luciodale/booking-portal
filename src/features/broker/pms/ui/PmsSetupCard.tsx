@@ -48,10 +48,10 @@ export function PmsSetupCard({
     return (
       <div className="bg-card rounded-lg border border-border p-6">
         <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-lg bg-success/10 flex items-center justify-center shrink-0">
             <svg
               aria-hidden
-              className="w-6 h-6 text-green-500"
+              className="w-6 h-6 text-success"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"

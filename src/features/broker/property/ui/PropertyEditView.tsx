@@ -371,9 +371,16 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
       {/* Images */}
       <section className="bg-card border border-border p-6 rounded-xl">
         <ImagesManager
-          propertyId={propertyId}
+          entityId={propertyId}
+          entityIdField="assetId"
           images={property.images ?? []}
           onRefresh={refreshProperty}
+          endpoints={{
+            upload: "/api/backoffice/upload-images",
+            delete: (id) => `/api/backoffice/images/${id}`,
+            setPrimary: (id) => `/api/backoffice/images/${id}/primary`,
+          }}
+          title="Property Images"
         />
       </section>
 

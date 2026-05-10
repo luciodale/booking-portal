@@ -137,7 +137,7 @@ function MonthGrid({
             >
               <span className="font-medium">{day.getDate()}</span>
               {isFull && !past && (
-                <span className="text-[8px] font-semibold text-red-400 mt-0.5">
+                <span className="text-[8px] font-semibold text-error mt-0.5">
                   Full
                 </span>
               )}

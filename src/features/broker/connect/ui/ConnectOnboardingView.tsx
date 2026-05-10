@@ -44,17 +44,14 @@ export function ConnectOnboardingView() {
   if (connectStatus?.status === "complete") {
     return (
       <div className="max-w-lg mx-auto py-8 px-6">
-        <div className="rounded-lg border border-green-600/40 bg-green-100 dark:border-green-500/30 dark:bg-green-950/20 p-6">
+        <div className="rounded-lg border border-success/30 bg-success/10 p-6">
           <div className="flex items-center gap-3 mb-2">
-            <CheckCircle
-              className="text-green-700 dark:text-green-400"
-              size={24}
-            />
-            <h2 className="text-lg font-semibold text-green-800 dark:text-green-400">
+            <CheckCircle className="text-success" size={24} />
+            <h2 className="text-lg font-semibold text-success">
               Payouts Enabled
             </h2>
           </div>
-          <p className="text-sm text-green-700 dark:text-green-400/80">
+          <p className="text-sm text-success">
             Your account is fully set up. Booking payments will be routed to
             your bank account.
           </p>
@@ -91,19 +88,19 @@ export function ConnectOnboardingView() {
   if (connectStatus?.status === "pending") {
     return (
       <div className="max-w-lg mx-auto py-8 px-6">
-        <div className="rounded-lg border border-blue-500/30 bg-blue-50 dark:bg-blue-950/20 p-6">
+        <div className="rounded-lg border border-info/30 bg-info/10 p-6">
           <div className="flex items-center gap-3 mb-2">
-            <Clock className="text-blue-600 dark:text-blue-400" size={24} />
-            <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-400">
+            <Clock className="text-info" size={24} />
+            <h2 className="text-lg font-semibold text-info">
               Verification in Progress
             </h2>
           </div>
-          <p className="text-sm text-blue-600 dark:text-blue-400/80">
+          <p className="text-sm text-info">
             Your details have been submitted. Stripe is verifying your account
             — this usually takes a few moments.
           </p>
-          <div className="mt-4 flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400/80">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
+          <div className="mt-4 flex items-center gap-2 text-sm text-info">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-info border-t-transparent" />
             Checking status...
           </div>
         </div>
@@ -119,25 +116,25 @@ export function ConnectOnboardingView() {
         process is powered by Stripe and takes a few minutes.
       </p>
       {isRevoked && (
-        <div className="rounded-lg border border-red-600/40 bg-red-100 dark:border-red-500/30 dark:bg-red-950/20 p-4 mb-6">
+        <div className="rounded-lg border border-error/30 bg-error/10 p-4 mb-6">
           <div className="flex items-center gap-2 mb-1">
             <AlertTriangle
-              className="text-red-700 dark:text-red-400"
+              className="text-error"
               size={16}
             />
-            <p className="text-sm font-medium text-red-800 dark:text-red-400">
+            <p className="text-sm font-medium text-error">
               Previous connection is no longer valid
             </p>
           </div>
-          <p className="text-sm text-red-700 dark:text-red-400/80">
+          <p className="text-sm text-error">
             Your linked Stripe account was revoked or can no longer be accessed.
             Please set up a new connection below.
           </p>
         </div>
       )}
       {connectStatus?.status === "incomplete" && (
-        <div className="rounded-lg border border-amber-600/40 bg-amber-100 dark:border-amber-500/30 dark:bg-amber-950/20 p-4 mb-6">
-          <p className="text-sm text-amber-800 dark:text-amber-400">
+        <div className="rounded-lg border border-warning/30 bg-warning/10 p-4 mb-6">
+          <p className="text-sm text-warning">
             Your account setup is incomplete. Please continue the onboarding
             process.
           </p>

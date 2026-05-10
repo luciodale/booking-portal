@@ -1,21 +1,13 @@
-import { CalendarGrid } from "@/features/public/booking/ui/CalendarGrid";
+import { CalendarPopover } from "@/features/public/booking/ui/CalendarPopover";
+import { DateTrigger } from "@/features/public/booking/ui/DateTrigger";
+import { MobileCalendarBottomSheet } from "@/features/public/booking/ui/mobile/MobileCalendarSheet";
 import { useSearchCalendar } from "@/features/public/search/hooks/useSearchCalendar";
 import { useLocale } from "@/i18n/react/LocaleProvider";
 import { Select } from "@/modules/ui/Select";
 import { useIsMobile } from "@/modules/ui/useIsMobile";
 import { cn } from "@/modules/utils/cn";
-import {
-  FloatingFocusManager,
-  FloatingPortal,
-  autoUpdate,
-  flip,
-  offset,
-  shift,
-  useClick,
-  useDismiss,
-  useFloating,
-  useInteractions,
-} from "@floating-ui/react";
+import type { SmoobuRateDay } from "@/schemas/smoobu";
+import { SwipeBarProvider, useSwipeBarContext } from "@luciodale/swipe-bar";
 import { useCallback, useMemo, useState } from "react";
 
 type SearchBarProps = {
@@ -32,9 +24,17 @@ const GUEST_OPTIONS = Array.from({ length: 10 }, (_, i) => ({
   label: `${i + 1} ${i === 0 ? "guest" : "guests"}`,
 }));
 
-const EMPTY_RATE_MAP = {} as Record<string, never>;
+const EMPTY_RATE_MAP = {} as Record<string, SmoobuRateDay>;
 
-export function SearchBar({
+export function SearchBar(props: SearchBarProps) {
+  return (
+    <SwipeBarProvider>
+      <SearchBarInner {...props} />
+    </SwipeBarProvider>
+  );
+}
+
+function SearchBarInner({
   cities,
   defaultCity = "",
   defaultCheckIn = "",
@@ -44,6 +44,7 @@ export function SearchBar({
 }: SearchBarProps) {
   const { t, localePath } = useLocale();
   const isMobile = useIsMobile();
+  const { openSidebar } = useSwipeBarContext();
   const [city, setCity] = useState(defaultCity);
   const [guests, setGuests] = useState(defaultGuests);
   const calendar = useSearchCalendar(defaultCheckIn, defaultCheckOut);
@@ -68,13 +69,22 @@ export function SearchBar({
     [city, calendar.checkIn, calendar.checkOut, guests, localePath]
   );
 
+  function handleCalendarOpen() {
+    openSidebar("bottom");
+    calendar.setCalendarOpen(true);
+  }
+
+  function handleDateClick(dateStr: string) {
+    calendar.handleDateClick(dateStr);
+  }
+
   const isHero = variant === "hero";
 
   return (
     <form
       onSubmit={handleSubmit}
       className={cn(
-        "bg-card rounded-2xl ring-2 ring-amber-500/50",
+        "bg-card rounded-2xl ring-2 ring-primary/50",
         isHero ? "p-3 max-w-3xl mx-auto" : "p-2"
       )}
     >
@@ -101,9 +111,52 @@ export function SearchBar({
         {/* Date picker */}
         <div className="flex-[3] min-w-0">
           {isMobile ? (
-            <MobileDatePicker calendar={calendar} isHero={isHero} />
+            <button
+              type="button"
+              className={cn(
+                "w-full text-left rounded-xl bg-secondary/50 transition-colors hover:bg-secondary/80 flex items-center px-4",
+                isHero ? "h-12" : "h-10"
+              )}
+              onClick={handleCalendarOpen}
+            >
+              <DateTrigger
+                checkIn={calendar.checkIn}
+                checkOut={calendar.checkOut}
+                variant="inline"
+              />
+            </button>
           ) : (
-            <DesktopDatePicker calendar={calendar} isHero={isHero} />
+            <CalendarPopover
+              isOpen={calendar.isCalendarOpen}
+              onOpenChange={calendar.setCalendarOpen}
+              currentMonth={calendar.currentMonth}
+              checkIn={calendar.checkIn}
+              checkOut={calendar.checkOut}
+              rateMap={EMPTY_RATE_MAP}
+              ratesLoading={false}
+              currency={null}
+              onDateClick={handleDateClick}
+              onPrevMonth={calendar.goPrevMonth}
+              onNextMonth={calendar.goNextMonth}
+              onConfirm={calendar.confirmCalendar}
+              renderTrigger={({ ref, getReferenceProps }) => (
+                <button
+                  ref={ref}
+                  type="button"
+                  className={cn(
+                    "w-full text-left rounded-xl bg-secondary/50 transition-colors hover:bg-secondary/80 flex items-center px-4",
+                    isHero ? "h-12" : "h-10"
+                  )}
+                  {...getReferenceProps()}
+                >
+                  <DateTrigger
+                    checkIn={calendar.checkIn}
+                    checkOut={calendar.checkOut}
+                    variant="inline"
+                  />
+                </button>
+              )}
+            />
           )}
         </div>
 
@@ -136,186 +189,23 @@ export function SearchBar({
           {t("search.searchButton")}
         </button>
       </div>
+
+      {isMobile && (
+        <MobileCalendarBottomSheet
+          isOpen={calendar.isCalendarOpen}
+          onOpenChange={calendar.setCalendarOpen}
+          currentMonth={calendar.currentMonth}
+          checkIn={calendar.checkIn}
+          checkOut={calendar.checkOut}
+          rateMap={EMPTY_RATE_MAP}
+          ratesLoading={false}
+          currency={null}
+          onDateClick={handleDateClick}
+          onPrevMonth={calendar.goPrevMonth}
+          onNextMonth={calendar.goNextMonth}
+          onConfirm={calendar.confirmCalendar}
+        />
+      )}
     </form>
-  );
-}
-
-type DatePickerProps = {
-  calendar: ReturnType<typeof useSearchCalendar>;
-  isHero: boolean;
-};
-
-function DesktopDatePicker({ calendar, isHero }: DatePickerProps) {
-  const { refs, floatingStyles, context } = useFloating({
-    open: calendar.isOpen,
-    onOpenChange: calendar.setIsOpen,
-    middleware: [offset(8), flip(), shift({ padding: 16 })],
-    placement: "bottom-start",
-    strategy: "fixed",
-    whileElementsMounted: autoUpdate,
-  });
-
-  const click = useClick(context);
-  const dismiss = useDismiss(context);
-  const { getReferenceProps, getFloatingProps } = useInteractions([
-    click,
-    dismiss,
-  ]);
-
-  return (
-    <>
-      <button
-        ref={refs.setReference}
-        type="button"
-        className={cn(
-          "w-full text-left rounded-xl bg-secondary/50 transition-colors hover:bg-secondary/80 flex items-center px-4",
-          isHero ? "h-12" : "h-10"
-        )}
-        {...getReferenceProps()}
-      >
-        <DateTriggerCompact
-          checkIn={calendar.checkIn}
-          checkOut={calendar.checkOut}
-        />
-      </button>
-
-      {calendar.isOpen && (
-        <FloatingPortal>
-          <FloatingFocusManager
-            context={context}
-            modal={false}
-            closeOnFocusOut={false}
-          >
-            <div
-              ref={refs.setFloating}
-              style={floatingStyles}
-              className="z-50 min-w-[600px] p-5 rounded-2xl bg-card border border-border shadow-2xl shadow-black/40"
-              {...getFloatingProps()}
-            >
-              <CalendarGrid
-                currentMonth={calendar.currentMonth}
-                checkIn={calendar.checkIn}
-                checkOut={calendar.checkOut}
-                rateMap={EMPTY_RATE_MAP}
-                ratesLoading={false}
-                currency={null}
-                onDateClick={calendar.handleDateClick}
-                onPrevMonth={calendar.goPrevMonth}
-                onNextMonth={calendar.goNextMonth}
-              />
-              <div className="mt-3 pt-3 border-t border-border flex justify-end">
-                <button
-                  type="button"
-                  onClick={calendar.handleConfirm}
-                  className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors"
-                >
-                  Confirm
-                </button>
-              </div>
-            </div>
-          </FloatingFocusManager>
-        </FloatingPortal>
-      )}
-    </>
-  );
-}
-
-function MobileDatePicker({ calendar, isHero }: DatePickerProps) {
-  return (
-    <>
-      <button
-        type="button"
-        className={cn(
-          "w-full text-left rounded-xl bg-secondary/50 transition-colors hover:bg-secondary/80 flex items-center px-4",
-          isHero ? "h-12" : "h-10"
-        )}
-        onClick={() => calendar.setIsOpen(true)}
-      >
-        <DateTriggerCompact
-          checkIn={calendar.checkIn}
-          checkOut={calendar.checkOut}
-        />
-      </button>
-
-      {calendar.isOpen && (
-        <div className="fixed inset-0 z-50">
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/50 w-full h-full cursor-default"
-            onClick={() => calendar.setIsOpen(false)}
-            aria-label="Close calendar"
-          />
-          <div className="absolute bottom-0 left-0 right-0 bg-card rounded-t-2xl max-h-[85vh] flex flex-col">
-            <div className="flex justify-center pt-3 pb-2 shrink-0">
-              <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
-            </div>
-            <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4">
-              <CalendarGrid
-                currentMonth={calendar.currentMonth}
-                checkIn={calendar.checkIn}
-                checkOut={calendar.checkOut}
-                rateMap={EMPTY_RATE_MAP}
-                ratesLoading={false}
-                currency={null}
-                onDateClick={calendar.handleDateClick}
-                vertical
-                monthCount={12}
-              />
-            </div>
-            <div className="px-4 py-3 border-t border-border bg-card shrink-0">
-              <button
-                type="button"
-                onClick={calendar.handleConfirm}
-                className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-function DateTriggerCompact({
-  checkIn,
-  checkOut,
-}: { checkIn: string | null; checkOut: string | null }) {
-  return (
-    <div className="flex items-center gap-2 whitespace-nowrap">
-      <svg
-        aria-hidden="true"
-        className="w-4 h-4 text-muted-foreground shrink-0"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
-        <line x1="16" x2="16" y1="2" y2="6" />
-        <line x1="8" x2="8" y1="2" y2="6" />
-        <line x1="3" x2="21" y1="10" y2="10" />
-      </svg>
-      <span
-        className={cn(
-          "text-base",
-          checkIn ? "text-foreground" : "text-muted-foreground"
-        )}
-      >
-        {checkIn ?? "Check-in"}
-      </span>
-      <span className="text-muted-foreground text-base">→</span>
-      <span
-        className={cn(
-          "text-base",
-          checkOut ? "text-foreground" : "text-muted-foreground"
-        )}
-      >
-        {checkOut ?? "Check-out"}
-      </span>
-    </div>
   );
 }

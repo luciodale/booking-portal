@@ -44,4 +44,10 @@ export const errors = {
   "error.failedToCancelBooking": "Failed to cancel booking",
   "error.failedToListBookings": "Failed to list bookings",
   "error.instantBookNotAvailable": "Online booking is not available for this property",
+  "error.missingExperienceId": "Missing experience ID",
+  "error.validationFailed": "Validation failed",
+  "error.maxImagesExceeded": "Maximum 20 images allowed per upload",
+  "error.noImagesProvided": "No images provided",
+  "error.invalidImageType": "Invalid image type",
+  "error.fileTooLarge": "File too large",
 } as const;

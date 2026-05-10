@@ -155,7 +155,7 @@ function CreatePropertyPage() {
   if (isIntegrationLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
-        <div className="h-8 w-8 animate-spin rounded-full border-[1.5px] border-zinc-800/20 border-t-zinc-900" />
+        <div className="h-8 w-8 animate-spin rounded-full border-[1.5px] border-muted-foreground/20 border-t-foreground" />
       </div>
     );
   }

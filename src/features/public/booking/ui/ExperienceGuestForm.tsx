@@ -65,7 +65,7 @@ export function ExperienceGuestForm({
             className={inputCls}
           />
           {errors.firstName && (
-            <p className="text-xs text-red-400 mt-1">
+            <p className="text-xs text-error mt-1">
               {errors.firstName.message}
             </p>
           )}
@@ -83,7 +83,7 @@ export function ExperienceGuestForm({
             className={inputCls}
           />
           {errors.lastName && (
-            <p className="text-xs text-red-400 mt-1">
+            <p className="text-xs text-error mt-1">
               {errors.lastName.message}
             </p>
           )}
@@ -103,7 +103,7 @@ export function ExperienceGuestForm({
           className={inputCls}
         />
         {errors.email && (
-          <p className="text-xs text-red-400 mt-1">{errors.email.message}</p>
+          <p className="text-xs text-error mt-1">{errors.email.message}</p>
         )}
       </div>
       <div>

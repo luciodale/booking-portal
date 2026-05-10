@@ -1,6 +1,5 @@
-import { formatPrice } from "@/features/public/booking/domain/dateUtils";
 import type { PriceLineItem } from "@/features/public/booking/domain/pricingTypes";
-import { centsToUnit } from "@/modules/money/money";
+import { centsToUnit, formatPrice } from "@/modules/money/money";
 
 type PriceBreakdownProps = {
   items: PriceLineItem[];

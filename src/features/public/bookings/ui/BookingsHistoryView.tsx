@@ -48,7 +48,7 @@ function BookingsHistoryInner({ locale }: { locale: Locale }) {
   if (error) {
     return (
       <div className="text-center py-20">
-        <p className="text-red-400">{t(locale, "bookings.failedToLoad")}</p>
+        <p className="text-error">{t(locale, "bookings.failedToLoad")}</p>
       </div>
     );
   }
@@ -105,10 +105,10 @@ function BookingSection({
 
 function BookingCard({ booking, locale }: { booking: BookingListItem; locale: Locale }) {
   const statusColors: Record<string, string> = {
-    pending: "bg-yellow-500/10 text-yellow-400",
-    confirmed: "bg-green-500/10 text-green-400",
-    cancelled: "bg-red-500/10 text-red-400",
-    completed: "bg-blue-500/10 text-blue-400",
+    pending: "bg-warning/10 text-warning",
+    confirmed: "bg-success/10 text-success",
+    cancelled: "bg-error/10 text-error",
+    completed: "bg-info/10 text-info",
   };
 
   const statusKey = `bookings.${booking.status}` as const;

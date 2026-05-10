@@ -1,5 +1,5 @@
 import { centsToUnit, multiplyCents } from "@/modules/money/money";
-import { formatPrice } from "./dateUtils";
+import { formatPrice } from "@/modules/money/money";
 import type {
   ExperienceAdditionalCost,
   PriceLineItem,

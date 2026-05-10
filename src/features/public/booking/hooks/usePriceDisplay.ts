@@ -2,7 +2,7 @@ import {
   computePropertyAdditionalCosts,
   formatPropertyCostPreview,
 } from "@/features/public/booking/domain/computeAdditionalCosts";
-import { formatPrice } from "@/features/public/booking/domain/dateUtils";
+import { formatPrice } from "@/modules/money/money";
 import {
   centsToUnit,
   divideCents,

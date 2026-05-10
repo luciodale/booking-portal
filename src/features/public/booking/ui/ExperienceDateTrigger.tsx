@@ -6,7 +6,7 @@ export function ExperienceDateTrigger({
   selectedDate: string | null;
 }) {
   return (
-    <div className="flex items-center gap-3 p-3.5 rounded-xl border-2 border-amber-500/40 bg-amber-500/5 hover:border-amber-400 transition-colors cursor-pointer">
+    <div className="flex items-center gap-3 p-3.5 rounded-xl border-2 border-primary/40 bg-primary/5 hover:border-primary transition-colors cursor-pointer">
       <svg
         aria-hidden="true"
         width="20"
@@ -17,7 +17,7 @@ export function ExperienceDateTrigger({
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
-        className="text-amber-400 shrink-0"
+        className="text-primary shrink-0"
       >
         <rect width="18" height="18" x="3" y="4" rx="2" ry="2" />
         <line x1="16" x2="16" y1="2" y2="6" />
@@ -26,11 +26,11 @@ export function ExperienceDateTrigger({
       </svg>
 
       <div className="flex-1">
-        <div className="text-[10px] text-amber-400/70 font-medium uppercase tracking-wider">
+        <div className="text-[10px] text-primary/70 font-medium uppercase tracking-wider">
           Date
         </div>
         <div
-          className={cn("text-sm truncate", selectedDate ? "text-foreground font-semibold" : "text-amber-400/50")}
+          className={cn("text-sm truncate", selectedDate ? "text-foreground font-semibold" : "text-primary/50")}
         >
           {selectedDate ?? "Select date"}
         </div>

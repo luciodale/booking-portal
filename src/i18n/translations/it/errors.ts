@@ -49,4 +49,10 @@ export const errors: Record<keyof typeof en, string> = {
   "error.failedToCancelBooking": "Impossibile cancellare la prenotazione",
   "error.failedToListBookings": "Impossibile elencare le prenotazioni",
   "error.instantBookNotAvailable": "La prenotazione online non è disponibile per questa proprietà",
+  "error.missingExperienceId": "ID esperienza mancante",
+  "error.validationFailed": "Validazione fallita",
+  "error.maxImagesExceeded": "Massimo 20 immagini per caricamento",
+  "error.noImagesProvided": "Nessuna immagine fornita",
+  "error.invalidImageType": "Tipo di immagine non valido",
+  "error.fileTooLarge": "File troppo grande",
 };

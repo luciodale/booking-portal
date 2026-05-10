@@ -11,7 +11,7 @@ export function useSearchCalendar(defaultCheckIn: string, defaultCheckOut: strin
   const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
   const [checkIn, setCheckIn] = useState<string | null>(defaultCheckIn || null);
   const [checkOut, setCheckOut] = useState<string | null>(defaultCheckOut || null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isCalendarOpen, setCalendarOpen] = useState(false);
 
   const goPrevMonth = useCallback(() => {
     setCurrentMonth((m) => subMonths(m, 1));
@@ -39,20 +39,20 @@ export function useSearchCalendar(defaultCheckIn: string, defaultCheckOut: strin
     [checkIn, checkOut],
   );
 
-  const handleConfirm = useCallback(() => {
-    setIsOpen(false);
+  const confirmCalendar = useCallback(() => {
+    setCalendarOpen(false);
   }, []);
 
   return {
     currentMonth,
     checkIn,
     checkOut,
-    isOpen,
-    setIsOpen,
+    isCalendarOpen,
+    setCalendarOpen,
     goPrevMonth,
     goNextMonth,
     handleDateClick,
-    handleConfirm,
+    confirmCalendar,
     formatDate,
   };
 }

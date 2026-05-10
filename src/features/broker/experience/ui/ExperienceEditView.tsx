@@ -16,7 +16,7 @@ import {
 import type { UpdateExperienceInput } from "@/schemas/experience";
 import { useQueryClient } from "@tanstack/react-query";
 import { experienceQueryKeys } from "@/features/broker/experience/constants/queryKeys";
-import { ExperienceImagesManager } from "./ExperienceImagesManager";
+import { ImagesManager } from "@/features/broker/property/ui/ImagesManager";
 import { PropertyLinker } from "./PropertyLinker";
 
 interface ExperienceEditViewProps {
@@ -440,10 +440,17 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
 
       {/* Images */}
       <section className="bg-card border border-border p-6 rounded-xl">
-        <ExperienceImagesManager
-          experienceId={experienceId}
+        <ImagesManager
+          entityId={experienceId}
+          entityIdField="experienceId"
           images={experience.images ?? []}
           onRefresh={refreshExperience}
+          endpoints={{
+            upload: "/api/backoffice/upload-experience-images",
+            delete: (id) => `/api/backoffice/experience-images/${id}`,
+            setPrimary: (id) => `/api/backoffice/experience-images/${id}/primary`,
+          }}
+          title="Experience Images"
         />
       </section>
 

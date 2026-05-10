@@ -2,6 +2,8 @@ import { getDb } from "@/db";
 import { experienceImages, experiences } from "@/db/schema";
 import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import type { ExperienceWithDetails } from "@/schemas/experience";
 import { updateExperienceSchema } from "@/schemas/experience";
 import type { APIRoute } from "astro";
@@ -14,22 +16,23 @@ import {
 } from "./responseHelpers";
 
 export const PATCH: APIRoute = async ({ params, request, locals }) => {
+  const locale = getRequestLocale(request);
   try {
     const { id } = params;
     if (!id) {
-      return jsonError("Experience ID required", 400);
+      return jsonError(t(locale, "error.missingExperienceId"), 400);
     }
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return jsonError("Database not available", 503);
+      return jsonError(t(locale, "error.dbNotAvailable"), 503);
     }
 
     const db = getDb(D1Database);
     const ctx = await resolveBrokerContext(locals, db);
 
     if (!ctx.userId) {
-      return jsonError("Forbidden: No broker account", 403);
+      return jsonError(t(locale, "error.forbidden"), 403);
     }
 
     const [existing] = await db
@@ -39,7 +42,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
       .limit(1);
 
     if (!existing) {
-      return jsonError("Experience not found", 404);
+      return jsonError(t(locale, "error.experienceNotFound"), 404);
     }
 
     assertBrokerOwnership(existing, ctx);
@@ -48,7 +51,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     const validationResult = updateExperienceSchema.safeParse(body);
 
     if (!validationResult.success) {
-      return jsonError("Validation failed", 400, validationResult.error.issues);
+      return jsonError(t(locale, "error.validationFailed"), 400, validationResult.error.issues);
     }
 
     const data = validationResult.data;
@@ -77,7 +80,7 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
   } catch (error) {
     console.error("Error updating experience:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to update experience"),
+      safeErrorMessage(error, "Failed to update experience", locale),
       mapErrorToStatus(error)
     );
   }

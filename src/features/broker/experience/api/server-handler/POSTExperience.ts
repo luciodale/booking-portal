@@ -1,6 +1,8 @@
 import { getDb } from "@/db";
 import { experiences } from "@/db/schema";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import { genUniqueId } from "@/modules/utils/id";
 import type { ExperienceWithDetails } from "@/schemas/experience";
 import { createExperienceSchema } from "@/schemas/experience";
@@ -13,24 +15,25 @@ import {
 } from "./responseHelpers";
 
 export const POST: APIRoute = async ({ request, locals }) => {
+  const locale = getRequestLocale(request);
   try {
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return jsonError("Database not available", 503);
+      return jsonError(t(locale, "error.dbNotAvailable"), 503);
     }
 
     const db = getDb(D1Database);
     const ctx = await resolveBrokerContext(locals, db);
 
     if (!ctx.userId) {
-      return jsonError("Forbidden: No broker account", 403);
+      return jsonError(t(locale, "error.forbidden"), 403);
     }
 
     const body = await request.json();
     const validationResult = createExperienceSchema.safeParse(body);
 
     if (!validationResult.success) {
-      return jsonError("Validation failed", 400, validationResult.error.issues);
+      return jsonError(t(locale, "error.validationFailed"), 400, validationResult.error.issues);
     }
 
     const data = validationResult.data;
@@ -57,7 +60,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error creating experience:", error);
     return jsonError(
-      safeErrorMessage(error, "Failed to create experience"),
+      safeErrorMessage(error, "Failed to create experience", locale),
       mapErrorToStatus(error)
     );
   }
