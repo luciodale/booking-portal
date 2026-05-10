@@ -9,12 +9,17 @@ describe("todayStr", () => {
 });
 
 describe("toDate", () => {
-  it("returns correct Date at noon", () => {
+  it("returns correct Date at noon UTC", () => {
     const d = toDate("2026-02-18");
-    expect(d.getFullYear()).toBe(2026);
-    expect(d.getMonth()).toBe(1); // 0-indexed
-    expect(d.getDate()).toBe(18);
-    expect(d.getHours()).toBe(12);
+    expect(d.getUTCFullYear()).toBe(2026);
+    expect(d.getUTCMonth()).toBe(1);
+    expect(d.getUTCDate()).toBe(18);
+    expect(d.getUTCHours()).toBe(12);
+  });
+
+  it("produces consistent UTC milliseconds regardless of runtime timezone", () => {
+    const d = toDate("2026-06-15");
+    expect(d.getTime()).toBe(Date.UTC(2026, 5, 15, 12));
   });
 });
 

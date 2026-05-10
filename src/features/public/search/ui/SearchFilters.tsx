@@ -39,13 +39,14 @@ export function SearchFilters({
       </div>
       <div className="flex items-center gap-3">
         {showAvailabilityToggle && (
-          <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+          <span className="inline-flex items-center gap-2 cursor-pointer select-none">
             <span className="text-xs text-muted-foreground whitespace-nowrap">
               {t("search.onlyAvailable")}
             </span>
             <button
               type="button"
               role="switch"
+              aria-label={t("search.onlyAvailable")}
               aria-checked={onlyAvailable}
               onClick={() => onOnlyAvailableChange(!onlyAvailable)}
               className={cn(
@@ -60,7 +61,7 @@ export function SearchFilters({
                 )}
               />
             </button>
-          </label>
+          </span>
         )}
         <div className="flex rounded-full border border-border bg-card p-1 gap-0.5">
           {TIERS.map(({ value, labelKey }) => (

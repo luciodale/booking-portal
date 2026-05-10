@@ -64,5 +64,5 @@ export function useSearchPrices(
       }
     }
     return map;
-  }, [properties, queries, enabled]);
+  }, [properties, queries, enabled, checkOut]);
 }

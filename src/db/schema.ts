@@ -278,7 +278,7 @@ export const bookings = sqliteTable(
       .default("pending"),
 
     // Payment
-    stripeSessionId: text("stripe_session_id"),
+    stripeSessionId: text("stripe_session_id").notNull(),
     stripePaymentIntentId: text("stripe_payment_intent_id"),
     paidAt: text("paid_at"),
 
@@ -297,6 +297,7 @@ export const bookings = sqliteTable(
     index("idx_bookings_user").on(table.userId),
     index("idx_bookings_status").on(table.status),
     index("idx_bookings_dates").on(table.checkIn, table.checkOut),
+    index("idx_bookings_overlap").on(table.assetId, table.status, table.checkIn, table.checkOut),
     uniqueIndex("idx_bookings_stripe_session").on(table.stripeSessionId),
     index("idx_bookings_stripe_pi").on(table.stripePaymentIntentId),
   ]

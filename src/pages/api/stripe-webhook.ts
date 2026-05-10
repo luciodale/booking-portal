@@ -230,9 +230,32 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (overlap) {
       await log.error({
         source: "stripe-webhook",
-        message: `Overlapping booking detected for property ${meta.propertyId} (${meta.checkIn} - ${meta.checkOut}), existing: ${overlap.id}`,
+        message: `Overlapping booking rejected for property ${meta.propertyId} (${meta.checkIn} - ${meta.checkOut}), existing: ${overlap.id}`,
         metadata: { stripeSessionId: session.id, overlapBookingId: overlap.id },
       });
+
+      const pi =
+        typeof session.payment_intent === "string"
+          ? session.payment_intent
+          : null;
+      if (pi) {
+        try {
+          await stripe.refunds.create({ payment_intent: pi });
+          await log.info({
+            source: "stripe-webhook",
+            message: `Auto-refund issued for overlapping booking on property ${meta.propertyId}`,
+            metadata: { paymentIntentId: pi, overlapBookingId: overlap.id },
+          });
+        } catch (refundErr) {
+          await log.error({
+            source: "stripe-webhook",
+            message: `Auto-refund failed for overlapping booking: ${refundErr instanceof Error ? refundErr.message : "Unknown"}`,
+            metadata: { paymentIntentId: pi },
+          });
+        }
+      }
+
+      return new Response("Booking rejected: dates overlap", { status: 409 });
     }
 
     const bookingId = nanoid();

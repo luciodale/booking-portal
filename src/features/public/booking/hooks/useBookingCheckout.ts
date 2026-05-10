@@ -2,8 +2,8 @@ import { createCheckoutSession } from "@/features/public/booking/api/createCheck
 import type { CityTax } from "@/features/public/booking/domain/pricingTypes";
 import { buildSignInRedirect } from "@/modules/auth/redirect";
 import { multiplyCents } from "@/modules/money/money";
+import { showError } from "@/modules/ui/react/stores/notificationStore";
 import { useState } from "react";
-import { toast } from "sonner";
 
 type BookingGuestInput = {
   firstName: string;
@@ -38,7 +38,7 @@ export function useBookingCheckout(params: {
       !params.nightPriceCents ||
       !params.currency
     ) {
-      toast.error("Please select dates and verify availability first.");
+      showError("Please select dates and verify availability first.");
       return;
     }
 
@@ -79,7 +79,7 @@ export function useBookingCheckout(params: {
       });
       window.location.href = result.url;
     } catch (error) {
-      toast.error(
+      showError(
         error instanceof Error
           ? error.message
           : "Something didn't work. Please try again or contact the host."

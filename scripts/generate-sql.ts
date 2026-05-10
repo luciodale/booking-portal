@@ -36,8 +36,8 @@ function jsonArray(arr: string[]): string {
 }
 
 function generateUserInsert(user: SeedUser): string {
-  return `INSERT INTO users (id, name, email, whatsapp_number, bio, avatar_url, verified)
-VALUES (${escapeString(user.id)}, ${escapeString(user.name)}, ${escapeString(user.email)}, ${escapeString(user.whatsappNumber)}, ${escapeString(user.bio)}, ${escapeString(user.avatarUrl)}, ${boolToInt(user.verified)});`;
+  return `INSERT INTO users (id, name, email, whatsapp_number, bio, avatar_url, verified, stripe_setup_complete, stripe_connected_account_id)
+VALUES (${escapeString(user.id)}, ${escapeString(user.name)}, ${escapeString(user.email)}, ${escapeString(user.whatsappNumber)}, ${escapeString(user.bio)}, ${escapeString(user.avatarUrl)}, ${boolToInt(user.verified)}, ${boolToInt(user.stripeSetupComplete)}, ${escapeString(user.stripeConnectedAccountId)});`;
 }
 
 function jsonValue(val: unknown): string {
@@ -71,15 +71,23 @@ VALUES (${escapeString(ctx.id)}, ${escapeString(ctx.userId)}, ${escapeString(ctx
 }
 
 function generateDeleteStatements(): string {
-  // Only delete from tables we seed (children first)
-  // Other tables (reviews, bookings, experience_bookings, etc.) are cleared by teardown
-  return `-- Clean existing data
+  return `-- Clean existing data (FK-dependent tables first)
+PRAGMA foreign_keys = OFF;
+DELETE FROM broker_fee_overrides;
+DELETE FROM event_logs;
+DELETE FROM broker_logs;
+DELETE FROM reviews;
+DELETE FROM experience_bookings;
+DELETE FROM bookings;
+DELETE FROM asset_experiences;
+DELETE FROM experience_images;
 DELETE FROM images;
 DELETE FROM city_tax_defaults;
 DELETE FROM pms_integrations;
 DELETE FROM experiences;
 DELETE FROM assets;
 DELETE FROM users;
+PRAGMA foreign_keys = ON;
 `;
 }
 

@@ -24,6 +24,8 @@ export type SeedUser = Required<
     | "bio"
     | "avatarUrl"
     | "verified"
+    | "stripeSetupComplete"
+    | "stripeConnectedAccountId"
   >
 >;
 
@@ -119,6 +121,8 @@ export const users: SeedUser[] = [
     bio: "Specializing in luxury properties across Europe",
     avatarUrl: null,
     verified: true,
+    stripeSetupComplete: true,
+    stripeConnectedAccountId: null,
   },
   {
     id: "seed_broker_001",
@@ -128,6 +132,19 @@ export const users: SeedUser[] = [
     bio: "Specializing in luxury properties across Europe",
     avatarUrl: null,
     verified: true,
+    stripeSetupComplete: true,
+    stripeConnectedAccountId: null,
+  },
+  {
+    id: "user_3AlTumz3yrgUc7l7MmMtoQMs49l",
+    name: "Lucio D'Alessandro",
+    email: "lucio.dalessa@gmail.com",
+    whatsappNumber: "+39 333 123 4567",
+    bio: "Boutique holiday rentals in Italy",
+    avatarUrl: null,
+    verified: true,
+    stripeSetupComplete: true,
+    stripeConnectedAccountId: "acct_1T9V5jH3s9j7agcP",
   },
 ];
 
@@ -681,6 +698,48 @@ Walking distance to the English Garden and excellent public transport connection
     instantBook: true,
     showFullAddress: true,
   },
+  {
+    id: "florence-apartment",
+    userId: "user_3AlTumz3yrgUc7l7MmMtoQMs49l",
+    smoobuPropertyId: 100007,
+    tier: "premium",
+    status: "published",
+    title: "Oltrarno Artisan Apartment",
+    description: `A charming apartment in Florence's Oltrarno quarter, steps from Palazzo Pitti and the Boboli Gardens. Terracotta floors, exposed wooden beams, and large windows flooding the space with natural light.
+
+The neighborhood is home to traditional artisan workshops, trattorias, and the lively Santo Spirito piazza. Cross the Ponte Vecchio to reach the Duomo in ten minutes on foot.`,
+    shortDescription:
+      "Artisan apartment in Oltrarno, steps from Palazzo Pitti.",
+    street: "Via Maggio 35",
+    zip: "50125",
+    city: "Florence",
+    country: "Italy",
+    latitude: "43.7676",
+    longitude: "11.2487",
+    maxOccupancy: 4,
+    bedrooms: 2,
+    bathrooms: 1,
+    sqMeters: 85,
+    amenities: [
+      { name: "wifi", icon: "wifi" },
+      { name: "kitchen", icon: "utensils-crossed" },
+      { name: "washing-machine", icon: "alarm-smoke" },
+      { name: "air-conditioning", icon: "snowflake" },
+      { name: "heating", icon: "thermometer" },
+    ],
+    views: [{ name: "city-views", icon: "landmark" }],
+    highlights: [
+      { name: "palazzo-pitti", icon: "landmark" },
+      { name: "walking-distance", icon: "check" },
+      { name: "artisan-quarter", icon: "palette" },
+    ],
+    additionalCosts: [
+      { label: "Cleaning fee", amount: 7000, per: "stay" },
+      { label: "Tourist tax", amount: 350, per: "night_per_guest", maxNights: 7 },
+    ],
+    instantBook: true,
+    showFullAddress: true,
+  },
 ];
 
 // ============================================================================
@@ -1130,6 +1189,34 @@ export const images: SeedImage[] = [
     order: 1,
     sourcePath: "properties/barcelona/living.webp",
   },
+  // Florence Apartment (reuse mallorca images)
+  {
+    id: "img-florence-1",
+    assetId: "florence-apartment",
+    r2Key: "properties/mallorca/living-room.webp",
+    alt: "Florence apartment living room",
+    isPrimary: true,
+    order: 0,
+    sourcePath: "properties/mallorca/living-room.webp",
+  },
+  {
+    id: "img-florence-2",
+    assetId: "florence-apartment",
+    r2Key: "properties/mallorca/bedroom.webp",
+    alt: "Apartment bedroom",
+    isPrimary: false,
+    order: 1,
+    sourcePath: "properties/mallorca/bedroom.webp",
+  },
+  {
+    id: "img-florence-3",
+    assetId: "florence-apartment",
+    r2Key: "properties/mallorca/kitchen.webp",
+    alt: "Apartment kitchen",
+    isPrimary: false,
+    order: 2,
+    sourcePath: "properties/mallorca/kitchen.webp",
+  },
 ];
 
 // ============================================================================
@@ -1394,6 +1481,14 @@ export const cityTaxDefaults: SeedCityTaxDefault[] = [
     amount: 400,
     maxNights: 7,
   },
+  {
+    id: "ctx-florence",
+    userId: "user_3AlTumz3yrgUc7l7MmMtoQMs49l",
+    city: "Florence",
+    country: "Italy",
+    amount: 350,
+    maxNights: 7,
+  },
 ];
 
 // ============================================================================
@@ -1406,6 +1501,13 @@ export const pmsIntegrations: SeedPmsIntegration[] = [
     provider: "smoobu",
     apiKey: "mock-api-key",
     pmsUserId: 50001,
+  },
+  {
+    id: "pms-seed-002",
+    userId: "user_3AlTumz3yrgUc7l7MmMtoQMs49l",
+    provider: "smoobu",
+    apiKey: "mock-api-key-lucio",
+    pmsUserId: 50002,
   },
 ];
 

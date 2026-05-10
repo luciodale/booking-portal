@@ -39,13 +39,13 @@ type MockApartment = {
     maxOccupancy: number;
     bedrooms: number;
     bathrooms: number;
-    doubleBeds: number;
-    singleBeds: number;
-    sofaBeds: number;
-    couches: number;
-    childBeds: number;
-    queenSizeBeds: number;
-    kingSizeBeds: number;
+    doubleBeds: number | null;
+    singleBeds: number | null;
+    sofaBeds: number | null;
+    couches: number | null;
+    childBeds: number | null;
+    queenSizeBeds: number | null;
+    kingSizeBeds: number | null;
   };
   equipments: string[];
   currency: string;
@@ -71,12 +71,12 @@ const MOCK_APARTMENTS: MockApartment[] = [
       bedrooms: 2,
       bathrooms: 2,
       doubleBeds: 1,
-      singleBeds: 0,
-      sofaBeds: 0,
-      couches: 0,
-      childBeds: 0,
+      singleBeds: null,
+      sofaBeds: null,
+      couches: null,
+      childBeds: null,
       queenSizeBeds: 1,
-      kingSizeBeds: 0,
+      kingSizeBeds: null,
     },
     equipments: [
       "WiFi",
@@ -106,12 +106,12 @@ const MOCK_APARTMENTS: MockApartment[] = [
       bedrooms: 1,
       bathrooms: 1,
       doubleBeds: 1,
-      singleBeds: 0,
-      sofaBeds: 0,
-      couches: 0,
-      childBeds: 0,
-      queenSizeBeds: 0,
-      kingSizeBeds: 0,
+      singleBeds: null,
+      sofaBeds: null,
+      couches: null,
+      childBeds: null,
+      queenSizeBeds: null,
+      kingSizeBeds: null,
     },
     equipments: [
       "WiFi",
@@ -141,12 +141,12 @@ const MOCK_APARTMENTS: MockApartment[] = [
       bedrooms: 2,
       bathrooms: 1,
       doubleBeds: 1,
-      singleBeds: 0,
-      sofaBeds: 0,
-      couches: 0,
-      childBeds: 0,
+      singleBeds: null,
+      sofaBeds: null,
+      couches: null,
+      childBeds: null,
       queenSizeBeds: 1,
-      kingSizeBeds: 0,
+      kingSizeBeds: null,
     },
     equipments: [
       "WiFi",
@@ -177,12 +177,12 @@ const MOCK_APARTMENTS: MockApartment[] = [
       bedrooms: 1,
       bathrooms: 1,
       doubleBeds: 1,
-      singleBeds: 0,
-      sofaBeds: 0,
-      couches: 0,
-      childBeds: 0,
-      queenSizeBeds: 0,
-      kingSizeBeds: 0,
+      singleBeds: null,
+      sofaBeds: null,
+      couches: null,
+      childBeds: null,
+      queenSizeBeds: null,
+      kingSizeBeds: null,
     },
     equipments: [
       "WiFi",
@@ -212,12 +212,12 @@ const MOCK_APARTMENTS: MockApartment[] = [
       bedrooms: 2,
       bathrooms: 1,
       doubleBeds: 1,
-      singleBeds: 0,
-      sofaBeds: 0,
-      couches: 0,
-      childBeds: 0,
+      singleBeds: null,
+      sofaBeds: null,
+      couches: null,
+      childBeds: null,
       queenSizeBeds: 1,
-      kingSizeBeds: 0,
+      kingSizeBeds: null,
     },
     equipments: [
       "WiFi",
@@ -247,12 +247,12 @@ const MOCK_APARTMENTS: MockApartment[] = [
       bedrooms: 1,
       bathrooms: 1,
       doubleBeds: 1,
-      singleBeds: 0,
-      sofaBeds: 0,
-      couches: 0,
-      childBeds: 0,
-      queenSizeBeds: 0,
-      kingSizeBeds: 0,
+      singleBeds: null,
+      sofaBeds: null,
+      couches: null,
+      childBeds: null,
+      queenSizeBeds: null,
+      kingSizeBeds: null,
     },
     equipments: [
       "WiFi",
@@ -264,6 +264,41 @@ const MOCK_APARTMENTS: MockApartment[] = [
     ],
     currency: "EUR",
     price: { minimal: "110", maximal: "180" },
+    type: { id: 1, name: "apartment" },
+  },
+  {
+    id: 100007,
+    name: "Oltrarno Artisan Apartment",
+    location: {
+      street: "Via Maggio 35",
+      zip: "50125",
+      city: "Florence",
+      country: "Italy",
+      latitude: "43.7676",
+      longitude: "11.2487",
+    },
+    timeZone: "Europe/Rome",
+    rooms: {
+      maxOccupancy: 4,
+      bedrooms: 2,
+      bathrooms: 1,
+      doubleBeds: 1,
+      singleBeds: null,
+      sofaBeds: null,
+      couches: null,
+      childBeds: null,
+      queenSizeBeds: 1,
+      kingSizeBeds: null,
+    },
+    equipments: [
+      "WiFi",
+      "Kitchen",
+      "Washing Machine",
+      "Air Conditioning",
+      "Heating",
+    ],
+    currency: "EUR",
+    price: { minimal: "130", maximal: "210" },
     type: { id: 1, name: "apartment" },
   },
   {
@@ -283,11 +318,11 @@ const MOCK_APARTMENTS: MockApartment[] = [
       bedrooms: 2,
       bathrooms: 1,
       doubleBeds: 1,
-      singleBeds: 0,
+      singleBeds: null,
       sofaBeds: 1,
-      couches: 0,
-      childBeds: 0,
-      queenSizeBeds: 0,
+      couches: null,
+      childBeds: null,
+      queenSizeBeds: null,
       kingSizeBeds: 1,
     },
     equipments: [
@@ -317,13 +352,13 @@ const MOCK_APARTMENTS: MockApartment[] = [
       maxOccupancy: 3,
       bedrooms: 1,
       bathrooms: 1,
-      doubleBeds: 0,
-      singleBeds: 0,
+      doubleBeds: null,
+      singleBeds: null,
       sofaBeds: 1,
-      couches: 0,
-      childBeds: 0,
+      couches: null,
+      childBeds: null,
       queenSizeBeds: 1,
-      kingSizeBeds: 0,
+      kingSizeBeds: null,
     },
     equipments: [
       "WiFi",
@@ -354,12 +389,12 @@ const MOCK_APARTMENTS: MockApartment[] = [
       bedrooms: 1,
       bathrooms: 1,
       doubleBeds: 1,
-      singleBeds: 0,
-      sofaBeds: 0,
-      couches: 0,
-      childBeds: 0,
-      queenSizeBeds: 0,
-      kingSizeBeds: 0,
+      singleBeds: null,
+      sofaBeds: null,
+      couches: null,
+      childBeds: null,
+      queenSizeBeds: null,
+      kingSizeBeds: null,
     },
     equipments: ["WiFi", "Kitchen", "Air Conditioning", "Washing Machine"],
     currency: "EUR",
@@ -448,11 +483,11 @@ const server = Bun.serve({
       });
     }
 
-    // GET /api/apartments — List all Smoobu apartments
+    // GET /api/apartments — List all Smoobu apartments (id + name only per docs)
     if (req.method === "GET" && pathname === "/api/apartments") {
       log("GET", pathname);
       return jsonResponse({
-        apartments: MOCK_APARTMENTS,
+        apartments: MOCK_APARTMENTS.map((a) => ({ id: a.id, name: a.name })),
       });
     }
 
@@ -486,13 +521,13 @@ const server = Bun.serve({
       for (const id of apartments) {
         if (hasOverlap(id, arrival, departure)) {
           errorMessages[String(id)] = {
-            errorCode: 0,
-            message: "Not available for selected dates",
+            errorCode: 402,
+            message: "The chosen day of arrival is not available",
           };
         } else if (nights < MIN_LENGTH_OF_STAY) {
           errorMessages[String(id)] = {
-            errorCode: 1,
-            message: `Minimum length of stay is ${MIN_LENGTH_OF_STAY} nights`,
+            errorCode: 401,
+            message: "The duration of the booking is too short.",
             minimumLengthOfStay: MIN_LENGTH_OF_STAY,
           };
         } else {
@@ -579,12 +614,12 @@ const server = Bun.serve({
           bedrooms: 2,
           bathrooms: 1,
           doubleBeds: 1,
-          singleBeds: 0,
-          sofaBeds: 0,
-          couches: 0,
-          childBeds: 0,
-          queenSizeBeds: 0,
-          kingSizeBeds: 0,
+          singleBeds: null,
+          sofaBeds: null,
+          couches: null,
+          childBeds: null,
+          queenSizeBeds: null,
+          kingSizeBeds: null,
         },
         equipments: ["WiFi", "Kitchen"],
         currency: "EUR",

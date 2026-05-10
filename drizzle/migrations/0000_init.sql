@@ -15,7 +15,7 @@ CREATE TABLE `assets` (
 	`id` text PRIMARY KEY NOT NULL,
 	`smoobu_property_id` integer,
 	`user_id` text NOT NULL,
-	`tier` text DEFAULT 'standard' NOT NULL,
+	`tier` text DEFAULT 'premium' NOT NULL,
 	`status` text DEFAULT 'draft' NOT NULL,
 	`title` text NOT NULL,
 	`description` text,
@@ -27,6 +27,7 @@ CREATE TABLE `assets` (
 	`latitude` text,
 	`longitude` text,
 	`show_full_address` integer DEFAULT true NOT NULL,
+	`cin` text,
 	`max_occupancy` integer,
 	`bedrooms` integer,
 	`bathrooms` integer,
@@ -73,7 +74,7 @@ CREATE TABLE `bookings` (
 	`total_price` integer NOT NULL,
 	`currency` text DEFAULT 'eur' NOT NULL,
 	`status` text DEFAULT 'pending' NOT NULL,
-	`stripe_session_id` text,
+	`stripe_session_id` text NOT NULL,
 	`stripe_payment_intent_id` text,
 	`paid_at` text,
 	`smoobu_reservation_id` integer,
@@ -88,6 +89,9 @@ CREATE INDEX `idx_bookings_asset` ON `bookings` (`asset_id`);--> statement-break
 CREATE INDEX `idx_bookings_user` ON `bookings` (`user_id`);--> statement-breakpoint
 CREATE INDEX `idx_bookings_status` ON `bookings` (`status`);--> statement-breakpoint
 CREATE INDEX `idx_bookings_dates` ON `bookings` (`check_in`,`check_out`);--> statement-breakpoint
+CREATE INDEX `idx_bookings_overlap` ON `bookings` (`asset_id`,`status`,`check_in`,`check_out`);--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_bookings_stripe_session` ON `bookings` (`stripe_session_id`);--> statement-breakpoint
+CREATE INDEX `idx_bookings_stripe_pi` ON `bookings` (`stripe_payment_intent_id`);--> statement-breakpoint
 CREATE TABLE `broker_fee_overrides` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
@@ -164,6 +168,7 @@ CREATE TABLE `experience_bookings` (
 CREATE INDEX `idx_exp_bookings_experience` ON `experience_bookings` (`experience_id`);--> statement-breakpoint
 CREATE INDEX `idx_exp_bookings_user` ON `experience_bookings` (`user_id`);--> statement-breakpoint
 CREATE INDEX `idx_exp_bookings_status` ON `experience_bookings` (`status`);--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_exp_bookings_stripe_session` ON `experience_bookings` (`stripe_session_id`);--> statement-breakpoint
 CREATE TABLE `experience_images` (
 	`id` text PRIMARY KEY NOT NULL,
 	`experience_id` text NOT NULL,
@@ -271,3 +276,6 @@ CREATE TABLE `users` (
 	`stripe_setup_complete` integer DEFAULT false NOT NULL,
 	`updated_at` text DEFAULT CURRENT_TIMESTAMP
 );
+--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_users_email` ON `users` (`email`);--> statement-breakpoint
+CREATE UNIQUE INDEX `idx_users_stripe_account` ON `users` (`stripe_connected_account_id`);
