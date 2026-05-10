@@ -2,7 +2,12 @@ import { useConnectStatus } from "@/features/broker/connect/queries/useConnectSt
 import { useCreateConnectAccount } from "@/features/broker/connect/queries/useCreateConnectAccount";
 import { useCreateAccountLink } from "@/features/broker/connect/queries/useCreateAccountLink";
 import { useCreateLoginLink } from "@/features/broker/connect/queries/useCreateLoginLink";
-import { AlertTriangle, CheckCircle, ExternalLink } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  ExternalLink,
+} from "lucide-react";
 
 export function ConnectOnboardingView() {
   const { data: connectStatus, isLoading } = useConnectStatus();
@@ -11,7 +16,7 @@ export function ConnectOnboardingView() {
   const createLoginLinkMutation = useCreateLoginLink();
 
   const isRevoked = connectStatus?.status === "revoked";
-  const isPending =
+  const isMutating =
     createAccountMutation.isPending || createLinkMutation.isPending;
 
   async function handleStartOnboarding() {
@@ -83,6 +88,29 @@ export function ConnectOnboardingView() {
     );
   }
 
+  if (connectStatus?.status === "pending") {
+    return (
+      <div className="max-w-lg mx-auto py-8 px-6">
+        <div className="rounded-lg border border-blue-500/30 bg-blue-50 dark:bg-blue-950/20 p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <Clock className="text-blue-600 dark:text-blue-400" size={24} />
+            <h2 className="text-lg font-semibold text-blue-700 dark:text-blue-400">
+              Verification in Progress
+            </h2>
+          </div>
+          <p className="text-sm text-blue-600 dark:text-blue-400/80">
+            Your details have been submitted. Stripe is verifying your account
+            — this usually takes a few moments.
+          </p>
+          <div className="mt-4 flex items-center gap-2 text-sm text-blue-600 dark:text-blue-400/80">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
+            Checking status...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-lg mx-auto py-8 px-6">
       <h1 className="text-2xl font-semibold mb-4">Set Up Payouts</h1>
@@ -118,10 +146,10 @@ export function ConnectOnboardingView() {
       <button
         type="button"
         onClick={handleStartOnboarding}
-        disabled={isPending}
+        disabled={isMutating}
         className="rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
       >
-        {isPending
+        {isMutating
           ? "Redirecting to Stripe..."
           : isRevoked
             ? "Reconnect Payouts"

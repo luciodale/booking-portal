@@ -3,8 +3,8 @@
  * Used by both property and experience forms/edit views.
  */
 
+import { centsToUnit, toCents } from "@/modules/money/money";
 import { cn } from "@/modules/utils/cn";
-import { CentsHint } from "./CentsHint";
 import { AddRowButton, RemoveRowButton } from "./ListEditorButtons";
 
 interface CostRow<P extends string = string> {
@@ -94,22 +94,23 @@ export function AdditionalCostsEditor<P extends string>({
               <div className="w-32">
                 <input
                   type="number"
-                  value={row.amount || ""}
+                  value={row.amount ? centsToUnit(row.amount) : ""}
                   onChange={(e) =>
                     updateRow(index, {
-                      amount: e.target.value === "" ? 0 : Number(e.target.value),
+                      amount:
+                        e.target.value === "" ? 0 : toCents(Number(e.target.value)),
                     })
                   }
                   disabled={disabled}
-                  placeholder="Cents"
+                  placeholder="EUR"
                   min={0}
+                  step="0.01"
                   className={cn(
                     "input w-full",
                     disabled && "opacity-50",
                     showErrors && row.amount <= 0 && "border-error"
                   )}
                 />
-                <CentsHint cents={row.amount} />
               </div>
 
               <div className="w-44">

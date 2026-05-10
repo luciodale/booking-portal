@@ -5,12 +5,12 @@
 
 import { propertyQueryKeys } from "@/features/broker/property/constants/queryKeys";
 import { useCityTaxDefault } from "@/features/broker/property/hooks/useCityTaxDefault";
-import { isItalyCountry } from "@/modules/countries";
 import { useUpsertCityTax } from "@/features/broker/property/hooks/useUpsertCityTax";
 import { useProperty } from "@/features/broker/property/queries/useProperty";
 import { useUpdateProperty } from "@/features/broker/property/queries/useUpdateProperty";
-import { CentsHint } from "@/modules/ui/react/CentsHint";
 import { getFacilityOptions } from "@/modules/constants";
+import { isItalyCountry } from "@/modules/countries";
+import { centsToUnit, toCents } from "@/modules/money/money";
 import {
   AdditionalCostsEditor,
   validateAdditionalCosts,
@@ -34,28 +34,28 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
   const { data: property, isLoading, error } = useProperty(propertyId);
   const updateProperty = useUpdateProperty();
 
-  const refreshProperty = () => {
+  function refreshProperty() {
     queryClient.invalidateQueries({
       queryKey: propertyQueryKeys.detail(propertyId),
     });
-  };
+  }
 
-  const saveField = async <K extends keyof UpdatePropertyInput>(
+  async function saveField<K extends keyof UpdatePropertyInput>(
     field: K,
     value: UpdatePropertyInput[K]
-  ) => {
+  ) {
     await updateProperty.mutateAsync({
       id: propertyId,
       data: { [field]: value },
     });
-  };
+  }
 
-  const saveFields = async (data: Partial<UpdatePropertyInput>) => {
+  async function saveFields(data: Partial<UpdatePropertyInput>) {
     await updateProperty.mutateAsync({
       id: propertyId,
       data,
     });
-  };
+  }
 
   if (isLoading) {
     return (
@@ -87,6 +87,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
             title: property.title,
             description: property.description ?? "",
             shortDescription: property.shortDescription ?? "",
+            cin: property.cin ?? "",
           }}
           onSave={(data) => saveFields(data)}
           renderFields={({ values, onChange, disabled }) => (
@@ -154,6 +155,24 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
                   rows={3}
                   maxLength={500}
                   className="input resize-none"
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="edit-cin"
+                  className="block text-sm font-medium text-foreground mb-1"
+                >
+                  CIN (Codice Identificativo Nazionale)
+                </label>
+                <input
+                  id="edit-cin"
+                  type="text"
+                  value={values.cin}
+                  onChange={(e) => onChange({ ...values, cin: e.target.value })}
+                  disabled={disabled}
+                  placeholder="IT012345C1A2B3C4D5"
+                  className="input"
                 />
               </div>
             </div>
@@ -224,15 +243,30 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
             return (
               <div className="space-y-6">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                  {numField("edit-maxOccupancy", "Max Occupancy", "maxOccupancy", { min: 1, max: 50 })}
-                  {numField("edit-bedrooms", "Bedrooms", "bedrooms", { max: 20 })}
-                  {numField("edit-bathrooms", "Bathrooms", "bathrooms", { max: 20 })}
-                  {numField("edit-sqMeters", "Size (m²)", "sqMeters", { min: 10 })}
+                  {numField(
+                    "edit-maxOccupancy",
+                    "Max Occupancy",
+                    "maxOccupancy",
+                    { min: 1, max: 50 }
+                  )}
+                  {numField("edit-bedrooms", "Bedrooms", "bedrooms", {
+                    max: 20,
+                  })}
+                  {numField("edit-bathrooms", "Bathrooms", "bathrooms", {
+                    max: 20,
+                  })}
+                  {numField("edit-sqMeters", "Size (m²)", "sqMeters", {
+                    min: 10,
+                  })}
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                   {numField("edit-doubleBeds", "Double Beds", "doubleBeds")}
                   {numField("edit-singleBeds", "Single Beds", "singleBeds")}
-                  {numField("edit-queenSizeBeds", "Queen Beds", "queenSizeBeds")}
+                  {numField(
+                    "edit-queenSizeBeds",
+                    "Queen Beds",
+                    "queenSizeBeds"
+                  )}
                   {numField("edit-kingSizeBeds", "King Beds", "kingSizeBeds")}
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
@@ -278,10 +312,8 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
       <section className="bg-card border border-border p-6 rounded-xl">
         <EditableSectionField
           title="Additional Costs"
-          description="Optional fees charged on top of the nightly rate (amounts in cents)."
-          values={{
-            additionalCosts: property.additionalCosts ?? [],
-          }}
+          description="Optional fees charged on top of the nightly rate."
+          values={{ additionalCosts: property.additionalCosts ?? [] }}
           onSave={(data) => saveField("additionalCosts", data.additionalCosts)}
           validate={(data) => validateAdditionalCosts(data.additionalCosts)}
           renderFields={({ values, onChange, disabled, showErrors }) => (
@@ -294,9 +326,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
                 { value: "night_per_guest", label: "Per Night Per Guest" },
               ]}
               showMaxNights
-              onChange={(costs) =>
-                onChange({ additionalCosts: costs })
-              }
+              onChange={(costs) => onChange({ additionalCosts: costs })}
               disabled={disabled}
               showErrors={showErrors}
             />
@@ -308,7 +338,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
       <section className="bg-card border border-border p-6 rounded-xl">
         <EditableSectionField
           title="Extras"
-          description="Optional add-ons guests can select during booking (amounts in cents)."
+          description="Optional add-ons guests can select during booking."
           values={{ extras: property.extras ?? [] }}
           onSave={(data) => saveField("extras", data.extras)}
           validate={(data) => validateExtras(data.extras)}
@@ -324,8 +354,18 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
       </section>
 
       {/* City Tax */}
-      {property.city && property.country && (
+      {property.city && property.country ? (
         <CityTaxSection city={property.city} country={property.country} />
+      ) : (
+        <section className="bg-card border border-border p-6 rounded-xl">
+          <h3 className="text-lg font-semibold text-foreground mb-2">
+            City Tax
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Set the property's city and country in the Location section above to
+            configure city tax.
+          </p>
+        </section>
       )}
 
       {/* Images */}
@@ -444,7 +484,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
           onSave={(data) =>
             saveFields({
               status: data.status as "draft" | "published" | "archived",
-              tier: data.tier as "elite" | "standard",
+              tier: data.tier as "elite" | "premium",
             })
           }
           renderFields={({ values, onChange, disabled }) => (
@@ -488,7 +528,7 @@ export function PropertyEditView({ propertyId }: PropertyEditViewProps) {
                   className="input"
                 >
                   <option value="elite">Elite</option>
-                  <option value="standard">Standard</option>
+                  <option value="premium">Premium</option>
                 </select>
               </div>
             </div>
@@ -510,7 +550,7 @@ function CityTaxSection({ city, country }: { city: string; country: string }) {
     <section className="bg-card border border-border p-6 rounded-xl">
       <EditableSectionField
         title="City Tax"
-        description={`Tourist tax for ${city}, ${country} (cents per person per night).`}
+        description={`Tourist tax for ${city}, ${country} (EUR per person per night).`}
         values={{
           amount: currentAmount,
           maxNights: currentMaxNights,
@@ -531,26 +571,26 @@ function CityTaxSection({ city, country }: { city: string; country: string }) {
                 htmlFor="edit-cityTaxAmount"
                 className="block text-sm font-medium text-foreground mb-1"
               >
-                Amount (cents/person/night)
+                Amount (EUR/person/night)
               </label>
               <input
                 id="edit-cityTaxAmount"
                 type="number"
-                value={values.amount ?? ""}
+                value={values.amount != null ? centsToUnit(values.amount) : ""}
                 onChange={(e) =>
                   onChange({
                     ...values,
                     amount:
                       e.target.value === ""
                         ? undefined
-                        : Number(e.target.value),
+                        : toCents(Number(e.target.value)),
                   })
                 }
                 disabled={disabled}
                 min={0}
+                step="0.01"
                 className="input"
               />
-              <CentsHint cents={values.amount} />
             </div>
             <div>
               <label

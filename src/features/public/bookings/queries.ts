@@ -26,7 +26,7 @@ export type BookingDetail = {
     id: string;
     title: string;
     city: string | null;
-    tier: "elite" | "standard";
+    tier: "elite" | "premium";
     location: string;
     imageUrl: string;
   };

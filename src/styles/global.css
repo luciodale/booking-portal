@@ -46,7 +46,7 @@
   --elite-glow: oklch(0.55 0.15 85 / 0.3);
 
   /* Standard tier */
-  --standard: oklch(0.7 0.01 260);
+  --premium: oklch(0.7 0.01 260);
 
   /* Marble tones */
   --marble-light: oklch(0.92 0.008 85);
@@ -121,7 +121,7 @@
   --elite-glow: oklch(0.75 0.12 85 / 0.3);
 
   /* Standard tier */
-  --standard: oklch(0.7 0.01 260);
+  --premium: oklch(0.7 0.01 260);
 
   /* Marble tones */
   --marble-light: oklch(0.92 0.008 85);
@@ -269,10 +269,10 @@
     box-shadow: 0 0 20px var(--elite-glow);
   }
 
-  /* Standard Badge */
-  .badge-standard {
+  /* Premium Badge */
+  .badge-premium {
     @apply inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-full;
-    background: var(--standard);
+    background: var(--premium);
     color: var(--foreground);
   }
 

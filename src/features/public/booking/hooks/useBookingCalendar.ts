@@ -1,5 +1,5 @@
 import { getDateRange } from "@/features/public/booking/domain/computeStayPrice";
-import { toCents } from "@/modules/money/money";
+import { sumCents, toCents } from "@/modules/money/money";
 import {
   addMonths,
   computeRateRange,
@@ -62,9 +62,6 @@ export function useBookingCalendar(
 
   const availabilityMutation = usePropertyAvailability(propertyId);
 
-  // Race-safe availability state: only the latest mutate() call's
-  // callbacks fire (TanStack Query guarantee), so stale responses
-  // from rapid date changes are automatically discarded.
   const [availData, setAvailData] = useState<SmoobuAvailabilityResponse | null>(
     null
   );
@@ -78,6 +75,27 @@ export function useBookingCalendar(
     setAvailLoading(false);
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mutate identity changes every render but the function is referentially stable per TanStack Query
+  const checkAvailability = useCallback(
+    (arrival: string, departure: string, guestCount: number | null) => {
+      setAvailLoading(true);
+      availabilityMutation.mutate(
+        { arrivalDate: arrival, departureDate: departure, guests: guestCount ?? undefined },
+        {
+          onSuccess: (data) => {
+            setAvailData(data);
+            setAvailLoading(false);
+          },
+          onError: (error) => {
+            setAvailError(error);
+            setAvailLoading(false);
+          },
+        }
+      );
+    },
+    []
+  );
+
   const currency = ratesQuery.data?.currency ?? null;
 
   const rateMap = useMemo((): Record<string, SmoobuRateDay> => {
@@ -90,21 +108,8 @@ export function useBookingCalendar(
     if (!pendingUrlCheck) return;
     if (!checkIn || !checkOut) return;
     setPendingUrlCheck(false);
-    setAvailLoading(true);
-    availabilityMutation.mutate(
-      { arrivalDate: checkIn, departureDate: checkOut, guests: guests ?? undefined },
-      {
-        onSuccess: (data) => {
-          setAvailData(data);
-          setAvailLoading(false);
-        },
-        onError: (error) => {
-          setAvailError(error);
-          setAvailLoading(false);
-        },
-      }
-    );
-  }, [pendingUrlCheck, checkIn, checkOut, guests, availabilityMutation.mutate]);
+    checkAvailability(checkIn, checkOut, guests);
+  }, [pendingUrlCheck, checkIn, checkOut, guests, checkAvailability]);
 
   // Re-check availability when guest count changes with dates already selected
   const prevGuestsRef = useRef(guests);
@@ -112,21 +117,8 @@ export function useBookingCalendar(
     if (prevGuestsRef.current === guests) return;
     prevGuestsRef.current = guests;
     if (!checkIn || !checkOut) return;
-    setAvailLoading(true);
-    availabilityMutation.mutate(
-      { arrivalDate: checkIn, departureDate: checkOut, guests: guests ?? undefined },
-      {
-        onSuccess: (data) => {
-          setAvailData(data);
-          setAvailLoading(false);
-        },
-        onError: (error) => {
-          setAvailError(error);
-          setAvailLoading(false);
-        },
-      }
-    );
-  }, [guests, checkIn, checkOut, availabilityMutation.mutate]);
+    checkAvailability(checkIn, checkOut, guests);
+  }, [guests, checkIn, checkOut, checkAvailability]);
 
   const goNextMonth = useCallback(() => {
     setCurrentMonth((m) => addMonths(m, 1));
@@ -146,20 +138,7 @@ export function useBookingCalendar(
       if (shouldAutoClose()) {
         setCalendarOpen(false);
       }
-      setAvailLoading(true);
-      availabilityMutation.mutate(
-        { arrivalDate: checkIn, departureDate: dateStr, guests: guests ?? undefined },
-        {
-          onSuccess: (data) => {
-            setAvailData(data);
-            setAvailLoading(false);
-          },
-          onError: (error) => {
-            setAvailError(error);
-            setAvailLoading(false);
-          },
-        }
-      );
+      checkAvailability(checkIn, dateStr, guests);
     } else {
       setCheckIn(dateStr);
       setCheckOut(null);
@@ -200,9 +179,7 @@ export function useBookingCalendar(
 
   const totalPriceCents = useMemo(
     () =>
-      nightPriceCents
-        ? Object.values(nightPriceCents).reduce((sum, c) => sum + c, 0)
-        : null,
+      nightPriceCents ? sumCents(Object.values(nightPriceCents)) : null,
     [nightPriceCents]
   );
 

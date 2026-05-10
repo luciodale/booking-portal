@@ -272,7 +272,7 @@ There is WIFI TV in the whole house with Netflix, Amazon Prime and Apple TV+. Th
     id: "barcelona-penthouse",
     userId: "seed_broker_001",
     smoobuPropertyId: 100001,
-    tier: "standard",
+    tier: "premium",
     status: "published",
     title: "Modern Downtown Penthouse",
     description: `A charming apartment in the heart of Barcelona's Eixample district. Walking distance to Gaudí's masterpieces and the best tapas bars in the city.
@@ -364,7 +364,7 @@ The property features lush gardens, a private dock, and interiors designed by a 
     id: "lisbon-loft",
     userId: "seed_broker_001",
     smoobuPropertyId: 100002,
-    tier: "standard",
+    tier: "premium",
     status: "published",
     title: "Alfama District Art Loft",
     description: `A stylish loft in Lisbon's historic Alfama district, blending traditional azulejo tiles with contemporary design.
@@ -458,7 +458,7 @@ Hand-crafted timber interiors, a private outdoor hot tub, and ski-in/ski-out acc
     id: "nice-apartment",
     userId: "seed_broker_001",
     smoobuPropertyId: 100003,
-    tier: "standard",
+    tier: "premium",
     status: "published",
     title: "Promenade des Anglais Apartment",
     description: `Bright two-bedroom apartment along Nice's famous Promenade des Anglais, just steps from the pebbly beach.
@@ -553,7 +553,7 @@ Traditional Cycladic architecture meets contemporary luxury, with a private chef
     id: "vienna-studio",
     userId: "seed_broker_001",
     smoobuPropertyId: 100004,
-    tier: "standard",
+    tier: "premium",
     status: "published",
     title: "Ringstrasse Art Nouveau Studio",
     description: `A beautifully restored Art Nouveau studio steps from the Vienna State Opera and the Ringstrasse boulevard.
@@ -598,7 +598,7 @@ High ceilings, original parquet floors, and curated period furniture blend seaml
     id: "porto-townhouse",
     userId: "seed_broker_001",
     smoobuPropertyId: 100005,
-    tier: "standard",
+    tier: "premium",
     status: "published",
     title: "Ribeira Townhouse Duplex",
     description: `A stylish duplex in Porto's UNESCO-listed Ribeira district, overlooking the Douro River and the iconic Dom Luís I Bridge.
@@ -643,7 +643,7 @@ The ground floor features an open-plan living area with exposed stone walls; the
     id: "munich-loft",
     userId: "seed_broker_001",
     smoobuPropertyId: 100006,
-    tier: "standard",
+    tier: "premium",
     status: "published",
     title: "Schwabing Industrial Loft",
     description: `A converted industrial loft in Munich's creative Schwabing quarter. Exposed brick, steel beams, and polished concrete floors meet designer furniture and a fully equipped kitchen.

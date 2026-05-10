@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }) as ClerkWebhookEvent;
   } catch (err) {
     console.error("Clerk webhook signature verification failed:", err);
-    log.error({
+    await log.error({
       source: "clerk-webhook",
       message: "Webhook signature verification failed",
       metadata: { error: err instanceof Error ? err.message : String(err) },
@@ -68,7 +68,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const email = data.email_addresses[0]?.email_address;
 
   if (!email) {
-    log.error({
+    await log.error({
       source: "clerk-webhook",
       message: `No email found for Clerk user ${data.id}`,
       metadata: { clerkUserId: data.id },
@@ -89,7 +89,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       avatarUrl: data.image_url,
     });
 
-    log.info({
+    await log.info({
       source: "clerk-webhook",
       message: `User created for Clerk user ${data.id}`,
       metadata: { clerkUserId: data.id, email },
@@ -98,7 +98,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return new Response("OK", { status: 200 });
   } catch (error) {
     console.error("Failed to insert user from Clerk webhook:", error);
-    log.error({
+    await log.error({
       source: "clerk-webhook",
       message: `Failed to insert user for Clerk user ${data.id}`,
       metadata: {

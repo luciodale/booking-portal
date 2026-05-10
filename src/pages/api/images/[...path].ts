@@ -7,10 +7,12 @@ import type { APIRoute } from "astro";
 
 export const prerender = false;
 
+const ALLOWED_PREFIXES = ["properties/", "experiences/"];
+
 export const GET: APIRoute = async ({ params, locals }) => {
   const path = params.path;
 
-  if (!path) {
+  if (!path || !ALLOWED_PREFIXES.some((p) => path.startsWith(p))) {
     return new Response("Not found", { status: 404 });
   }
 

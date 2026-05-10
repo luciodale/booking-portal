@@ -62,7 +62,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     assertBrokerOwnership(experience, ctx);
 
-    const uploadedImages = [];
     const files = formData.getAll("images") as File[];
 
     if (files.length === 0) {
@@ -73,11 +72,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return jsonError("Maximum 20 images allowed per upload", 400);
     }
 
+    // Phase 1: validate all files
+    const prepared: Array<{
+      isPrimary: boolean;
+      alt: string;
+      arrayBuffer: ArrayBuffer;
+      r2Key: string;
+      imageId: string;
+    }> = [];
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const isPrimary = formData.get("isPrimary") === String(i);
-      const alt = (formData.get(`alt_${i}`) as string) || file.name;
-
+      const rawAlt = (formData.get(`alt_${i}`) as string) || file.name;
+      const alt = rawAlt.replace(/<[^>]*>/g, "").slice(0, 500);
       const arrayBuffer = await file.arrayBuffer();
 
       if (!validateImageType(arrayBuffer)) {
@@ -96,34 +104,55 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       const filename = file.name.replace(/\.[^.]+$/, ".webp");
       const r2Key = generateExperienceImageKey(experienceId, filename, isPrimary);
-
-      await uploadImageToR2(R2Bucket, r2Key, arrayBuffer, {
-        contentType: "image/webp",
-        alt,
-      });
-
       const imageId = genUniqueId("eimg");
 
-      const [savedImage] = await db
-        .insert(experienceImages)
-        .values({
-          id: imageId,
-          experienceId,
-          r2Key,
-          alt,
-          isPrimary,
-          order: i,
-          createdAt: new Date().toISOString(),
-        })
-        .returning();
-
-      uploadedImages.push({
-        ...savedImage,
-        url: generateImageUrl(r2Key),
-      });
+      prepared.push({ isPrimary, alt, arrayBuffer, r2Key, imageId });
     }
 
-    return jsonSuccess({ images: uploadedImages }, 201);
+    // Phase 2: upload all to R2, rolling back on failure
+    const uploadedR2Keys: string[] = [];
+    try {
+      for (const item of prepared) {
+        await uploadImageToR2(R2Bucket, item.r2Key, item.arrayBuffer, {
+          contentType: "image/webp",
+          alt: item.alt,
+        });
+        uploadedR2Keys.push(item.r2Key);
+      }
+    } catch (r2Error) {
+      for (const key of uploadedR2Keys) {
+        try {
+          await R2Bucket.delete(key);
+        } catch {}
+      }
+      throw r2Error;
+    }
+
+    // Phase 3: batch insert all DB records
+    const dbRows = prepared.map((item, i) => ({
+      id: item.imageId,
+      experienceId,
+      r2Key: item.r2Key,
+      alt: item.alt,
+      isPrimary: item.isPrimary,
+      order: i,
+      createdAt: new Date().toISOString(),
+    }));
+
+    const savedImages = await db
+      .insert(experienceImages)
+      .values(dbRows)
+      .returning();
+
+    return jsonSuccess(
+      {
+        images: savedImages.map((img) => ({
+          ...img,
+          url: generateImageUrl(img.r2Key),
+        })),
+      },
+      201
+    );
   } catch (error) {
     console.error("Error uploading experience images:", error);
     return jsonError(

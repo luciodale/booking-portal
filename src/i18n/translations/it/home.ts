@@ -10,13 +10,13 @@ export const home: Record<keyof typeof en, string> = {
     "Proprietà di lusso selezionate per il viaggiatore più esigente",
   "home.eliteTagline": "Dove il lusso incontra la perfezione",
   "home.eliteCta": "Esplora Elite",
-  "home.standardDescription":
+  "home.premiumDescription":
     "Soggiorni di qualità a un valore eccezionale",
-  "home.standardTagline": "Comfort senza compromessi",
-  "home.standardFeature1": "Qualità verificata",
-  "home.standardFeature2": "Miglior prezzo garantito",
-  "home.standardFeature3": "Cancellazione flessibile",
-  "home.standardCta": "Esplora Standard",
+  "home.premiumTagline": "Comfort senza compromessi",
+  "home.premiumFeature1": "Qualità verificata",
+  "home.premiumFeature2": "Miglior prezzo garantito",
+  "home.premiumFeature3": "Cancellazione flessibile",
+  "home.premiumCta": "Esplora Premium",
   "home.ctaHeading": "Pronto a pubblicare la tua {gradient}",
   "home.ctaGradient": "proprietà?",
   "home.ctaDescription":

@@ -1,27 +1,6 @@
 import { describe, expect, test } from "vitest";
-import { z } from "zod";
-
-function toCents(amount: number): number {
-  return Math.round(amount * 100);
-}
-
-const checkoutBodySchema = z.object({
-  propertyId: z.string().min(1),
-  checkIn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  checkOut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  guests: z.number().int().min(1),
-  currency: z.string().min(1),
-  nightPriceCents: z.record(z.string(), z.number().int().nonnegative()),
-  guestInfo: z.object({
-    firstName: z.string().min(1),
-    lastName: z.string().min(1),
-    email: z.string().email(),
-    phone: z.string().optional(),
-    adults: z.number().int().min(1),
-    children: z.number().int().min(0),
-    guestNote: z.string().optional(),
-  }),
-});
+import { checkoutBodySchema } from "@/schemas/checkout";
+import { toCents } from "@/modules/money/money";
 
 function makeValidBody(overrides: Record<string, unknown> = {}) {
   return {
@@ -36,6 +15,8 @@ function makeValidBody(overrides: Record<string, unknown> = {}) {
       "2025-07-03": 12500,
       "2025-07-04": 12500,
     },
+    cityTaxCents: 800,
+    selectedExtraIndices: [],
     guestInfo: {
       firstName: "John",
       lastName: "Doe",
@@ -98,6 +79,20 @@ describe("checkout request validation", () => {
     expect(result.success).toBe(false);
   });
 
+  test("rejects negative cityTaxCents", () => {
+    const result = checkoutBodySchema.safeParse(
+      makeValidBody({ cityTaxCents: -100 })
+    );
+    expect(result.success).toBe(false);
+  });
+
+  test("rejects non-integer selectedExtraIndices", () => {
+    const result = checkoutBodySchema.safeParse(
+      makeValidBody({ selectedExtraIndices: [1.5] })
+    );
+    expect(result.success).toBe(false);
+  });
+
   test("accepts valid request", () => {
     const result = checkoutBodySchema.safeParse(
       makeValidBody({
@@ -113,6 +108,15 @@ describe("checkout request validation", () => {
       })
     );
     expect(result.success).toBe(true);
+  });
+
+  test("defaults selectedExtraIndices to empty array", () => {
+    const { selectedExtraIndices: _, ...body } = makeValidBody();
+    const result = checkoutBodySchema.safeParse(body);
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.selectedExtraIndices).toEqual([]);
+    }
   });
 });
 

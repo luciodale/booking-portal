@@ -1,7 +1,6 @@
 type PaymentSplitInput = {
   nightlyTotalCents: number;
   additionalCostsCents: number;
-  extrasCents: number;
   cityTaxCents: number;
   feePercent: number;
   withholdingPercent: number;
@@ -16,11 +15,13 @@ type PaymentSplit = {
   hostPayoutCents: number;
 };
 
-import { percentOfCents } from "@/modules/money/money";
+import { percentOfCents, sumCents } from "@/modules/money/money";
 
 export function computePaymentSplit(input: PaymentSplitInput): PaymentSplit {
-  const taxableBaseCents =
-    input.nightlyTotalCents + input.additionalCostsCents;
+  const taxableBaseCents = sumCents([
+    input.nightlyTotalCents,
+    input.additionalCostsCents,
+  ]);
 
   const platformFeeCents = percentOfCents(taxableBaseCents, input.feePercent);
 
@@ -29,13 +30,16 @@ export function computePaymentSplit(input: PaymentSplitInput): PaymentSplit {
     input.withholdingPercent
   );
 
-  const applicationFeeCents = platformFeeCents + withholdingTaxCents;
+  const applicationFeeCents = sumCents([
+    platformFeeCents,
+    withholdingTaxCents,
+  ]);
 
-  const guestTotalCents =
-    input.nightlyTotalCents +
-    input.additionalCostsCents +
-    input.extrasCents +
-    input.cityTaxCents;
+  const guestTotalCents = sumCents([
+    input.nightlyTotalCents,
+    input.additionalCostsCents,
+    input.cityTaxCents,
+  ]);
 
   const hostPayoutCents = guestTotalCents - applicationFeeCents;
 

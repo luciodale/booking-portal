@@ -37,7 +37,7 @@ function TierCard({
   selected,
   onSelect,
 }: {
-  tier: "elite" | "standard";
+  tier: "elite" | "premium";
   title: string;
   description: string;
   selected: boolean;
@@ -73,7 +73,7 @@ function CreatePropertyPage() {
     useIsPmsIntegrated();
   const listingsQuery = useIntegrationListings(!!isIntegrated);
 
-  const [selectedTier, setSelectedTier] = useState<"elite" | "standard" | null>(
+  const [selectedTier, setSelectedTier] = useState<"elite" | "premium" | null>(
     null
   );
   const [selectedListing, setSelectedListing] = useState<{
@@ -209,11 +209,11 @@ function CreatePropertyPage() {
               onSelect={() => setSelectedTier("elite")}
             />
             <TierCard
-              tier="standard"
-              title="Standard"
+              tier="premium"
+              title="Premium"
               description="Quality vacation rentals with all essential features."
-              selected={selectedTier === "standard"}
-              onSelect={() => setSelectedTier("standard")}
+              selected={selectedTier === "premium"}
+              onSelect={() => setSelectedTier("premium")}
             />
           </div>
         </div>

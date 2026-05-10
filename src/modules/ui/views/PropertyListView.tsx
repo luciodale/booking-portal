@@ -56,7 +56,7 @@ export function PropertyList() {
           options={[
             { value: "", label: "All Tiers" },
             { value: "elite", label: "Elite" },
-            { value: "standard", label: "Standard" },
+            { value: "premium", label: "Premium" },
           ]}
           placeholder="All Tiers"
           className="w-auto min-w-36"
@@ -162,7 +162,7 @@ export function PropertyList() {
                       className={
                         property.tier === "elite"
                           ? "badge-elite"
-                          : "badge-standard"
+                          : "badge-premium"
                       }
                     >
                       {property.tier}

@@ -47,10 +47,9 @@ export async function upsertBrokerFee(
 export async function deleteBrokerFee(
   userId: string
 ): Promise<{ deleted: boolean }> {
-  const response = await fetch("/api/admin/broker-fees", {
+  const params = new URLSearchParams({ userId });
+  const response = await fetch(`/api/admin/broker-fees?${params.toString()}`, {
     method: "DELETE",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId }),
   });
   const json = (await response.json()) as {
     success: boolean;

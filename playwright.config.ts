@@ -1,7 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
+import dotenv from "dotenv";
+
+dotenv.config({ path: ".dev.vars" });
+dotenv.config({ path: ".env" });
 
 export default defineConfig({
-  testDir: "./playwright",
+  globalSetup: "./e2e/global-setup.ts",
+  testDir: "./e2e/tests",
 
   // Run tests in parallel
   fullyParallel: true,

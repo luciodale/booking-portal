@@ -54,7 +54,7 @@ const experienceFieldsSchema = baseExperienceInsertSchema
     basePrice: z
       .number()
       .int()
-      .min(100, "Base price must be at least 1 EUR (100 cents)")
+      .min(100, "Base price must be at least 1 EUR")
       .max(100000000, "Base price too high"),
     additionalCosts: z
       .array(

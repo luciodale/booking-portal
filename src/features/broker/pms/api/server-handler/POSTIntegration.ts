@@ -1,11 +1,8 @@
 import { getDb } from "@/db";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
-import type {
-  TPostIntegrationsRequest,
-  TPostIntegrationsResponse,
-} from "@/features/broker/pms/api/types";
-import { availablePms } from "@/features/broker/pms/constants/integrations";
+import type { TPostIntegrationsResponse } from "@/features/broker/pms/api/types";
 import { insertIntegration } from "@/features/broker/pms/integrations/smoobu/insertIntegration";
+import { smoobuCreateBodySchema } from "@/features/broker/pms/integrations/smoobu/createBodySchema";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { t } from "@/i18n/t";
 import {
@@ -30,18 +27,20 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return jsonError(t(locale, "error.forbidden"), 403);
     }
 
-    const body = (await request.json()) as { provider?: string };
-    const provider = body?.provider;
-    if (!provider || !(availablePms as readonly string[]).includes(provider)) {
+    const raw = await request.json();
+    const parsed = smoobuCreateBodySchema.safeParse(raw);
+    if (!parsed.success) {
       return jsonError(t(locale, "error.invalidRequest"), 400);
     }
 
-    switch (provider) {
+    const body = parsed.data;
+
+    switch (body.provider) {
       case "smoobu": {
         const integration = await insertIntegration(
           D1Database,
           ctx.userId,
-          body as TPostIntegrationsRequest
+          body
         );
         return jsonSuccess(
           integration satisfies TPostIntegrationsResponse,

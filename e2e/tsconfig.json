@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true,
+    "paths": {
+      "@e2e/fixtures/*": ["./fixtures/*"],
+      "@e2e/helpers/*": ["./helpers/*"]
+    },
+    "baseUrl": "."
+  },
+  "include": ["**/*.ts"]
+}

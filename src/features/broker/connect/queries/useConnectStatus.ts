@@ -6,9 +6,13 @@ export const connectQueryKeys = {
   status: () => [...connectQueryKeys.all, "status"] as const,
 };
 
+const PENDING_POLL_INTERVAL = 5000;
+
 export function useConnectStatus() {
   return useQuery({
     queryKey: connectQueryKeys.status(),
     queryFn: fetchConnectStatus,
+    refetchInterval: (query) =>
+      query.state.data?.status === "pending" ? PENDING_POLL_INTERVAL : false,
   });
 }

@@ -57,7 +57,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
         ...normalizedData,
         id: propertyId,
         userId: ctx.userId,
-        tier: (normalizedData.tier || "elite") as "elite" | "standard",
+        tier: (normalizedData.tier || "elite") as "elite" | "premium",
         status: (normalizedData.status || "published") as
           | "draft"
           | "published"

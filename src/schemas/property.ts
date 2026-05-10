@@ -55,6 +55,8 @@ const propertyFieldsSchema = baseAssetInsertSchema
       .min(20, "Short description must be at least 20 characters")
       .max(500),
 
+    cin: z.string().min(1, "CIN is required"),
+
     street: z.string().min(1, "Street address is required"),
     zip: z.string().min(1, "Postal code is required"),
     city: z.string().min(2, "City is required"),

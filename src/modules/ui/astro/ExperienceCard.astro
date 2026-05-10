@@ -4,13 +4,13 @@ import { localePath } from "@/i18n/locale-path";
 import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { centsToUnit } from "@/modules/money/money";
+import { formatCentsAsPrice } from "@/modules/money/money";
 
 interface Props {
   experience: LinkedExperience;
   propertyTitle: string;
   ownerWhatsapp: string | null;
-  variant?: "standard" | "elite";
+  variant?: "premium" | "elite";
   locale?: Locale;
 }
 
@@ -18,7 +18,7 @@ const {
   experience: exp,
   propertyTitle,
   ownerWhatsapp,
-  variant = "standard",
+  variant = "premium",
   locale = (Astro.currentLocale ?? defaultLocale) as Locale,
 } = Astro.props;
 
@@ -26,8 +26,7 @@ const isElite = variant === "elite";
 const categoryIcon = exp.categoryIcon;
 
 function formatPrice(cents: number, currency: string) {
-  const symbol = currency === "eur" ? "\u20AC" : `${currency.toUpperCase()} `;
-  return `${symbol}${centsToUnit(cents).toLocaleString()}`;
+  return formatCentsAsPrice(cents, currency);
 }
 ---
 

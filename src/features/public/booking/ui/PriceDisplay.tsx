@@ -2,7 +2,6 @@ import { formatPrice } from "@/features/public/booking/domain/dateUtils";
 import type {
   CityTax,
   PropertyAdditionalCost,
-  PropertyExtra,
 } from "@/features/public/booking/domain/pricingTypes";
 import { centsToUnit } from "@/modules/money/money";
 import { usePriceDisplay } from "@/features/public/booking/hooks/usePriceDisplay";
@@ -20,8 +19,6 @@ type PriceDisplayProps = {
   availabilityLoading: boolean;
   availabilityError: Error | null;
   additionalCosts: PropertyAdditionalCost[] | null;
-  extras?: PropertyExtra[] | null;
-  selectedExtras?: Set<number>;
   guests: number | null;
   cityTax?: CityTax | null;
   onRetry?: () => void;
@@ -96,7 +93,7 @@ export function PriceDisplay({ onRetry, ...props }: PriceDisplayProps) {
       );
 
     case "available": {
-      const hasAdditionalCosts = state.additionalCostItems.length > 0 || state.extraItems.length > 0;
+      const hasAdditionalCosts = state.additionalCostItems.length > 0;
 
       if (!hasAdditionalCosts) {
         return (
@@ -127,7 +124,7 @@ export function PriceDisplay({ onRetry, ...props }: PriceDisplayProps) {
       return (
         <div className="space-y-3">
           <PriceBreakdown
-            items={[accommodationItem, ...state.additionalCostItems, ...state.extraItems]}
+            items={[accommodationItem, ...state.additionalCostItems]}
             total={{ label: "Total", amountCents: state.grandTotalCents }}
             currency={state.currency}
           />

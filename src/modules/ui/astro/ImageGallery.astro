@@ -2,10 +2,10 @@
 interface Props {
   images: string[];
   title: string;
-  variant?: "standard" | "elite";
+  variant?: "premium" | "elite";
 }
 
-const { images, title, variant = "standard" } = Astro.props;
+const { images, title, variant = "premium" } = Astro.props;
 const isElite = variant === "elite";
 ---
 

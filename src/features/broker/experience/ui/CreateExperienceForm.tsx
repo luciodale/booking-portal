@@ -3,7 +3,6 @@
  */
 
 import { experienceCategories } from "@/features/broker/experience/constants/categoryLabels";
-import { CentsHint } from "@/modules/ui/react/CentsHint";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
 import { IconSelectInput } from "@/modules/ui/react/form-inputs/IconSelectInput";
@@ -18,7 +17,7 @@ import { TextareaInput } from "@/modules/ui/react/form-inputs/TextareaInput";
 import type { CreateExperienceInput } from "@/schemas/experience";
 import { createExperienceSchema } from "@/schemas/experience";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 export interface CreateExperienceFormData extends CreateExperienceInput {
@@ -60,7 +59,6 @@ export function CreateExperienceForm({
   const images = watch("images");
   const additionalCosts = watch("additionalCosts") ?? [];
   const instantBook = watch("instantBook") ?? false;
-  const basePriceValue = useWatch({ control, name: "basePrice" });
 
   const categoryDefaultOptions = experienceCategories.map((c) => ({
     value: c.id,
@@ -151,11 +149,11 @@ export function CreateExperienceForm({
         <NumberInput
           name="basePrice"
           control={control}
-          label="Base Price (cents)"
+          label="Base Price (EUR)"
           required
-          description="Price per person in cents (e.g., 25000 = 250.00 EUR)"
-          min={100}
-          labelSuffix={<CentsHint cents={basePriceValue} />}
+          description="Price per person in EUR"
+          min={1}
+          centsMode
         />
 
         <SelectInput
@@ -172,7 +170,7 @@ export function CreateExperienceForm({
 
       <FormSection title="Additional Costs">
         <p className="text-sm text-muted-foreground">
-          Optional fees charged on top of the base price (amounts in cents).
+          Optional fees charged on top of the base price.
         </p>
         <AdditionalCostsEditor
           costs={additionalCosts}

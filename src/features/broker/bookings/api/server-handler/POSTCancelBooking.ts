@@ -39,6 +39,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       .select({
         id: bookings.id,
         status: bookings.status,
+        checkIn: bookings.checkIn,
         stripePaymentIntentId: bookings.stripePaymentIntentId,
         smoobuReservationId: bookings.smoobuReservationId,
         assetId: bookings.assetId,
@@ -65,27 +66,40 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       );
     }
 
+    // Cancellation policy: no free cancellation within 48h of check-in
+    const MIN_CANCEL_HOURS = 48;
+    const [y, m, d] = booking.checkIn.split("-").map(Number);
+    const checkInMs = Date.UTC(y, m - 1, d);
+    const hoursUntilCheckIn = (checkInMs - Date.now()) / (1000 * 60 * 60);
+
+    if (!ctx.isAdmin && hoursUntilCheckIn < MIN_CANCEL_HOURS) {
+      return jsonError(
+        t(locale, "error.cancellationTooLate", {
+          hours: MIN_CANCEL_HOURS,
+        }),
+        400
+      );
+    }
+
     // Stripe refund
-    if (!import.meta.env.DEV) {
-      if (!stripeKey) {
-        return jsonError(t(locale, "error.stripeNotConfigured"), 503);
-      }
+    if (!stripeKey) {
+      return jsonError(t(locale, "error.stripeNotConfigured"), 503);
+    }
 
-      if (booking.stripePaymentIntentId) {
-        const stripe = new Stripe(stripeKey);
-        await stripe.refunds.create({
-          payment_intent: booking.stripePaymentIntentId,
-        });
+    if (booking.stripePaymentIntentId) {
+      const stripe = new Stripe(stripeKey);
+      await stripe.refunds.create({
+        payment_intent: booking.stripePaymentIntentId,
+      });
 
-        log.info({
-          source: "cancel-booking",
-          message: `Stripe refund issued for booking ${bookingId}`,
-          metadata: {
-            bookingId,
-            paymentIntentId: booking.stripePaymentIntentId,
-          },
-        });
-      }
+      await log.info({
+        source: "cancel-booking",
+        message: `Stripe refund issued for booking ${bookingId}`,
+        metadata: {
+          bookingId,
+          paymentIntentId: booking.stripePaymentIntentId,
+        },
+      });
     }
 
     // Smoobu cancel
@@ -107,20 +121,20 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
           );
 
           if (!smoobuRes.ok) {
-            log.warn({
+            await log.warn({
               source: "cancel-booking",
               message: `Smoobu cancel returned ${smoobuRes.status} for reservation ${booking.smoobuReservationId}`,
               metadata: { bookingId, smoobuStatus: smoobuRes.status },
             });
           } else {
-            log.info({
+            await log.info({
               source: "cancel-booking",
               message: `Smoobu reservation ${booking.smoobuReservationId} cancelled`,
               metadata: { bookingId },
             });
           }
         } catch (smoobuErr) {
-          log.error({
+          await log.error({
             source: "cancel-booking",
             message: `Smoobu cancel failed for reservation ${booking.smoobuReservationId}: ${smoobuErr instanceof Error ? smoobuErr.message : "Unknown"}`,
             metadata: { bookingId },
@@ -138,7 +152,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       })
       .where(eq(bookings.id, bookingId));
 
-    log.info({
+    await log.info({
       source: "cancel-booking",
       message: `Booking ${bookingId} cancelled by broker`,
       metadata: { bookingId, cancelledBy: ctx.userId },

@@ -7,7 +7,7 @@ export type SearchProperty = {
   longitude: number;
 };
 
-export type TierFilter = "all" | "elite" | "standard";
+export type TierFilter = "all" | "elite" | "premium";
 
 export type PropertyPrice = {
   avgNightlyRate: number;

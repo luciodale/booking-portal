@@ -12,10 +12,10 @@ type SearchFiltersProps = {
   showAvailabilityToggle: boolean;
 };
 
-const TIERS: { value: TierFilter; labelKey: "search.filterAll" | "search.filterElite" | "search.filterStandard" }[] = [
+const TIERS: { value: TierFilter; labelKey: "search.filterAll" | "search.filterElite" | "search.filterPremium" }[] = [
   { value: "all", labelKey: "search.filterAll" },
   { value: "elite", labelKey: "search.filterElite" },
-  { value: "standard", labelKey: "search.filterStandard" },
+  { value: "premium", labelKey: "search.filterPremium" },
 ];
 
 export function SearchFilters({

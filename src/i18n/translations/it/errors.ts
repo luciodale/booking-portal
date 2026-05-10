@@ -44,6 +44,8 @@ export const errors: Record<keyof typeof en, string> = {
   "error.bookingNotFound": "Prenotazione non trovata",
   "error.forbiddenNotYourProperty": "Accesso negato: non è la tua proprietà",
   "error.cannotCancelBooking": "Impossibile cancellare la prenotazione con stato \"{status}\"",
+  "error.cancellationTooLate":
+    "Le cancellazioni devono essere effettuate almeno {hours} ore prima del check-in",
   "error.failedToCancelBooking": "Impossibile cancellare la prenotazione",
   "error.failedToListBookings": "Impossibile elencare le prenotazioni",
   "error.instantBookNotAvailable": "La prenotazione online non è disponibile per questa proprietà",

@@ -24,11 +24,3 @@ export type CalendarViewProps = {
   basePrice: number;
 };
 
-export type DayState = {
-  isToday: boolean;
-  isDisabled: boolean;
-  isPriced: boolean;
-  isInRange: boolean;
-  isRangeStart: boolean;
-  isRangeEnd: boolean;
-};

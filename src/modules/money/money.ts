@@ -28,3 +28,16 @@ export function sumCents(values: number[]): number {
 export function divideCents(total: number, divisor: number): number {
   return new Decimal(total).dividedBy(divisor).toDecimalPlaces(0).toNumber();
 }
+
+export function formatCentsAsPrice(cents: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: currency.toUpperCase(),
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(centsToUnit(cents));
+  } catch {
+    return `${currency.toUpperCase()} ${centsToUnit(cents).toFixed(2)}`;
+  }
+}

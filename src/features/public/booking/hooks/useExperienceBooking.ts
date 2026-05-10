@@ -10,6 +10,7 @@ import type {
   PriceLineItem,
 } from "@/features/public/booking/domain/pricingTypes";
 import { useExperienceAvailability } from "@/features/public/booking/hooks/useExperienceAvailability";
+import { multiplyCents, sumCents } from "@/modules/money/money";
 import { useCallback, useMemo, useState } from "react";
 
 export function useExperienceBooking(params: {
@@ -32,7 +33,7 @@ export function useExperienceBooking(params: {
     isError: availabilityError,
   } = useExperienceAvailability(params.experienceId, currentMonth);
 
-  const baseTotalCents = params.basePrice * participants;
+  const baseTotalCents = multiplyCents(params.basePrice, participants);
 
   const additionalCostItems = useMemo<PriceLineItem[]>(
     () =>
@@ -44,11 +45,11 @@ export function useExperienceBooking(params: {
   );
 
   const additionalTotalCents = useMemo(
-    () => additionalCostItems.reduce((sum, item) => sum + item.amountCents, 0),
+    () => sumCents(additionalCostItems.map((item) => item.amountCents)),
     [additionalCostItems]
   );
 
-  const totalPriceCents = baseTotalCents + additionalTotalCents;
+  const totalPriceCents = sumCents([baseTotalCents, additionalTotalCents]);
 
   const isSelectedDateFull = useMemo(() => {
     if (!selectedDate) return false;

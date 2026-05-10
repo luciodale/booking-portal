@@ -26,7 +26,7 @@ export function IntegrationsView() {
                 Smoobu Connected
               </h2>
             </div>
-            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+            <div className="mt-4 flex flex-col gap-4 text-sm">
               {integrationStatus?.integration?.pmsEmail && (
                 <div>
                   <span className="text-muted-foreground">Email</span>

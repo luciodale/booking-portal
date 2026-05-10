@@ -11,12 +11,30 @@ import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 
+const ALLOWED_SETTING_KEYS = [
+  "withholdingTaxPercent",
+  "defaultApplicationFeePercent",
+] as const;
+
 const putSettingSchema = z.object({
-  key: z.string().min(1),
+  key: z.enum(ALLOWED_SETTING_KEYS),
   value: z.string(),
 });
 
-const validators: Record<string, z.ZodType<string>> = {};
+const validators: Record<string, z.ZodType<string>> = {
+  withholdingTaxPercent: z
+    .string()
+    .refine((v) => {
+      const n = Number(v);
+      return Number.isFinite(n) && n >= 0 && n <= 100;
+    }, "Must be a number between 0 and 100"),
+  defaultApplicationFeePercent: z
+    .string()
+    .refine((v) => {
+      const n = Number(v);
+      return Number.isFinite(n) && n >= 0 && n <= 100;
+    }, "Must be a number between 0 and 100"),
+};
 
 export async function PUTSettings(
   request: Request,

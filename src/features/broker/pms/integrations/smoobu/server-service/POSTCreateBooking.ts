@@ -3,6 +3,7 @@ import type {
   SmoobuCreateBookingResponse,
 } from "@/schemas/smoobu";
 import { smoobuCreateBookingResponseSchema } from "@/schemas/smoobu";
+import { SmoobuApiError } from "../SmoobuApiError";
 import { SMOOBU_BASE_URL } from "../constants";
 
 export async function createSmoobuBooking(
@@ -20,8 +21,10 @@ export async function createSmoobuBooking(
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(
-      `Smoobu create booking failed: ${response.status} - ${text}`
+    throw new SmoobuApiError(
+      response.status,
+      "Create booking failed",
+      text
     );
   }
 

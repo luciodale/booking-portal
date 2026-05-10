@@ -1,7 +1,7 @@
 export const common = {
   "nav.home": "Home",
   "nav.elite": "Elite",
-  "nav.standard": "Standard",
+  "nav.premium": "Premium",
   "nav.experiences": "Experiences",
   "nav.about": "About",
 

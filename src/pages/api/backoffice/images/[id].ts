@@ -60,22 +60,24 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
       .where(eq(assets.id, image.assetId))
       .limit(1);
 
-    if (asset) {
-      assertBrokerOwnership(asset, ctx);
+    if (!asset) {
+      return new Response(JSON.stringify({ error: "Parent asset not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
+    assertBrokerOwnership(asset, ctx);
 
-    // Delete from R2 if bucket available
+    // Delete DB record first (authoritative), then clean up R2
+    await db.delete(images).where(eq(images.id, id));
+
     if (R2Bucket && image.r2Key) {
       try {
         await R2Bucket.delete(image.r2Key);
       } catch (r2Error) {
-        console.error("Failed to delete from R2:", r2Error);
-        // Continue with DB deletion even if R2 fails
+        console.error("Orphaned R2 object after DB delete:", r2Error);
       }
     }
-
-    // Delete from database
-    await db.delete(images).where(eq(images.id, id));
 
     // If this was the primary image, we need to set another as primary
     if (image.isPrimary) {

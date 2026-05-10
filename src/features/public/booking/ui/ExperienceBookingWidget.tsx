@@ -5,12 +5,15 @@ import { useExperienceBooking } from "@/features/public/booking/hooks/useExperie
 import { useExperienceCheckout } from "@/features/public/booking/hooks/useExperienceCheckout";
 import { ExperienceCalendarPopover } from "@/features/public/booking/ui/ExperienceCalendarPopover";
 import { ExperienceGuestForm } from "@/features/public/booking/ui/ExperienceGuestForm";
-import { MobileExperienceCalendarSheet } from "@/features/public/booking/ui/mobile/MobileExperienceCalendarSheet";
+import {
+  MobileExperienceCalendarBottomSheet,
+  MobileExperienceCalendarTrigger,
+} from "@/features/public/booking/ui/mobile/MobileExperienceCalendarSheet";
 import { useIsMobile } from "@/modules/ui/useIsMobile";
 import { PriceBreakdown } from "@/features/public/booking/ui/PriceBreakdown";
 import type { ExperienceGuestInput } from "@/features/public/booking/ui/ExperienceGuestForm";
 import { useAuth } from "@clerk/astro/react";
-import { SwipeBarProvider } from "@luciodale/swipe-bar";
+import { SwipeBarProvider, useSwipeBarContext } from "@luciodale/swipe-bar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 
@@ -81,6 +84,7 @@ function BookingFlow({
   additionalCosts,
 }: ExperienceBookingWidgetProps) {
   const isMobile = useIsMobile();
+  const { openSidebar } = useSwipeBarContext();
   const { isSignedIn } = useAuth();
   const booking = useExperienceBooking({
     experienceId,
@@ -128,17 +132,12 @@ function BookingFlow({
 
         {/* Date Picker */}
         {isMobile ? (
-          <MobileExperienceCalendarSheet
-            isOpen={booking.isCalendarOpen}
-            onOpenChange={booking.setCalendarOpen}
-            currentMonth={booking.currentMonth}
+          <MobileExperienceCalendarTrigger
             selectedDate={booking.selectedDate}
-            availabilityMap={booking.availabilityMap}
-            maxParticipants={maxParticipants}
-            onDateClick={booking.handleDateClick}
-            onPrevMonth={booking.goPrevMonth}
-            onNextMonth={booking.goNextMonth}
-            onClear={booking.clearDate}
+            onOpen={() => {
+              openSidebar("bottom");
+              booking.setCalendarOpen(true);
+            }}
           />
         ) : (
           <ExperienceCalendarPopover
@@ -252,6 +251,21 @@ function BookingFlow({
           </>
         )}
       </div>
+
+      {isMobile && (
+        <MobileExperienceCalendarBottomSheet
+          isOpen={booking.isCalendarOpen}
+          onOpenChange={booking.setCalendarOpen}
+          currentMonth={booking.currentMonth}
+          selectedDate={booking.selectedDate}
+          availabilityMap={booking.availabilityMap}
+          maxParticipants={maxParticipants}
+          onDateClick={booking.handleDateClick}
+          onPrevMonth={booking.goPrevMonth}
+          onNextMonth={booking.goNextMonth}
+          onClear={booking.clearDate}
+        />
+      )}
     </div>
   );
 }

@@ -46,10 +46,10 @@ const propertyHref = localePath(locale, booking.property.tier === "elite"
   ? `/elite/${booking.property.id}`
   : `/property/${booking.property.id}`);
 
-import { centsToUnit } from "@/modules/money/money";
+import { formatCentsAsPrice } from "@/modules/money/money";
 
 function formatCents(cents: number, currency: string) {
-  return `${centsToUnit(cents).toFixed(2)} ${currency.toUpperCase()}`;
+  return formatCentsAsPrice(cents, currency);
 }
 ---
 

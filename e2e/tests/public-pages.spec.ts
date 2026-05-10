@@ -1,9 +1,9 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "@e2e/fixtures/base";
 
 test.describe("Public pages smoke tests", () => {
   test("home page loads with property cards", async ({ page }) => {
     await page.goto("/");
-    await expect(page).toHaveTitle(/booking/i);
+    await expect(page).toHaveTitle(/elitestay/i);
     await expect(page.locator("main")).toBeVisible();
   });
 

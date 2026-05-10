@@ -53,7 +53,7 @@ const cities = await fetchAllCities(db);
   </section>
 
   <!-- Search section -->
-  <section class="relative z-10 py-20 px-6 bg-background overflow-hidden">
+  <section class="relative z-10 py-20 pb-6 px-6 bg-background overflow-hidden">
     <div
       class="absolute inset-0 bg-linrst-to-br from-amber-400/5 via-transparent to-primary/5 pointer-events-none"
       aria-hidden="true"
@@ -67,19 +67,20 @@ const cities = await fetchAllCities(db);
         {t(locale, "home.searchHeading")}
       </h2>
       <p
-        class="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 animate-slide-up opacity-0"
+        class="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto animate-slide-up opacity-0"
         style="animation-delay: 0.4s"
       >
         {t(locale, "home.searchSubtitle")}
       </p>
-      <div
-        class="w-full animate-slide-up opacity-0"
-        style="animation-delay: 0.6s"
-      >
-        <SearchBarIsland client:only="react" locale={locale} cities={cities} />
-      </div>
     </div>
   </section>
+
+  <!-- Sticky search bar -->
+  <div class="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b border-border/50 py-4 px-6">
+    <div class="container mx-auto max-w-3xl">
+      <SearchBarIsland client:only="react" locale={locale} cities={cities} />
+    </div>
+  </div>
 
   <!-- Elite Collection — Full-bleed cinematic section -->
   <section
@@ -132,7 +133,7 @@ const cities = await fetchAllCities(db);
     </div>
   </section>
 
-  <!-- Standard Collection — Marketing -->
+  <!-- Premium Collection — Marketing -->
   <section class="py-24 px-6 bg-card relative overflow-hidden">
     <div class="container mx-auto relative z-10">
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
@@ -141,17 +142,17 @@ const cities = await fetchAllCities(db);
           <p
             class="text-sm font-semibold tracking-widest uppercase text-primary mb-4"
           >
-            Standard Collection
+            Premium Collection
           </p>
           <h2
             class="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight leading-[1.1] mb-6"
           >
-            {t(locale, "home.standardTagline")}
+            {t(locale, "home.premiumTagline")}
           </h2>
           <p
             class="text-lg text-muted-foreground leading-relaxed mb-10 max-w-md"
           >
-            {t(locale, "home.standardDescription")}
+            {t(locale, "home.premiumDescription")}
           </p>
 
           <div class="flex flex-col gap-6 mb-12">
@@ -159,15 +160,15 @@ const cities = await fetchAllCities(db);
               [
                 {
                   icon: "shield-check",
-                  text: t(locale, "home.standardFeature1"),
+                  text: t(locale, "home.premiumFeature1"),
                 },
                 {
                   icon: "badge-percent",
-                  text: t(locale, "home.standardFeature2"),
+                  text: t(locale, "home.premiumFeature2"),
                 },
                 {
                   icon: "calendar-check",
-                  text: t(locale, "home.standardFeature3"),
+                  text: t(locale, "home.premiumFeature3"),
                 },
               ].map((feature) => (
                 <div class="flex items-center gap-4">
@@ -185,10 +186,10 @@ const cities = await fetchAllCities(db);
 
           <div>
             <a
-              href={localePath(locale, "/standard")}
+              href={localePath(locale, "/premium")}
               class="inline-flex items-center gap-2 px-8 py-4 text-sm font-semibold rounded-full border border-border bg-background hover:border-primary hover:text-primary transition-all duration-200 group"
             >
-              {t(locale, "home.standardCta")}
+              {t(locale, "home.premiumCta")}
               <i
                 data-lucide="arrow-right"
                 class="w-4 h-4 group-hover:translate-x-1 transition-transform"
@@ -204,8 +205,8 @@ const cities = await fetchAllCities(db);
               class="aspect-[3/4] rounded-2xl overflow-hidden shadow-lg translate-y-8"
             >
               <img
-                src="/images/home/standard-interior.webp"
-                alt="Standard property interior"
+                src="/images/home/premium-interior.webp"
+                alt="Premium property interior"
                 class="w-full h-full object-cover"
                 loading="lazy"
               />
@@ -214,8 +215,8 @@ const cities = await fetchAllCities(db);
               class="aspect-[3/4] rounded-2xl overflow-hidden shadow-lg -translate-y-8"
             >
               <img
-                src="/images/home/standard-living.webp"
-                alt="Standard property living room"
+                src="/images/home/premium-living.webp"
+                alt="Premium property living room"
                 class="w-full h-full object-cover"
                 loading="lazy"
               />

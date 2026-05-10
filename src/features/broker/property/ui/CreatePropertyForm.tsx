@@ -11,7 +11,6 @@ import { useCityTaxDefault } from "@/features/broker/property/hooks/useCityTaxDe
 import { isItalyCountry } from "@/modules/countries";
 import type { Feature } from "@/modules/constants";
 import { getFacilityOptions } from "@/modules/constants";
-import { CentsHint } from "@/modules/ui/react/CentsHint";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { ExtrasEditor } from "@/modules/ui/react/ExtrasEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
@@ -28,7 +27,7 @@ import { createPropertySchema } from "@/schemas/property";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link2 } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { LocationSection } from "./LocationSection";
 
@@ -86,7 +85,7 @@ interface CreatePropertyFormProps {
   onSubmit: (data: CreatePropertyFormData) => Promise<void>;
   isLoading?: boolean;
   integrationPropertyId: number;
-  tier: "elite" | "standard";
+  tier: "elite" | "premium";
   /** Smoobu field data available for per-field linking */
   smoobuData?: Partial<CreatePropertyInput> | null;
 }
@@ -126,8 +125,6 @@ export function CreatePropertyForm({
   const city = watch("city") ?? "";
   const country = watch("country") ?? "";
   const isItaly = isItalyCountry(country);
-  const cityTaxAmountValue = useWatch({ control, name: "cityTaxAmount" });
-
   const prevIsItalyRef = useRef(isItaly);
   useEffect(() => {
     if (prevIsItalyRef.current && !isItaly) {
@@ -228,6 +225,14 @@ export function CreatePropertyForm({
           description="Brief summary for property cards"
           placeholder="Luxury villa with stunning sea views..."
           rows={3}
+        />
+
+        <TextInput
+          name="cin"
+          control={control}
+          label="CIN (Codice Identificativo Nazionale)"
+          required
+          placeholder="IT012345C1A2B3C4D5"
         />
       </FormSection>
 
@@ -369,7 +374,7 @@ export function CreatePropertyForm({
       {/* Additional Costs */}
       <FormSection title="Additional Costs">
         <p className="text-sm text-muted-foreground">
-          Optional fees charged on top of the nightly rate (amounts in cents).
+          Optional fees charged on top of the nightly rate.
         </p>
         <AdditionalCostsEditor
           costs={additionalCosts}
@@ -390,7 +395,7 @@ export function CreatePropertyForm({
       {/* Extras (guest-selectable add-ons) */}
       <FormSection title="Extras">
         <p className="text-sm text-muted-foreground">
-          Guest-selectable add-ons with icons (amounts in cents).
+          Guest-selectable add-ons with icons.
         </p>
         <ExtrasEditor
           extras={extras}
@@ -402,8 +407,7 @@ export function CreatePropertyForm({
       {/* City Tax */}
       <FormSection title="City Tax">
         <p className="text-sm text-muted-foreground">
-          Tourist tax per person per night (in cents). Saved as a default for
-          this city.
+          Tourist tax per person per night (EUR). Saved as a default for this city.
         </p>
         {cityTaxQuery.data && (
           <p className="text-xs text-primary">
@@ -414,9 +418,9 @@ export function CreatePropertyForm({
           <NumberInput
             name="cityTaxAmount"
             control={control}
-            label="Amount (cents/person/night)"
+            label="Amount (EUR/person/night)"
             min={0}
-            labelSuffix={<CentsHint cents={cityTaxAmountValue} />}
+            centsMode
           />
           <NumberInput
             name="cityTaxMaxNights"

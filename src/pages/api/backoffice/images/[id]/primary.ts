@@ -59,9 +59,13 @@ export const PUT: APIRoute = async ({ params, locals }) => {
       .where(eq(assets.id, image.assetId))
       .limit(1);
 
-    if (asset) {
-      assertBrokerOwnership(asset, ctx);
+    if (!asset) {
+      return new Response(JSON.stringify({ error: "Parent asset not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      });
     }
+    assertBrokerOwnership(asset, ctx);
 
     // Remove primary from all other images of this asset
     await db

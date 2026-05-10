@@ -70,43 +70,43 @@ export async function fetchExperienceCityCards(
     (row): row is typeof row & { city: string } => row.city != null
   );
 
-  return Promise.all(
-    validRows.map(async (row) => {
-      const [firstExp] = await db
-        .select({ id: experiences.id, imageUrl: experiences.imageUrl })
-        .from(experiences)
-        .innerJoin(users, eq(experiences.userId, users.id))
-        .where(
-          and(
-            eq(experiences.status, "published"),
-            eq(users.stripeSetupComplete, true),
-            eq(experiences.city, row.city)
-          )
+  const cards: ExperienceCityCard[] = [];
+  for (const row of validRows) {
+    const [firstExp] = await db
+      .select({
+        id: experiences.id,
+        imageUrl: experiences.imageUrl,
+        primaryR2Key: experienceImages.r2Key,
+      })
+      .from(experiences)
+      .innerJoin(users, eq(experiences.userId, users.id))
+      .leftJoin(
+        experienceImages,
+        and(
+          eq(experienceImages.experienceId, experiences.id),
+          eq(experienceImages.isPrimary, true)
         )
-        .limit(1);
+      )
+      .where(
+        and(
+          eq(experiences.status, "published"),
+          eq(users.stripeSetupComplete, true),
+          eq(experiences.city, row.city)
+        )
+      )
+      .limit(1);
 
-      let imageUrl = "";
-      if (firstExp) {
-        const [img] = await db
-          .select()
-          .from(experienceImages)
-          .where(
-            and(
-              eq(experienceImages.experienceId, firstExp.id),
-              eq(experienceImages.isPrimary, true)
-            )
-          )
-          .limit(1);
-        if (img) {
-          imageUrl = generateImageUrl(img.r2Key);
-        } else if (firstExp.imageUrl) {
-          imageUrl = generateImageUrl(firstExp.imageUrl);
-        }
-      }
+    let imageUrl = "";
+    if (firstExp?.primaryR2Key) {
+      imageUrl = generateImageUrl(firstExp.primaryR2Key);
+    } else if (firstExp?.imageUrl) {
+      imageUrl = generateImageUrl(firstExp.imageUrl);
+    }
 
-      return { city: row.city, count: row.count, imageUrl };
-    })
-  );
+    cards.push({ city: row.city, count: row.count, imageUrl });
+  }
+
+  return cards;
 }
 
 export async function fetchExperiencesByCity(
@@ -137,9 +137,19 @@ export async function fetchExperiencesByCity(
   const offset = (page - 1) * PER_PAGE;
 
   const rows = await db
-    .select({ experiences })
+    .select({
+      exp: experiences,
+      primaryR2Key: experienceImages.r2Key,
+    })
     .from(experiences)
     .innerJoin(users, eq(experiences.userId, users.id))
+    .leftJoin(
+      experienceImages,
+      and(
+        eq(experienceImages.experienceId, experiences.id),
+        eq(experienceImages.isPrimary, true)
+      )
+    )
     .where(
       and(
         eq(experiences.status, "published"),
@@ -151,42 +161,28 @@ export async function fetchExperiencesByCity(
     .limit(PER_PAGE)
     .offset(offset);
 
-  const items = await Promise.all(
-    rows.map(async (row) => {
-      const exp = row.experiences;
-      const [primaryImg] = await db
-        .select()
-        .from(experienceImages)
-        .where(
-          and(
-            eq(experienceImages.experienceId, exp.id),
-            eq(experienceImages.isPrimary, true)
-          )
-        )
-        .limit(1);
+  const items = rows.map((row) => {
+    const imageUrl = row.primaryR2Key
+      ? generateImageUrl(row.primaryR2Key)
+      : row.exp.imageUrl
+        ? generateImageUrl(row.exp.imageUrl)
+        : "";
 
-      const imageUrl = primaryImg
-        ? generateImageUrl(primaryImg.r2Key)
-        : exp.imageUrl
-          ? generateImageUrl(exp.imageUrl)
-          : "";
-
-      return {
-        id: exp.id,
-        title: exp.title,
-        location: formatLocation(exp),
-        imageUrl,
-        duration: exp.duration ?? "",
-        category: exp.category
-          ? (experienceCategoryLabels[exp.category] ?? exp.category)
-          : "Other",
-        shortDescription: exp.shortDescription ?? "",
-        basePrice: exp.basePrice,
-        currency: exp.currency,
-        maxParticipants: exp.maxParticipants,
-      };
-    })
-  );
+    return {
+      id: row.exp.id,
+      title: row.exp.title,
+      location: formatLocation(row.exp),
+      imageUrl,
+      duration: row.exp.duration ?? "",
+      category: row.exp.category
+        ? (experienceCategoryLabels[row.exp.category] ?? row.exp.category)
+        : "Other",
+      shortDescription: row.exp.shortDescription ?? "",
+      basePrice: row.exp.basePrice,
+      currency: row.exp.currency,
+      maxParticipants: row.exp.maxParticipants,
+    };
+  });
 
   return { experiences: items, totalCount, totalPages };
 }

@@ -8,11 +8,6 @@ import {
 } from "@/features/broker/property/api/server-handler/responseHelpers";
 import type { APIContext } from "astro";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
-
-const deleteBrokerFeeSchema = z.object({
-  userId: z.string().min(1),
-});
 
 export async function DELETEBrokerFee(
   request: Request,
@@ -24,12 +19,12 @@ export async function DELETEBrokerFee(
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) return jsonError("Database not available", 503);
 
-    const body = deleteBrokerFeeSchema.safeParse(await request.json());
-    if (!body.success) {
-      return jsonError("Invalid request", 400, body.error.issues);
+    const url = new URL(request.url);
+    const userId = url.searchParams.get("userId");
+    if (!userId) {
+      return jsonError("userId query parameter is required", 400);
     }
 
-    const { userId } = body.data;
     const db = getDb(D1Database);
 
     await db

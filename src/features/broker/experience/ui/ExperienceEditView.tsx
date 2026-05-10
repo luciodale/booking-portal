@@ -5,8 +5,8 @@
 import { experienceCategories } from "@/features/broker/experience/constants/categoryLabels";
 import { useExperience } from "@/features/broker/experience/queries/useExperience";
 import { useUpdateExperience } from "@/features/broker/experience/queries/useUpdateExperience";
-import { CentsHint } from "@/modules/ui/react/CentsHint";
 import { EditableSectionField } from "@/features/broker/property/ui/EditableField";
+import { centsToUnit, toCents } from "@/modules/money/money";
 import { CategoryPicker } from "@/modules/ui/react/form-inputs/IconSelectInput";
 import type { ExperienceAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
 import {
@@ -299,13 +299,13 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
         <EditableSectionField
           title="Pricing"
           values={{
-            basePrice: String(experience.basePrice),
+            basePrice: String(centsToUnit(experience.basePrice)),
             currency: experience.currency,
             showPrice: experience.showPrice ? "yes" : "no",
           }}
           onSave={(data) =>
             saveFields({
-              basePrice: Number(data.basePrice),
+              basePrice: toCents(Number(data.basePrice)),
               currency: data.currency,
               showPrice: data.showPrice === "yes",
             })
@@ -317,20 +317,21 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
                   htmlFor="edit-exp-basePrice"
                   className="block text-sm font-medium text-foreground mb-1"
                 >
-                  Base Price (cents)
+                  Base Price (EUR)
                 </label>
                 <input
                   id="edit-exp-basePrice"
-                  type="text"
+                  type="number"
                   value={values.basePrice}
                   onChange={(e) =>
                     onChange({ ...values, basePrice: e.target.value })
                   }
                   disabled={disabled}
-                  placeholder="25000"
+                  placeholder="250"
+                  step="0.01"
+                  min="1"
                   className="input"
                 />
-                <CentsHint cents={Number(values.basePrice) || undefined} />
               </div>
 
               <div>
@@ -383,7 +384,7 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
       <section className="bg-card border border-border p-6 rounded-xl">
         <EditableSectionField
           title="Additional Costs"
-          description="Optional fees charged on top of the base price (amounts in cents)."
+          description="Optional fees charged on top of the base price."
           values={{ additionalCosts: (experience.additionalCosts ?? []) as ExperienceAdditionalCost[] }}
           onSave={(data) =>
             saveField("additionalCosts", data.additionalCosts)

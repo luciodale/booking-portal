@@ -47,7 +47,7 @@ type BackofficeAppProps = {
   locale?: Locale;
 };
 
-export default function BackofficeApp({ locale = "en" }: BackofficeAppProps) {
+export function BackofficeApp({ locale = "en" }: BackofficeAppProps) {
   return (
     <ClerkProviderWrapper locale={locale}>
       <LocaleProvider locale={locale}>

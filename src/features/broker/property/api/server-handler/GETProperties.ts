@@ -39,7 +39,7 @@ export const GET: APIRoute = async ({ locals, url, request }) => {
     }
 
     if (tier) {
-      conditions.push(eq(assets.tier, tier as "elite" | "standard"));
+      conditions.push(eq(assets.tier, tier as "elite" | "premium"));
     }
     if (status) {
       conditions.push(
@@ -47,10 +47,11 @@ export const GET: APIRoute = async ({ locals, url, request }) => {
       );
     }
     if (search) {
+      const escaped = search.replace(/%/g, "\\%").replace(/_/g, "\\_");
       conditions.push(
         or(
-          like(assets.title, `%${search}%`),
-          like(assets.city, `%${search}%`)
+          like(assets.title, `%${escaped}%`),
+          like(assets.city, `%${escaped}%`)
         )
       );
     }

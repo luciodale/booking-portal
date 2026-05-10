@@ -39,6 +39,8 @@ export const errors = {
   "error.bookingNotFound": "Booking not found",
   "error.forbiddenNotYourProperty": "Forbidden: Not your property",
   "error.cannotCancelBooking": "Cannot cancel booking with status \"{status}\"",
+  "error.cancellationTooLate":
+    "Cancellations must be made at least {hours} hours before check-in",
   "error.failedToCancelBooking": "Failed to cancel booking",
   "error.failedToListBookings": "Failed to list bookings",
   "error.instantBookNotAvailable": "Online booking is not available for this property",

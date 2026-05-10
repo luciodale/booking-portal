@@ -55,7 +55,7 @@ export function getWeekDays(date: Date): Date[] {
  * Format price for display (short form)
  */
 export function formatPriceShort(cents: number): string {
-  return `€${Math.round(centsToUnit(cents))}`;
+  return `€${Math.round(centsToUnit(cents)).toLocaleString()}`;
 }
 
 /**

@@ -11,7 +11,7 @@ import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
 export type ConnectStatus = {
-  status: "not_started" | "incomplete" | "complete" | "revoked";
+  status: "not_started" | "incomplete" | "pending" | "complete" | "revoked";
   chargesEnabled: boolean;
   payoutsEnabled: boolean;
   detailsSubmitted: boolean;
@@ -66,7 +66,11 @@ export async function GETConnectStatus(locals: APIContext["locals"]) {
     const detailsSubmitted = account.details_submitted ?? false;
 
     const status: ConnectStatus["status"] =
-      chargesEnabled && payoutsEnabled ? "complete" : "incomplete";
+      chargesEnabled && payoutsEnabled
+        ? "complete"
+        : detailsSubmitted
+          ? "pending"
+          : "incomplete";
 
     return jsonSuccess<ConnectStatus>({
       status,

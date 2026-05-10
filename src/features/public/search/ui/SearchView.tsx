@@ -60,7 +60,7 @@ function SearchViewInner({
   return (
     <div data-search-view className="flex flex-col h-content-fit">
       {/* Search bar — above the split, centered, z-20 so dropdown floats above split */}
-      <div className="bg-background z-20 relative px-4 py-4 border-b border-border flex justify-center">
+      <div className="sticky z-30 bg-background px-4 py-4 border-b border-border flex justify-center" style={{ top: "var(--spacing-header-height)" }}>
         <div className="w-full max-w-3xl">
           <SearchBar
             variant="hero"
@@ -76,7 +76,7 @@ function SearchViewInner({
       {/* Split: list + map — fixed vh so map is always fully visible */}
       <div
         className="flex flex-col lg:flex-row"
-        style={{ height: "calc(100vh - 70px - 82px)" }}
+        style={{ height: "calc(100vh - var(--spacing-header-height) - 82px)" }}
       >
         {/* Map — top on mobile, right on desktop, always full height */}
         <div className="h-[40vh] lg:h-full lg:w-5/12 lg:flex-none lg:order-2">

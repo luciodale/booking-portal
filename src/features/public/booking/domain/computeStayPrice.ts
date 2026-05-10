@@ -1,7 +1,7 @@
 /**
  * Price utilities for booking calculations.
  * All arithmetic in cents (integers) to avoid floating-point errors.
- * No Date objects — works with YYYY-MM-DD strings for Cloudflare Workers compatibility.
+ * Uses Date.UTC for timezone-safe day arithmetic on YYYY-MM-DD strings.
  */
 
 import { toCents as _toCents } from "@/modules/money/money";
@@ -12,15 +12,18 @@ export const toCents = _toCents;
 /** Returns array of YYYY-MM-DD strings from start (inclusive) to end (exclusive). */
 export function getDateRange(start: string, end: string): string[] {
   const dates: string[] = [];
-  const current = new Date(`${start}T00:00:00`);
-  const endDate = new Date(`${end}T00:00:00`);
+  const [y1, m1, d1] = start.split("-").map(Number);
+  const [y2, m2, d2] = end.split("-").map(Number);
+  let ms = Date.UTC(y1, m1 - 1, d1);
+  const endMs = Date.UTC(y2, m2 - 1, d2);
 
-  while (current < endDate) {
-    const year = current.getFullYear();
-    const month = String(current.getMonth() + 1).padStart(2, "0");
-    const day = String(current.getDate()).padStart(2, "0");
+  while (ms < endMs) {
+    const dt = new Date(ms);
+    const year = dt.getUTCFullYear();
+    const month = String(dt.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(dt.getUTCDate()).padStart(2, "0");
     dates.push(`${year}-${month}-${day}`);
-    current.setDate(current.getDate() + 1);
+    ms += 86_400_000;
   }
 
   return dates;

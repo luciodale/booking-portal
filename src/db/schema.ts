@@ -1,27 +1,42 @@
 import type { Feature } from "@/modules/constants";
 import { sql } from "drizzle-orm";
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import {
+  index,
+  integer,
+  sqliteTable,
+  text,
+  uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 
 // ============================================================================
 // Users table - unified profiles (guests + property managers, links to Clerk)
 // ============================================================================
-export const users = sqliteTable("users", {
-  id: text("id").primaryKey(),
-  email: text("email").notNull(),
-  name: text("name"),
-  phone: text("phone"),
-  avatarUrl: text("avatar_url"),
-  preferredLanguage: text("preferred_language").default("en"),
-  whatsappNumber: text("whatsapp_number"),
-  bio: text("bio"),
-  verified: integer("verified", { mode: "boolean" }).notNull().default(false),
-  createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
-  stripeConnectedAccountId: text("stripe_connected_account_id"),
-  stripeSetupComplete: integer("stripe_setup_complete", { mode: "boolean" })
-    .notNull()
-    .default(false),
-  updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
-});
+export const users = sqliteTable(
+  "users",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    name: text("name"),
+    phone: text("phone"),
+    avatarUrl: text("avatar_url"),
+    preferredLanguage: text("preferred_language").default("en"),
+    whatsappNumber: text("whatsapp_number"),
+    bio: text("bio"),
+    verified: integer("verified", { mode: "boolean" }).notNull().default(false),
+    createdAt: text("created_at").default(sql`CURRENT_TIMESTAMP`),
+    stripeConnectedAccountId: text("stripe_connected_account_id"),
+    stripeSetupComplete: integer("stripe_setup_complete", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    updatedAt: text("updated_at").default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    uniqueIndex("idx_users_email").on(table.email),
+    uniqueIndex("idx_users_stripe_account").on(
+      table.stripeConnectedAccountId
+    ),
+  ]
+);
 
 // ============================================================================
 // Platform Settings table - generic key-value admin settings
@@ -67,9 +82,9 @@ export const assets = sqliteTable(
 
     // Tier
     tier: text("tier")
-      .$type<"elite" | "standard">()
+      .$type<"elite" | "premium">()
       .notNull()
-      .default("standard"),
+      .default("premium"),
     status: text("status")
       .$type<"draft" | "published" | "archived">()
       .notNull()
@@ -90,6 +105,9 @@ export const assets = sqliteTable(
     showFullAddress: integer("show_full_address", { mode: "boolean" })
       .notNull()
       .default(true),
+
+    // CIN (Codice Identificativo Nazionale)
+    cin: text("cin"),
 
     // Rooms (from Smoobu for hotels)
     maxOccupancy: integer("max_occupancy"),
@@ -279,6 +297,8 @@ export const bookings = sqliteTable(
     index("idx_bookings_user").on(table.userId),
     index("idx_bookings_status").on(table.status),
     index("idx_bookings_dates").on(table.checkIn, table.checkOut),
+    uniqueIndex("idx_bookings_stripe_session").on(table.stripeSessionId),
+    index("idx_bookings_stripe_pi").on(table.stripePaymentIntentId),
   ]
 );
 
@@ -491,6 +511,7 @@ export const experienceBookings = sqliteTable(
     index("idx_exp_bookings_experience").on(table.experienceId),
     index("idx_exp_bookings_user").on(table.userId),
     index("idx_exp_bookings_status").on(table.status),
+    uniqueIndex("idx_exp_bookings_stripe_session").on(table.stripeSessionId),
   ]
 );
 

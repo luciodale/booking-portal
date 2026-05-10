@@ -73,8 +73,8 @@ function createPopupContent(
   const detailPath =
     asset.tier === "elite" ? `/elite/${asset.id}` : `/property/${asset.id}`;
 
-  const badgeClass = asset.tier === "elite" ? "badge-elite" : "badge-standard";
-  const badgeLabel = asset.tier === "elite" ? "Elite" : "Standard";
+  const badgeClass = asset.tier === "elite" ? "badge-elite" : "badge-premium";
+  const badgeLabel = asset.tier === "elite" ? "Elite" : "Premium";
 
   const features: string[] = [];
   if (asset.bedrooms != null)

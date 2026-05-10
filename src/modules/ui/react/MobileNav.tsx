@@ -59,9 +59,9 @@ function getNavLinks(locale: Locale): NavLink[] {
       icon: <Crown size={18} />,
     },
     {
-      href: localePath(locale, "/standard"),
-      label: t(locale, "nav.standard"),
-      matchPath: "/standard",
+      href: localePath(locale, "/premium"),
+      label: t(locale, "nav.premium"),
+      matchPath: "/premium",
       icon: <Building2 size={18} />,
     },
     {

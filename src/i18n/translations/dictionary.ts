@@ -11,7 +11,7 @@ import { experiences as enExperiences } from "./en/experiences";
 import { home as enHome } from "./en/home";
 import { property as enProperty } from "./en/property";
 import { search as enSearch } from "./en/search";
-import { standard as enStandard } from "./en/standard";
+import { premium as enPremium } from "./en/premium";
 import { about as itAbout } from "./it/about";
 import { auth as itAuth } from "./it/auth";
 import { backoffice as itBackoffice } from "./it/backoffice";
@@ -24,13 +24,13 @@ import { experiences as itExperiences } from "./it/experiences";
 import { home as itHome } from "./it/home";
 import { property as itProperty } from "./it/property";
 import { search as itSearch } from "./it/search";
-import { standard as itStandard } from "./it/standard";
+import { premium as itPremium } from "./it/premium";
 
 const en = {
   ...enCommon,
   ...enHome,
   ...enElite,
-  ...enStandard,
+  ...enPremium,
   ...enExperiences,
   ...enProperty,
   ...enSearch,
@@ -46,7 +46,7 @@ const it = {
   ...itCommon,
   ...itHome,
   ...itElite,
-  ...itStandard,
+  ...itPremium,
   ...itExperiences,
   ...itProperty,
   ...itSearch,
@@ -60,7 +60,7 @@ const it = {
 
 export type TranslationKey = keyof typeof en;
 
-export const dictionaries: Record<Locale, Record<string, string>> = {
+export const dictionaries: Record<Locale, Record<TranslationKey, string>> = {
   en,
   it,
 };

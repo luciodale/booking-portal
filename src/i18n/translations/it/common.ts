@@ -3,7 +3,7 @@ import type { common as en } from "../en/common";
 export const common: Record<keyof typeof en, string> = {
   "nav.home": "Home",
   "nav.elite": "Elite",
-  "nav.standard": "Standard",
+  "nav.premium": "Premium",
   "nav.experiences": "Esperienze",
   "nav.about": "Chi Siamo",
 

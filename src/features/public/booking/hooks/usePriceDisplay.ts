@@ -1,5 +1,4 @@
 import {
-  computeExtrasTotal,
   computePropertyAdditionalCosts,
   formatPropertyCostPreview,
 } from "@/features/public/booking/domain/computeAdditionalCosts";
@@ -14,7 +13,6 @@ import type {
   CityTax,
   PriceLineItem,
   PropertyAdditionalCost,
-  PropertyExtra,
 } from "@/features/public/booking/domain/pricingTypes";
 import type { SmoobuAvailabilityResponse } from "@/schemas/smoobu";
 import { useMemo } from "react";
@@ -43,8 +41,6 @@ type PriceDisplayInput = {
   availabilityLoading: boolean;
   availabilityError: Error | null;
   additionalCosts?: PropertyAdditionalCost[] | null;
-  extras?: PropertyExtra[] | null;
-  selectedExtras?: Set<number>;
   guests?: number | null;
   cityTax?: CityTax | null;
 };
@@ -57,8 +53,6 @@ type ErrorInfo = {
   leadTime?: number;
   arrivalDays?: string[];
 };
-
-export type ExtraLineItem = PriceLineItem & { extraIndex: number };
 
 type PriceDisplayState =
   | { status: "no-dates" }
@@ -74,7 +68,6 @@ type PriceDisplayState =
       nights: number;
       currency: string;
       additionalCostItems: PriceLineItem[];
-      extraItems: ExtraLineItem[];
       grandTotalCents: number;
     };
 
@@ -108,8 +101,6 @@ export function usePriceDisplay({
   availabilityLoading,
   availabilityError,
   additionalCosts,
-  extras,
-  selectedExtras,
   guests,
   cityTax,
 }: PriceDisplayInput): PriceDisplayState {
@@ -156,27 +147,8 @@ export function usePriceDisplay({
       );
     }
 
-    // Compute extras (kept separate for removable UI)
-    let extraItems: ExtraLineItem[] = [];
-    if (extras && selectedExtras && selectedExtras.size > 0 && guests != null && guests > 0) {
-      const rawExtrasItems = computeExtrasTotal(extras, selectedExtras, {
-        nights,
-        guests,
-        currency: resolvedCurrency,
-      });
-      // Tag each item with its original extra index
-      const selectedArr = Array.from(selectedExtras);
-      extraItems = rawExtrasItems.map((item, i) => ({
-        ...item,
-        extraIndex: selectedArr[i],
-      }));
-    }
-
     const additionalTotalCents = sumCents(
       additionalCostItems.map((item) => item.amountCents)
-    );
-    const extrasTotalCents = sumCents(
-      extraItems.map((item) => item.amountCents)
     );
 
     // Compute city tax
@@ -204,8 +176,7 @@ export function usePriceDisplay({
       nights,
       currency: resolvedCurrency,
       additionalCostItems,
-      extraItems,
-      grandTotalCents: sumCents([totalPriceCents, additionalTotalCents, extrasTotalCents, cityTaxCents]),
+      grandTotalCents: sumCents([totalPriceCents, additionalTotalCents, cityTaxCents]),
     };
   }, [
     checkIn,
@@ -218,8 +189,6 @@ export function usePriceDisplay({
     availabilityLoading,
     availabilityError,
     additionalCosts,
-    extras,
-    selectedExtras,
     guests,
     cityTax,
   ]);

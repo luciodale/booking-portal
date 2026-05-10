@@ -1,19 +1,12 @@
 import { experienceCategoryLabels } from "@/features/broker/experience/constants/categoryLabels";
 import { useDeleteExperience } from "@/features/broker/experience/queries/useDeleteExperience";
 import { useExperiences } from "@/features/broker/experience/queries/useExperiences";
-import { centsToUnit } from "@/modules/money/money";
+import { formatCentsAsPrice } from "@/modules/money/money";
 import { Select } from "@/modules/ui/Select";
 import { cn } from "@/modules/utils/cn";
 import { formatLocation } from "@/utils/formatLocation";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-
-function formatPrice(cents: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency.toUpperCase(),
-  }).format(centsToUnit(cents));
-}
 
 export function ExperienceListView() {
   const [search, setSearch] = useState("");
@@ -156,7 +149,7 @@ export function ExperienceListView() {
                       : "—"}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                    {formatPrice(exp.basePrice, exp.currency)}
+                    {formatCentsAsPrice(exp.basePrice, exp.currency)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span

@@ -4,7 +4,7 @@ export const search = {
   "search.description": "Trova il soggiorno perfetto",
   "search.filterAll": "Tutte",
   "search.filterElite": "Elite",
-  "search.filterStandard": "Standard",
+  "search.filterPremium": "Premium",
   "search.perNight": "/notte",
   "search.noResults": "Nessuna proprietà trovata in questa città",
   "search.noCity": "Inserisci una città per cercare proprietà",

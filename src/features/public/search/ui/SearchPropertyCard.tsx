@@ -63,10 +63,10 @@ export function SearchPropertyCard({
             <span
               className={cn(
                 "text-[10px] font-medium px-1.5 py-0.5 rounded-full",
-                asset.tier === "elite" ? "badge-elite" : "badge-standard"
+                asset.tier === "elite" ? "badge-elite" : "badge-premium"
               )}
             >
-              {asset.tier === "elite" ? "Elite" : "Standard"}
+              {asset.tier === "elite" ? "Elite" : "Premium"}
             </span>
             {asset.instantBook && (
               <span className="inline-flex items-center gap-1 text-[10px] font-medium text-primary">

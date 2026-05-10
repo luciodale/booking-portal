@@ -5,7 +5,7 @@ import type { DrizzleD1Database } from "drizzle-orm/d1";
 import type * as schema from "@/db/schema";
 
 type Db = DrizzleD1Database<typeof schema>;
-type Tier = "elite" | "standard";
+type Tier = "elite" | "premium";
 
 export type PropertyItem = {
   asset: typeof assets.$inferSelect;
@@ -66,10 +66,17 @@ export async function fetchPropertiesByCity(
   const totalPages = Math.ceil(totalCount / PER_PAGE);
   const offset = (page - 1) * PER_PAGE;
 
-  const propertiesRaw = await db
-    .select({ assets })
+  const rows = await db
+    .select({
+      asset: assets,
+      imageR2Key: images.r2Key,
+    })
     .from(assets)
     .innerJoin(users, eq(assets.userId, users.id))
+    .leftJoin(
+      images,
+      and(eq(images.assetId, assets.id), eq(images.isPrimary, true))
+    )
     .where(
       and(
         eq(assets.tier, tier),
@@ -82,22 +89,10 @@ export async function fetchPropertiesByCity(
     .limit(PER_PAGE)
     .offset(offset);
 
-  const properties = await Promise.all(
-    propertiesRaw.map(async (row) => {
-      const [primaryImage] = await db
-        .select()
-        .from(images)
-        .where(
-          and(eq(images.assetId, row.assets.id), eq(images.isPrimary, true))
-        )
-        .limit(1);
-
-      return {
-        asset: row.assets,
-        imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
-      };
-    })
-  );
+  const properties = rows.map((row) => ({
+    asset: row.asset,
+    imageUrl: row.imageR2Key ? generateImageUrl(row.imageR2Key) : "",
+  }));
 
   return { properties, totalCount, totalPages };
 }
@@ -154,10 +149,17 @@ export async function fetchSearchProperties(
 ): Promise<SearchPropertyItem[]> {
   const cityLower = city.toLowerCase();
 
-  const propertiesRaw = await db
-    .select()
+  const rows = await db
+    .select({
+      asset: assets,
+      imageR2Key: images.r2Key,
+    })
     .from(assets)
     .innerJoin(users, eq(assets.userId, users.id))
+    .leftJoin(
+      images,
+      and(eq(images.assetId, assets.id), eq(images.isPrimary, true))
+    )
     .where(
       and(
         eq(assets.status, "published"),
@@ -169,30 +171,25 @@ export async function fetchSearchProperties(
     )
     .orderBy(desc(assets.createdAt));
 
-  return Promise.all(
-    propertiesRaw.map(async (row) => {
-      const asset = row.assets;
-      const [primaryImage] = await db
-        .select()
-        .from(images)
-        .where(and(eq(images.assetId, asset.id), eq(images.isPrimary, true)))
-        .limit(1);
+  return rows.flatMap((row) => {
+    const lat = Number.parseFloat(row.asset.latitude ?? "");
+    const lng = Number.parseFloat(row.asset.longitude ?? "");
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return [];
 
-      const lat = Number(asset.latitude);
-      const lng = Number(asset.longitude);
-      const coords = asset.showFullAddress
-        ? { latitude: lat, longitude: lng }
-        : obfuscateCoordinates(asset.id, lat, lng);
+    const coords = row.asset.showFullAddress
+      ? { latitude: lat, longitude: lng }
+      : obfuscateCoordinates(row.asset.id, lat, lng);
 
-      const sanitizedAsset = asset.showFullAddress
-        ? asset
-        : { ...asset, street: null, zip: null };
+    const sanitizedAsset = row.asset.showFullAddress
+      ? row.asset
+      : { ...row.asset, street: null, zip: null };
 
-      return {
+    return [
+      {
         asset: sanitizedAsset,
-        imageUrl: primaryImage ? generateImageUrl(primaryImage.r2Key) : "",
+        imageUrl: row.imageR2Key ? generateImageUrl(row.imageR2Key) : "",
         ...coords,
-      };
-    })
-  );
+      },
+    ];
+  });
 }

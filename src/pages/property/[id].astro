@@ -114,7 +114,7 @@ const effectiveInstantBook =
       <div class="mb-6">
         <Badge variant={property.tier} />
       </div>
-      <ImageGallery images={property.images} title={property.title} variant="standard" />
+      <ImageGallery images={property.images} title={property.title} variant="premium" />
     </div>
   </section>
 
@@ -128,9 +128,9 @@ const effectiveInstantBook =
         maxGuests={property.maxGuests}
         instantBook={effectiveInstantBook}
         additionalCosts={asset.additionalCosts ?? null}
-        extras={asset.extras ?? null}
         cityTax={cityTax}
         locale={locale}
+        variant="mobile"
       />
     </div>
   </section>
@@ -260,7 +260,7 @@ const effectiveInstantBook =
           {(asset.extras ?? []).length > 0 && (
             <>
               <div class="divider-elegant"></div>
-              <ExtrasSection extras={asset.extras!} variant="standard" />
+              <ExtrasSection extras={asset.extras!} variant="premium" />
             </>
           )}
         </div>
@@ -275,9 +275,9 @@ const effectiveInstantBook =
               maxGuests={property.maxGuests}
               instantBook={effectiveInstantBook}
               additionalCosts={asset.additionalCosts ?? null}
-              extras={asset.extras ?? null}
-              cityTax={cityTax}
+                    cityTax={cityTax}
               locale={locale}
+              variant="desktop"
             />
           </div>
         </div>
