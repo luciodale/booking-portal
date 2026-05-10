@@ -26,7 +26,10 @@ export function useUpsertBrokerFee() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ userId, feePercent }: { userId: string; feePercent: number }) =>
+    mutationFn: ({
+      userId,
+      feePercent,
+    }: { userId: string; feePercent: number }) =>
       upsertBrokerFee(userId, feePercent),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: brokerFeeKeys.all });

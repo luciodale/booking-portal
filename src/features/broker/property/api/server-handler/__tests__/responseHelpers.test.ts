@@ -27,28 +27,38 @@ describe("mapErrorToStatus", () => {
 
 describe("safeErrorMessage", () => {
   test("returns fallback for non-Error values", () => {
-    expect(safeErrorMessage("oops", "Something went wrong")).toBe("Something went wrong");
+    expect(safeErrorMessage("oops", "Something went wrong")).toBe(
+      "Something went wrong"
+    );
   });
 
   test("returns message for Unauthorized", () => {
-    expect(safeErrorMessage(new Error("Unauthorized"), "fallback")).toBe("Unauthorized");
+    expect(safeErrorMessage(new Error("Unauthorized"), "fallback")).toBe(
+      "Unauthorized"
+    );
   });
 
   test("returns message for Forbidden", () => {
-    expect(safeErrorMessage(new Error("Forbidden: not your resource"), "fallback")).toBe(
-      "Forbidden: not your resource"
-    );
+    expect(
+      safeErrorMessage(new Error("Forbidden: not your resource"), "fallback")
+    ).toBe("Forbidden: not your resource");
   });
 
   test("returns friendly message for UNIQUE constraint", () => {
     expect(
-      safeErrorMessage(new Error("UNIQUE constraint failed: users.email"), "fallback")
+      safeErrorMessage(
+        new Error("UNIQUE constraint failed: users.email"),
+        "fallback"
+      )
     ).toBe("This record already exists");
   });
 
   test("returns friendly message for NOT NULL constraint", () => {
     expect(
-      safeErrorMessage(new Error("NOT NULL constraint failed: assets.title"), "fallback")
+      safeErrorMessage(
+        new Error("NOT NULL constraint failed: assets.title"),
+        "fallback"
+      )
     ).toBe("A required field is missing");
   });
 
@@ -59,6 +69,8 @@ describe("safeErrorMessage", () => {
   });
 
   test("returns fallback for generic errors", () => {
-    expect(safeErrorMessage(new Error("unexpected null"), "fallback")).toBe("fallback");
+    expect(safeErrorMessage(new Error("unexpected null"), "fallback")).toBe(
+      "fallback"
+    );
   });
 });

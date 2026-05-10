@@ -3,8 +3,8 @@ import {
   useBackofficeBookings,
   useCancelBooking,
 } from "@/features/broker/bookings/hooks/useBackofficeBookings";
-import { formatCentsAsPrice } from "@/modules/money/money";
 import { queryProperties } from "@/features/broker/property/api/client-server/queryProperties";
+import { formatCentsAsPrice } from "@/modules/money/money";
 import { cn } from "@/modules/utils/cn";
 import { SearchableDropdown } from "@luciodale/react-searchable-dropdown";
 import type { TObjectDropdownOption } from "@luciodale/react-searchable-dropdown";
@@ -47,59 +47,73 @@ function usePropertyOptions() {
 function PricingBreakdown({ booking }: { booking: BackofficeBooking }) {
   const fmt = (cents: number) => formatCents(cents, booking.currency);
   const hostPayout =
-    booking.totalPrice -
-    booking.platformFeeCents -
-    booking.withholdingTaxCents;
+    booking.totalPrice - booking.platformFeeCents - booking.withholdingTaxCents;
 
   return (
     <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm py-3 px-6 max-w-md">
       <span className="text-muted-foreground">Nightly total</span>
-      <span className="text-foreground text-right">{fmt(booking.baseTotal)}</span>
+      <span className="text-foreground text-right">
+        {fmt(booking.baseTotal)}
+      </span>
 
       {booking.additionalCostsCents > 0 && (
         <>
           <span className="text-muted-foreground">Additional costs</span>
-          <span className="text-foreground text-right">{fmt(booking.additionalCostsCents)}</span>
+          <span className="text-foreground text-right">
+            {fmt(booking.additionalCostsCents)}
+          </span>
         </>
       )}
 
       {booking.extrasCents > 0 && (
         <>
           <span className="text-muted-foreground">Extras</span>
-          <span className="text-foreground text-right">{fmt(booking.extrasCents)}</span>
+          <span className="text-foreground text-right">
+            {fmt(booking.extrasCents)}
+          </span>
         </>
       )}
 
       {booking.cityTaxCents > 0 && (
         <>
           <span className="text-muted-foreground">City tax</span>
-          <span className="text-foreground text-right">{fmt(booking.cityTaxCents)}</span>
+          <span className="text-foreground text-right">
+            {fmt(booking.cityTaxCents)}
+          </span>
         </>
       )}
 
       <div className="col-span-2 border-t border-border my-1" />
 
       <span className="text-muted-foreground">Guest total</span>
-      <span className="text-foreground font-medium text-right">{fmt(booking.totalPrice)}</span>
+      <span className="text-foreground font-medium text-right">
+        {fmt(booking.totalPrice)}
+      </span>
 
       {booking.platformFeeCents > 0 && (
         <>
           <span className="text-muted-foreground">Platform fee</span>
-          <span className="text-error text-right">-{fmt(booking.platformFeeCents)}</span>
+          <span className="text-error text-right">
+            -{fmt(booking.platformFeeCents)}
+          </span>
         </>
       )}
 
       {booking.withholdingTaxCents > 0 && (
         <>
           <span className="text-muted-foreground">Withholding tax</span>
-          <span className="text-error text-right">-{fmt(booking.withholdingTaxCents)}</span>
+          <span className="text-error text-right">
+            -{fmt(booking.withholdingTaxCents)}
+          </span>
         </>
       )}
 
       <div className="col-span-2 border-t border-border my-1" />
 
       <span className="text-muted-foreground font-medium">Host payout</span>
-      <span className="text-foreground font-medium text-right">{fmt(hostPayout)}</span>
+      <span className="text-foreground font-medium text-right">
+        {fmt(hostPayout)}
+      </span>
     </div>
   );
 }
@@ -272,7 +286,10 @@ export function BookingsList() {
             classNameDropdownOptionNoMatch="px-3 py-2 text-sm text-muted-foreground"
             DropdownIcon={({ toggled }: { toggled: boolean }) => (
               <ChevronDown
-                className={cn("w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform", toggled && "rotate-180")}
+                className={cn(
+                  "w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform",
+                  toggled && "rotate-180"
+                )}
               />
             )}
           />

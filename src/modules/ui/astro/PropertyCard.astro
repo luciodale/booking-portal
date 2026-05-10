@@ -1,11 +1,11 @@
 ---
+import type { Asset } from "@/db/schema";
+import { localePath } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { t } from "@/i18n/t";
-import { localePath } from "@/i18n/locale-path";
-import type { Asset } from "@/db/schema";
-import { formatLocation } from "@/utils/formatLocation";
 import Badge from "@/modules/ui/astro/Badge.astro";
+import { formatLocation } from "@/utils/formatLocation";
 
 interface Props {
   asset: Asset;
@@ -14,10 +14,18 @@ interface Props {
   locale?: Locale;
 }
 
-const { asset, imageUrl, target, locale = (Astro.currentLocale ?? defaultLocale) as Locale } = Astro.props;
+const {
+  asset,
+  imageUrl,
+  target,
+  locale = (Astro.currentLocale ?? defaultLocale) as Locale,
+} = Astro.props;
 
 const isElite = asset.tier === "elite";
-const href = localePath(locale, isElite ? `/elite/${asset.id}` : `/property/${asset.id}`);
+const href = localePath(
+  locale,
+  isElite ? `/elite/${asset.id}` : `/property/${asset.id}`
+);
 ---
 
 <a

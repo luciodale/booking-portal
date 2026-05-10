@@ -8,10 +8,7 @@ import {
   validateImageSize,
   validateImageType,
 } from "@/modules/r2/image-processor";
-import {
-  generateImageUrl,
-  uploadImageToR2,
-} from "@/modules/r2/r2-helpers";
+import { generateImageUrl, uploadImageToR2 } from "@/modules/r2/r2-helpers";
 import { genUniqueId } from "@/modules/utils/id";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
@@ -99,7 +96,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       }
 
       const filename = file.name.replace(/\.[^.]+$/, ".webp");
-      const r2Key = generateExperienceImageKey(experienceId, filename, isPrimary);
+      const r2Key = generateExperienceImageKey(
+        experienceId,
+        filename,
+        isPrimary
+      );
       const imageId = genUniqueId("eimg");
 
       prepared.push({ isPrimary, alt, arrayBuffer, r2Key, imageId });

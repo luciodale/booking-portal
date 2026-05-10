@@ -5,7 +5,9 @@ import { Toaster, toast } from "sonner";
 
 function useThemeFromDom(): "light" | "dark" {
   const [dark, setDark] = useState(
-    () => typeof document !== "undefined" && document.documentElement.classList.contains("dark"),
+    () =>
+      typeof document !== "undefined" &&
+      document.documentElement.classList.contains("dark")
   );
 
   useEffect(() => {

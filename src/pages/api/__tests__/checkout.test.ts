@@ -1,6 +1,6 @@
-import { describe, expect, test } from "vitest";
-import { checkoutBodySchema } from "@/schemas/checkout";
 import { toCents } from "@/modules/money/money";
+import { checkoutBodySchema } from "@/schemas/checkout";
+import { describe, expect, test } from "vitest";
 
 function makeValidBody(overrides: Record<string, unknown> = {}) {
   return {
@@ -24,6 +24,7 @@ function makeValidBody(overrides: Record<string, unknown> = {}) {
       adults: 2,
       children: 0,
     },
+    requestNonce: "test-nonce-abc123",
     ...overrides,
   };
 }

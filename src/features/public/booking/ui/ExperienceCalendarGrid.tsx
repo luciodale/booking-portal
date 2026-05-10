@@ -62,7 +62,11 @@ export function ExperienceCalendarGrid({
         </div>
       )}
 
-      <div className={cn(vertical ? "grid grid-cols-1 gap-4" : "grid grid-cols-2 gap-6")}>
+      <div
+        className={cn(
+          vertical ? "grid grid-cols-1 gap-4" : "grid grid-cols-2 gap-6"
+        )}
+      >
         {months.map((month) => (
           <MonthGrid
             key={formatDate(month)}
@@ -130,7 +134,9 @@ function MonthGrid({
               onClick={() => onDateClick(dateStr)}
               className={cn(
                 "relative flex flex-col items-center justify-center py-1.5 rounded-lg text-xs transition-colors min-h-[44px]",
-                disabled ? "text-muted-foreground/40 cursor-not-allowed" : "hover:bg-primary/20 cursor-pointer",
+                disabled
+                  ? "text-muted-foreground/40 cursor-not-allowed"
+                  : "hover:bg-primary/20 cursor-pointer",
                 past && "line-through",
                 isSelected && "bg-primary text-primary-foreground"
               )}

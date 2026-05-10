@@ -1,5 +1,5 @@
-import type { SmoobuRateDay } from "../../../../../schemas/smoobu";
 import { describe, expect, it } from "vitest";
+import type { SmoobuRateDay } from "../../../../../schemas/smoobu";
 import { getMinStayNights } from "../minStay";
 
 function makeRate(overrides: Partial<SmoobuRateDay> = {}): SmoobuRateDay {

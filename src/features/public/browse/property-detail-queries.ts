@@ -10,11 +10,11 @@ import {
   experienceCategories,
   experienceCategoryLabels,
 } from "@/features/broker/experience/constants/categoryLabels";
+import type { CityTax } from "@/features/public/booking/domain/pricingTypes";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import { formatLocation } from "@/utils/formatLocation";
 import { and, eq } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
-import type { CityTax } from "@/features/public/booking/domain/pricingTypes";
 
 type Db = DrizzleD1Database<typeof schema>;
 
@@ -96,9 +96,7 @@ export async function fetchLinkedExperiences(
     })
   );
 
-  return results.filter(
-    (e): e is NonNullable<typeof e> => e !== null
-  );
+  return results.filter((e): e is NonNullable<typeof e> => e !== null);
 }
 
 export async function fetchOwnerWhatsapp(

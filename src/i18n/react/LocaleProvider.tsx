@@ -1,9 +1,14 @@
-import { createContext, useContext, useCallback, type PropsWithChildren } from "react";
+import {
+  type PropsWithChildren,
+  createContext,
+  useCallback,
+  useContext,
+} from "react";
+import { localePath as localePathFn } from "../locale-path";
+import { t as tFn } from "../t";
+import type { TranslationKey } from "../translations/dictionary";
 import type { Locale } from "../types";
 import { defaultLocale } from "../types";
-import type { TranslationKey } from "../translations/dictionary";
-import { t as tFn } from "../t";
-import { localePath as localePathFn } from "../locale-path";
 
 type LocaleContextValue = {
   locale: Locale;
@@ -19,12 +24,12 @@ export function LocaleProvider({ locale, children }: LocaleProviderProps) {
   const t = useCallback(
     (key: TranslationKey, params?: Record<string, string | number>) =>
       tFn(locale, key, params),
-    [locale],
+    [locale]
   );
 
   const localePath = useCallback(
     (path: string) => localePathFn(locale, path),
-    [locale],
+    [locale]
   );
 
   return (

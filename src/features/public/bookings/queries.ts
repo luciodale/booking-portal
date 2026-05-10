@@ -19,7 +19,7 @@ export type BookingDetail = {
   cityTaxCents: number;
   totalPrice: number;
   currency: string;
-  status: "pending" | "confirmed" | "cancelled" | "completed";
+  status: "pending" | "pending_pms" | "confirmed" | "cancelled" | "completed";
   guestNote: string | null;
   createdAt: string | null;
   property: {
@@ -92,7 +92,10 @@ export async function fetchBookingById(
       title: row.propertyTitle,
       city: row.propertyCity,
       tier: row.propertyTier,
-      location: formatLocation({ city: row.propertyCity, country: row.propertyCountry }),
+      location: formatLocation({
+        city: row.propertyCity,
+        country: row.propertyCountry,
+      }),
       imageUrl: primaryImg ? generateImageUrl(primaryImg.r2Key) : "",
     },
   };

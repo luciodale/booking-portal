@@ -146,7 +146,13 @@ describe("getDayDisplayState", () => {
     today: "2026-02-15",
     checkIn: null as string | null,
     checkOut: null as string | null,
-    rate: undefined as { price: number | null; min_length_of_stay: number | null; available: number } | undefined,
+    rate: undefined as
+      | {
+          price: number | null;
+          min_length_of_stay: number | null;
+          available: number;
+        }
+      | undefined,
     ratesLoading: false,
     currency: "EUR" as string | null,
   };

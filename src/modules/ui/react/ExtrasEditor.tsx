@@ -40,10 +40,7 @@ export function ExtrasEditor({
   showErrors = false,
 }: ExtrasEditorProps) {
   function addRow() {
-    onChange([
-      ...extras,
-      { name: "", icon: "", amount: 0, per: "stay" },
-    ]);
+    onChange([...extras, { name: "", icon: "", amount: 0, per: "stay" }]);
   }
 
   function removeRow(index: number) {
@@ -51,7 +48,9 @@ export function ExtrasEditor({
   }
 
   function updateRow(index: number, patch: Partial<PropertyExtra>) {
-    onChange(extras.map((row, i) => (i === index ? { ...row, ...patch } : row)));
+    onChange(
+      extras.map((row, i) => (i === index ? { ...row, ...patch } : row))
+    );
   }
 
   return (
@@ -92,7 +91,9 @@ export function ExtrasEditor({
                   onChange={(e) =>
                     updateRow(index, {
                       amount:
-                        e.target.value === "" ? 0 : toCents(Number(e.target.value)),
+                        e.target.value === ""
+                          ? 0
+                          : toCents(Number(e.target.value)),
                     })
                   }
                   disabled={disabled}
@@ -147,7 +148,10 @@ export function ExtrasEditor({
                 </div>
               )}
 
-              <RemoveRowButton onClick={() => removeRow(index)} disabled={disabled} />
+              <RemoveRowButton
+                onClick={() => removeRow(index)}
+                disabled={disabled}
+              />
             </div>
             {errors.length > 0 && (
               <p className="text-xs text-error">{errors.join(". ")}</p>

@@ -21,11 +21,7 @@ export async function createSmoobuBooking(
 
   if (!response.ok) {
     const text = await response.text();
-    throw new SmoobuApiError(
-      response.status,
-      "Create booking failed",
-      text
-    );
+    throw new SmoobuApiError(response.status, "Create booking failed", text);
   }
 
   const json = (await response.json()) as unknown;

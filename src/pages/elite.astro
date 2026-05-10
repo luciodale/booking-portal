@@ -19,7 +19,7 @@ const db = getDb(Astro.locals.runtime.env.DB);
 const cityParam = Astro.url.searchParams.get("city");
 const currentPage = Math.max(
   1,
-  Number(Astro.url.searchParams.get("page") || "1"),
+  Number(Astro.url.searchParams.get("page") || "1")
 );
 
 const cities = cityParam ? [] : await fetchCitiesByTier(db, "elite");

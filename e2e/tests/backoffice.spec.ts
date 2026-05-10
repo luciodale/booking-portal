@@ -181,9 +181,7 @@ test.describe("Backoffice property management", () => {
     await expect(premiumRow).toContainText("premium");
   });
 
-  test("property row shows correct status", async ({
-    authenticatedPage,
-  }) => {
+  test("property row shows correct status", async ({ authenticatedPage }) => {
     await mockBackofficeApis(authenticatedPage);
     await authenticatedPage.goto("/backoffice/properties");
 
@@ -214,18 +212,21 @@ test.describe("Backoffice property management", () => {
         route.continue();
       }
     });
-    await authenticatedPage.route("**/api/backoffice/connect/status", (route) => {
-      route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify({
-          hasAccount: true,
-          chargesEnabled: true,
-          payoutsEnabled: true,
-          detailsSubmitted: true,
-        }),
-      });
-    });
+    await authenticatedPage.route(
+      "**/api/backoffice/connect/status",
+      (route) => {
+        route.fulfill({
+          status: 200,
+          contentType: "application/json",
+          body: JSON.stringify({
+            hasAccount: true,
+            chargesEnabled: true,
+            payoutsEnabled: true,
+            detailsSubmitted: true,
+          }),
+        });
+      }
+    );
     await authenticatedPage.route("**/api/backoffice/integrations", (route) => {
       if (route.request().method() === "GET") {
         route.fulfill({

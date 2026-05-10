@@ -1,8 +1,8 @@
 ---
+import { localePath } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { t } from "@/i18n/t";
-import { localePath } from "@/i18n/locale-path";
 import LanguageSwitcher from "@/modules/ui/astro/LanguageSwitcher.astro";
 
 const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
@@ -10,18 +10,33 @@ const locale = (Astro.currentLocale ?? defaultLocale) as Locale;
 const footerLinks = {
   company: [
     { href: localePath(locale, "/about"), label: t(locale, "footer.aboutUs") },
-    { href: localePath(locale, "/careers"), label: t(locale, "footer.careers") },
+    {
+      href: localePath(locale, "/careers"),
+      label: t(locale, "footer.careers"),
+    },
     { href: localePath(locale, "/press"), label: t(locale, "footer.press") },
   ],
   support: [
-    { href: localePath(locale, "/help"), label: t(locale, "footer.helpCenter") },
-    { href: localePath(locale, "/contact"), label: t(locale, "footer.contact") },
+    {
+      href: localePath(locale, "/help"),
+      label: t(locale, "footer.helpCenter"),
+    },
+    {
+      href: localePath(locale, "/contact"),
+      label: t(locale, "footer.contact"),
+    },
     { href: localePath(locale, "/safety"), label: t(locale, "footer.safety") },
   ],
   legal: [
-    { href: localePath(locale, "/privacy"), label: t(locale, "footer.privacy") },
+    {
+      href: localePath(locale, "/privacy"),
+      label: t(locale, "footer.privacy"),
+    },
     { href: localePath(locale, "/terms"), label: t(locale, "footer.terms") },
-    { href: localePath(locale, "/cookies"), label: t(locale, "footer.cookies") },
+    {
+      href: localePath(locale, "/cookies"),
+      label: t(locale, "footer.cookies"),
+    },
   ],
 };
 

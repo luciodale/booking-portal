@@ -49,9 +49,7 @@ export async function GETConnectStatus(locals: APIContext["locals"]) {
 
     let account: Stripe.Account;
     try {
-      account = await stripe.accounts.retrieve(
-        user.stripeConnectedAccountId
-      );
+      account = await stripe.accounts.retrieve(user.stripeConnectedAccountId);
     } catch {
       return jsonSuccess<ConnectStatus>({
         status: "revoked",

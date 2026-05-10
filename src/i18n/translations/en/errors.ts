@@ -1,18 +1,25 @@
 export const errors = {
+  "error.required": "Required",
+  "error.invalidEmail": "Invalid email",
+  "error.atLeastOneAdult": "At least 1 adult",
+  "error.fileTypeInvalid": "Invalid file type. Accepted: JPG, PNG, WebP",
+  "error.fileTooLarge": "File too large. Maximum: {maxMB}MB",
+  "error.bookingTooSmall": "Booking total below minimum allowed",
+  "error.ratesTemporarilyUnavailable":
+    "Live rates are temporarily unavailable. Please try again shortly.",
+  "error.refundFailedRetryRequired":
+    "Refund could not be processed. An operator will follow up.",
   "error.dbNotAvailable": "Database not available",
   "error.stripeNotConfigured": "Stripe not configured",
   "error.invalidRequest": "Invalid request",
   "error.propertyNotFound": "Property not found or not linked to PMS",
   "error.noPmsIntegration": "No PMS integration found",
-  "error.minStay":
-    "Minimum stay is {nights} nights for the selected dates",
+  "error.minStay": "Minimum stay is {nights} nights for the selected dates",
   "error.propertyNotAvailable":
     "Property is no longer available for these dates",
   "error.unableToComputePrice": "Unable to compute price for this stay",
-  "error.priceChanged":
-    "Price has changed. Please refresh and try again.",
-  "error.cityTaxChanged":
-    "City tax has changed. Please refresh and try again.",
+  "error.priceChanged": "Price has changed. Please refresh and try again.",
+  "error.cityTaxChanged": "City tax has changed. Please refresh and try again.",
   "error.mockWebhookFailed": "Mock webhook failed",
   "error.signInRequired": "Sign in required",
   "error.checkoutFailed": "Checkout failed",
@@ -38,16 +45,16 @@ export const errors = {
   "error.missingBookingId": "Missing booking ID",
   "error.bookingNotFound": "Booking not found",
   "error.forbiddenNotYourProperty": "Forbidden: Not your property",
-  "error.cannotCancelBooking": "Cannot cancel booking with status \"{status}\"",
+  "error.cannotCancelBooking": 'Cannot cancel booking with status "{status}"',
   "error.cancellationTooLate":
     "Cancellations must be made at least {hours} hours before check-in",
   "error.failedToCancelBooking": "Failed to cancel booking",
   "error.failedToListBookings": "Failed to list bookings",
-  "error.instantBookNotAvailable": "Online booking is not available for this property",
+  "error.instantBookNotAvailable":
+    "Online booking is not available for this property",
   "error.missingExperienceId": "Missing experience ID",
   "error.validationFailed": "Validation failed",
   "error.maxImagesExceeded": "Maximum 20 images allowed per upload",
   "error.noImagesProvided": "No images provided",
   "error.invalidImageType": "Invalid image type",
-  "error.fileTooLarge": "File too large",
 } as const;

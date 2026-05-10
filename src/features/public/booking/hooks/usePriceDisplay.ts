@@ -2,6 +2,11 @@ import {
   computePropertyAdditionalCosts,
   formatPropertyCostPreview,
 } from "@/features/public/booking/domain/computeAdditionalCosts";
+import type {
+  CityTax,
+  PriceLineItem,
+  PropertyAdditionalCost,
+} from "@/features/public/booking/domain/pricingTypes";
 import { formatPrice } from "@/modules/money/money";
 import {
   centsToUnit,
@@ -9,11 +14,6 @@ import {
   multiplyCents,
   sumCents,
 } from "@/modules/money/money";
-import type {
-  CityTax,
-  PriceLineItem,
-  PropertyAdditionalCost,
-} from "@/features/public/booking/domain/pricingTypes";
 import type { SmoobuAvailabilityResponse } from "@/schemas/smoobu";
 import { useMemo } from "react";
 
@@ -176,7 +176,11 @@ export function usePriceDisplay({
       nights,
       currency: resolvedCurrency,
       additionalCostItems,
-      grandTotalCents: sumCents([totalPriceCents, additionalTotalCents, cityTaxCents]),
+      grandTotalCents: sumCents([
+        totalPriceCents,
+        additionalTotalCents,
+        cityTaxCents,
+      ]),
     };
   }, [
     checkIn,

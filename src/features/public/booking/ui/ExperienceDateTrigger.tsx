@@ -30,7 +30,10 @@ export function ExperienceDateTrigger({
           Date
         </div>
         <div
-          className={cn("text-sm truncate", selectedDate ? "text-foreground font-semibold" : "text-primary/50")}
+          className={cn(
+            "text-sm truncate",
+            selectedDate ? "text-foreground font-semibold" : "text-primary/50"
+          )}
         >
           {selectedDate ?? "Select date"}
         </div>

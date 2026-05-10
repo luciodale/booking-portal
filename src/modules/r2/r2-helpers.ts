@@ -5,9 +5,17 @@
 
 import { genUniqueId } from "@/modules/utils/id";
 
+// Public R2 base URL. In dev we proxy through /api/images so local R2 dev
+// served objects work without CORS. In prod we read from PUBLIC_R2_BASE_URL
+// so the bucket can be swapped (custom domain, signed URLs) without code
+// changes. A safe fallback keeps existing public deployments working.
+const PROD_PUBLIC_R2_FALLBACK =
+  "https://pub-9d13f1d66a7642979229f65d101a51c6.r2.dev";
+
 export const R2_PUBLIC_URL = import.meta.env.DEV
   ? "/api/images"
-  : "https://pub-9d13f1d66a7642979229f65d101a51c6.r2.dev";
+  : ((import.meta.env.PUBLIC_R2_BASE_URL as string | undefined) ??
+    PROD_PUBLIC_R2_FALLBACK);
 
 /**
  * Uploads an image buffer to R2 bucket

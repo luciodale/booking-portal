@@ -3,20 +3,20 @@
  */
 
 import { experienceCategories } from "@/features/broker/experience/constants/categoryLabels";
+import { experienceQueryKeys } from "@/features/broker/experience/constants/queryKeys";
 import { useExperience } from "@/features/broker/experience/queries/useExperience";
 import { useUpdateExperience } from "@/features/broker/experience/queries/useUpdateExperience";
 import { EditableSectionField } from "@/features/broker/property/ui/EditableField";
-import { centsToUnit, toCents } from "@/modules/money/money";
-import { CategoryPicker } from "@/modules/ui/react/form-inputs/IconSelectInput";
+import { ImagesManager } from "@/features/broker/property/ui/ImagesManager";
 import type { ExperienceAdditionalCost } from "@/features/public/booking/domain/pricingTypes";
+import { centsToUnit, toCents } from "@/modules/money/money";
 import {
   AdditionalCostsEditor,
   validateAdditionalCosts,
 } from "@/modules/ui/react/AdditionalCostsEditor";
+import { CategoryPicker } from "@/modules/ui/react/form-inputs/IconSelectInput";
 import type { UpdateExperienceInput } from "@/schemas/experience";
 import { useQueryClient } from "@tanstack/react-query";
-import { experienceQueryKeys } from "@/features/broker/experience/constants/queryKeys";
-import { ImagesManager } from "@/features/broker/property/ui/ImagesManager";
 import { PropertyLinker } from "./PropertyLinker";
 
 interface ExperienceEditViewProps {
@@ -385,17 +385,20 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
         <EditableSectionField
           title="Additional Costs"
           description="Optional fees charged on top of the base price."
-          values={{ additionalCosts: (experience.additionalCosts ?? []) as ExperienceAdditionalCost[] }}
-          onSave={(data) =>
-            saveField("additionalCosts", data.additionalCosts)
-          }
+          values={{
+            additionalCosts: (experience.additionalCosts ??
+              []) as ExperienceAdditionalCost[],
+          }}
+          onSave={(data) => saveField("additionalCosts", data.additionalCosts)}
           validate={(data) => validateAdditionalCosts(data.additionalCosts)}
           renderFields={({ values, onChange, disabled, showErrors }) => (
             <AdditionalCostsEditor
               costs={values.additionalCosts}
               perOptions={[...experiencePerOptions]}
               onChange={(costs) =>
-                onChange({ additionalCosts: costs as ExperienceAdditionalCost[] })
+                onChange({
+                  additionalCosts: costs as ExperienceAdditionalCost[],
+                })
               }
               disabled={disabled}
               showErrors={showErrors}
@@ -448,7 +451,8 @@ export function ExperienceEditView({ experienceId }: ExperienceEditViewProps) {
           endpoints={{
             upload: "/api/backoffice/upload-experience-images",
             delete: (id) => `/api/backoffice/experience-images/${id}`,
-            setPrimary: (id) => `/api/backoffice/experience-images/${id}/primary`,
+            setPrimary: (id) =>
+              `/api/backoffice/experience-images/${id}/primary`,
           }}
           title="Experience Images"
         />

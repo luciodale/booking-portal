@@ -3,9 +3,9 @@ import { assets, images } from "@/db/schema";
 import { assertBrokerOwnership } from "@/features/broker/auth/assertBrokerOwnership";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import { displayToKebab } from "@/features/broker/property/domain/sync-features";
-import type { Feature } from "@/modules/constants";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { t } from "@/i18n/t";
+import type { Feature } from "@/modules/constants";
 import type { PropertyWithDetails } from "@/schemas/property";
 import { updatePropertySchema } from "@/schemas/property";
 import type { APIRoute } from "astro";
@@ -53,7 +53,11 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     const validationResult = updatePropertySchema.safeParse(body);
 
     if (!validationResult.success) {
-      return jsonError(t(locale, "error.invalidRequest"), 400, validationResult.error.issues);
+      return jsonError(
+        t(locale, "error.invalidRequest"),
+        400,
+        validationResult.error.issues
+      );
     }
 
     const data = validationResult.data;

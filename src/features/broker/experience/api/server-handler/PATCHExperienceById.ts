@@ -51,7 +51,11 @@ export const PATCH: APIRoute = async ({ params, request, locals }) => {
     const validationResult = updateExperienceSchema.safeParse(body);
 
     if (!validationResult.success) {
-      return jsonError(t(locale, "error.validationFailed"), 400, validationResult.error.issues);
+      return jsonError(
+        t(locale, "error.validationFailed"),
+        400,
+        validationResult.error.issues
+      );
     }
 
     const data = validationResult.data;

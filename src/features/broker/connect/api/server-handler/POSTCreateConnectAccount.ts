@@ -56,8 +56,7 @@ export async function POSTCreateConnectAccount(
 
     return jsonSuccess({ accountId: account.id });
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Internal error";
+    const message = error instanceof Error ? error.message : "Internal error";
     console.error("[POSTCreateConnectAccount]", message, error);
     return jsonError(
       import.meta.env.DEV ? message : "Internal error",

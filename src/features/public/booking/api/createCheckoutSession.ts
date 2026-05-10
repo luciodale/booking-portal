@@ -16,6 +16,7 @@ type CheckoutSessionParams = {
     children: number;
     guestNote?: string;
   };
+  requestNonce: string;
 };
 
 type CheckoutSessionResponse = {

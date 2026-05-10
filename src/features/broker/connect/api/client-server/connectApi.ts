@@ -1,8 +1,8 @@
 import type { ConnectStatus } from "@/features/broker/connect/api/server-handler/GETConnectStatus";
 
-export async function createConnectAccount(
-  { replace = false }: { replace?: boolean } = {}
-): Promise<{ accountId: string }> {
+export async function createConnectAccount({
+  replace = false,
+}: { replace?: boolean } = {}): Promise<{ accountId: string }> {
   const params = replace ? "?replace=true" : "";
   const response = await fetch(`/api/backoffice/connect/account${params}`, {
     method: "POST",

@@ -12,7 +12,10 @@ type SearchFiltersProps = {
   showAvailabilityToggle: boolean;
 };
 
-const TIERS: { value: TierFilter; labelKey: "search.filterAll" | "search.filterElite" | "search.filterPremium" }[] = [
+const TIERS: {
+  value: TierFilter;
+  labelKey: "search.filterAll" | "search.filterElite" | "search.filterPremium";
+}[] = [
   { value: "all", labelKey: "search.filterAll" },
   { value: "elite", labelKey: "search.filterElite" },
   { value: "premium", labelKey: "search.filterPremium" },
@@ -34,7 +37,9 @@ export function SearchFilters({
       <div>
         <h1 className="text-lg font-semibold text-foreground">{city}</h1>
         <p className="text-sm text-muted-foreground">
-          {resultCount === 1 ? t("search.resultsSingular") : t("search.results", { count: resultCount })}
+          {resultCount === 1
+            ? t("search.resultsSingular")
+            : t("search.results", { count: resultCount })}
         </p>
       </div>
       <div className="flex items-center gap-3">
@@ -73,7 +78,7 @@ export function SearchFilters({
                 "px-3 py-1.5 text-xs font-medium rounded-full transition-colors",
                 tierFilter === value
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground",
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
               {t(labelKey)}

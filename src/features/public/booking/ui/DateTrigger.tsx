@@ -92,7 +92,10 @@ export function DateSlot({
         {label}
       </div>
       <div
-        className={cn("text-sm truncate", value && "text-foreground font-semibold")}
+        className={cn(
+          "text-sm truncate",
+          value && "text-foreground font-semibold"
+        )}
       >
         {value ?? "Select date"}
       </div>

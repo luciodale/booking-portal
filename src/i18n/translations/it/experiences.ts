@@ -18,8 +18,6 @@ export const experiences: Record<keyof typeof en, string> = {
   "experiences.upToParticipants": "Fino a {count} partecipanti",
   "experiences.perPerson": "a persona",
   "experiences.aboutThisExperience": "Informazioni su Questa Esperienza",
-  "experiences.availableAtProperties":
-    "Disponibile presso Queste Proprietà",
-  "experiences.bookAndAdd":
-    "Prenota un soggiorno e aggiungi questa esperienza",
+  "experiences.availableAtProperties": "Disponibile presso Queste Proprietà",
+  "experiences.bookAndAdd": "Prenota un soggiorno e aggiungi questa esperienza",
 };

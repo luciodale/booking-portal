@@ -38,4 +38,3 @@ export type TGetIntegrationListingsResponse = {
 
 /** GET /api/backoffice/integrations/listings/[id] — response (Smoobu apartment details) */
 export type { SmoobuApartmentDetails as TGetIntegrationListingDetailResponse } from "@/schemas/smoobu";
-

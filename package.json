@@ -35,7 +35,8 @@
     "format:check": "biome format .",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "mock:smoobu": "bun run scripts/mock-smoobu.ts"
+    "mock:smoobu": "bun run scripts/mock-smoobu.ts",
+    "prepare": "bunx lefthook install || true"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.6.12",
@@ -86,6 +87,10 @@
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "drizzle-kit": "^0.31.4",
+    "lefthook": "^1.7.22",
     "wrangler": "^4.59.1"
+  },
+  "overrides": {
+    "nanostores": "^1.3.0"
   }
 }

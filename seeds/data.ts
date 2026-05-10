@@ -218,7 +218,12 @@ The pool area is a great place to relax. It features a saltwater infinity pool, 
     ],
     additionalCosts: [
       { label: "Cleaning fee", amount: 35000, per: "stay" },
-      { label: "Tourist tax", amount: 350, per: "night_per_guest", maxNights: 10 },
+      {
+        label: "Tourist tax",
+        amount: 350,
+        per: "night_per_guest",
+        maxNights: 10,
+      },
     ],
     instantBook: false,
     showFullAddress: true,
@@ -279,9 +284,7 @@ There is WIFI TV in the whole house with Netflix, Amazon Prime and Apple TV+. Th
       { name: "sauna", icon: "flame" },
       { name: "sunny-location", icon: "sun" },
     ],
-    additionalCosts: [
-      { label: "Cleaning fee", amount: 25000, per: "stay" },
-    ],
+    additionalCosts: [{ label: "Cleaning fee", amount: 25000, per: "stay" }],
     instantBook: false,
     showFullAddress: true,
   },
@@ -322,7 +325,12 @@ This modern apartment features a fully equipped kitchen, comfortable bedrooms, a
     ],
     additionalCosts: [
       { label: "Cleaning fee", amount: 8000, per: "stay" },
-      { label: "Tourist tax", amount: 225, per: "night_per_guest", maxNights: 7 },
+      {
+        label: "Tourist tax",
+        amount: 225,
+        per: "night_per_guest",
+        maxNights: 7,
+      },
     ],
     instantBook: true,
     showFullAddress: true,
@@ -372,7 +380,12 @@ The property features lush gardens, a private dock, and interiors designed by a 
     ],
     additionalCosts: [
       { label: "Cleaning fee", amount: 20000, per: "stay" },
-      { label: "Tourist tax", amount: 300, per: "night_per_guest", maxNights: 14 },
+      {
+        label: "Tourist tax",
+        amount: 300,
+        per: "night_per_guest",
+        maxNights: 14,
+      },
     ],
     instantBook: false,
     showFullAddress: true,
@@ -417,7 +430,12 @@ Steps from Fado houses and the iconic Tram 28 route. Rooftop terrace with sweepi
     ],
     additionalCosts: [
       { label: "Cleaning fee", amount: 6000, per: "stay" },
-      { label: "Tourist tax", amount: 200, per: "night_per_guest", maxNights: 7 },
+      {
+        label: "Tourist tax",
+        amount: 200,
+        per: "night_per_guest",
+        maxNights: 7,
+      },
     ],
     instantBook: true,
     showFullAddress: true,
@@ -465,9 +483,7 @@ Hand-crafted timber interiors, a private outdoor hot tub, and ski-in/ski-out acc
       { name: "hot-tub", icon: "waves" },
       { name: "cinema", icon: "tv" },
     ],
-    additionalCosts: [
-      { label: "Cleaning fee", amount: 20000, per: "stay" },
-    ],
+    additionalCosts: [{ label: "Cleaning fee", amount: 20000, per: "stay" }],
     instantBook: false,
     showFullAddress: true,
   },
@@ -561,7 +577,12 @@ Traditional Cycladic architecture meets contemporary luxury, with a private chef
     ],
     additionalCosts: [
       { label: "Cleaning fee", amount: 25000, per: "stay" },
-      { label: "Tourist tax", amount: 400, per: "night_per_guest", maxNights: 7 },
+      {
+        label: "Tourist tax",
+        amount: 400,
+        per: "night_per_guest",
+        maxNights: 7,
+      },
     ],
     instantBook: false,
     showFullAddress: true,
@@ -651,7 +672,12 @@ The ground floor features an open-plan living area with exposed stone walls; the
     ],
     additionalCosts: [
       { label: "Cleaning fee", amount: 5500, per: "stay" },
-      { label: "Tourist tax", amount: 200, per: "night_per_guest", maxNights: 7 },
+      {
+        label: "Tourist tax",
+        amount: 200,
+        per: "night_per_guest",
+        maxNights: 7,
+      },
     ],
     instantBook: true,
     showFullAddress: true,
@@ -692,9 +718,7 @@ Walking distance to the English Garden and excellent public transport connection
       { name: "creative-quarter", icon: "palette" },
       { name: "industrial-design", icon: "check" },
     ],
-    additionalCosts: [
-      { label: "Cleaning fee", amount: 6000, per: "stay" },
-    ],
+    additionalCosts: [{ label: "Cleaning fee", amount: 6000, per: "stay" }],
     instantBook: true,
     showFullAddress: true,
   },
@@ -735,7 +759,12 @@ The neighborhood is home to traditional artisan workshops, trattorias, and the l
     ],
     additionalCosts: [
       { label: "Cleaning fee", amount: 7000, per: "stay" },
-      { label: "Tourist tax", amount: 350, per: "night_per_guest", maxNights: 7 },
+      {
+        label: "Tourist tax",
+        amount: 350,
+        per: "night_per_guest",
+        maxNights: 7,
+      },
     ],
     instantBook: true,
     showFullAddress: true,

@@ -1,11 +1,11 @@
 import { getDb } from "@/db";
 import { platformSettings } from "@/db/schema";
-import { requireAdmin } from "@/modules/auth/auth";
 import {
   jsonError,
   jsonSuccess,
   mapErrorToStatus,
 } from "@/features/broker/property/api/server-handler/responseHelpers";
+import { requireAdmin } from "@/modules/auth/auth";
 import type { APIContext } from "astro";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
@@ -22,18 +22,14 @@ const putSettingSchema = z.object({
 });
 
 const validators: Record<string, z.ZodType<string>> = {
-  withholdingTaxPercent: z
-    .string()
-    .refine((v) => {
-      const n = Number(v);
-      return Number.isFinite(n) && n >= 0 && n <= 100;
-    }, "Must be a number between 0 and 100"),
-  defaultApplicationFeePercent: z
-    .string()
-    .refine((v) => {
-      const n = Number(v);
-      return Number.isFinite(n) && n >= 0 && n <= 100;
-    }, "Must be a number between 0 and 100"),
+  withholdingTaxPercent: z.string().refine((v) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 && n <= 100;
+  }, "Must be a number between 0 and 100"),
+  defaultApplicationFeePercent: z.string().refine((v) => {
+    const n = Number(v);
+    return Number.isFinite(n) && n >= 0 && n <= 100;
+  }, "Must be a number between 0 and 100"),
 };
 
 export async function PUTSettings(
@@ -57,7 +53,10 @@ export async function PUTSettings(
     if (keyValidator) {
       const result = keyValidator.safeParse(value);
       if (!result.success) {
-        return jsonError(result.error.issues[0]?.message ?? "Invalid value", 400);
+        return jsonError(
+          result.error.issues[0]?.message ?? "Invalid value",
+          400
+        );
       }
     }
 

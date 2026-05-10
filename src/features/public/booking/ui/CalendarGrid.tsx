@@ -70,7 +70,11 @@ export function CalendarGrid({
         </div>
       )}
 
-      <div className={cn(vertical ? "grid grid-cols-1 gap-4" : "grid grid-cols-2 gap-6")}>
+      <div
+        className={cn(
+          vertical ? "grid grid-cols-1 gap-4" : "grid grid-cols-2 gap-6"
+        )}
+      >
         {months.map((month) => (
           <MonthGrid
             key={formatDate(month)}
@@ -147,7 +151,9 @@ function MonthGrid({
               onClick={() => onDateClick(dateStr)}
               className={cn(
                 "relative flex flex-col items-center justify-center rounded-full text-xs size-[44px] mx-auto",
-                ds.unavailable ? "text-muted-foreground/40 cursor-not-allowed line-through" : "hover:bg-primary/20 cursor-pointer",
+                ds.unavailable
+                  ? "text-muted-foreground/40 cursor-not-allowed line-through"
+                  : "hover:bg-primary/20 cursor-pointer",
                 ds.isCheckIn && "bg-primary text-primary-foreground",
                 ds.isCheckOut && "bg-primary text-primary-foreground",
                 ds.inRange && "bg-primary/10"

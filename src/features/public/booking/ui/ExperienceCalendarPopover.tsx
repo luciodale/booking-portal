@@ -68,7 +68,11 @@ export function ExperienceCalendarPopover({
 
       {isOpen && (
         <FloatingPortal>
-          <FloatingFocusManager context={context} modal={false} closeOnFocusOut={false}>
+          <FloatingFocusManager
+            context={context}
+            modal={false}
+            closeOnFocusOut={false}
+          >
             <div
               ref={refs.setFloating}
               style={floatingStyles}

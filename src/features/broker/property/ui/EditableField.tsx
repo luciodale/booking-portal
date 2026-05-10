@@ -11,7 +11,7 @@ import type { Feature } from "@/modules/constants";
 import { IconPicker } from "@/modules/ui/react/IconPicker";
 import { cn } from "@/modules/utils/cn";
 import { getErrorMessages } from "@/modules/utils/errors";
-import { Check, type LucideIcon, Loader2, icons } from "lucide-react";
+import { Check, Loader2, type LucideIcon, icons } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
 /** Resolve a kebab-case or PascalCase icon name to a lucide component */
@@ -181,13 +181,9 @@ export function EditableFeatureGroupField({
         ) => {
           if (disabled) return;
 
-          const currentNames = new Set(
-            values[fieldName].map((f) => f.name)
-          );
+          const currentNames = new Set(values[fieldName].map((f) => f.name));
           const addedNames = new Set(
-            newValue
-              .filter((f) => !currentNames.has(f.name))
-              .map((f) => f.name)
+            newValue.filter((f) => !currentNames.has(f.name)).map((f) => f.name)
           );
 
           const updated = { ...values, [fieldName]: newValue };

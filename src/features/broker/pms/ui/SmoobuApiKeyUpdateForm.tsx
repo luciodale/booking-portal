@@ -7,7 +7,9 @@ type SmoobuApiKeyFormValues = {
 };
 
 function useSmoobuApiKeyUpdateForm() {
-  const form = useForm<SmoobuApiKeyFormValues>({ defaultValues: { apiKey: "" } });
+  const form = useForm<SmoobuApiKeyFormValues>({
+    defaultValues: { apiKey: "" },
+  });
   const mutation = useUpdateSmoobuApiKey();
 
   function handleSubmit(values: SmoobuApiKeyFormValues) {

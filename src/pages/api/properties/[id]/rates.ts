@@ -5,6 +5,7 @@ import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/serv
 import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { t } from "@/i18n/t";
+import { ratesQuerySchema } from "@/schemas/availability";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 
@@ -12,24 +13,31 @@ export const GET: APIRoute = async ({ params, request, locals, url }) => {
   const locale = getRequestLocale(request);
   try {
     const { id } = params;
-    const startDate = url.searchParams.get("startDate");
-    const endDate = url.searchParams.get("endDate");
+    const parsed = ratesQuerySchema.safeParse({
+      startDate: url.searchParams.get("startDate"),
+      endDate: url.searchParams.get("endDate"),
+    });
 
-    if (!id || !startDate || !endDate) {
+    if (!id || !parsed.success) {
       return new Response(
         JSON.stringify({
           error: t(locale, "error.missingRequiredParams"),
+          details: parsed.success ? undefined : parsed.error.issues,
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
+    const { startDate, endDate } = parsed.data;
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return new Response(JSON.stringify({ error: t(locale, "error.dbNotAvailable") }), {
-        status: 503,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: t(locale, "error.dbNotAvailable") }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     const db = getDb(D1Database);
@@ -78,7 +86,11 @@ export const GET: APIRoute = async ({ params, request, locals, url }) => {
     console.error("Error fetching rates:", error);
     return new Response(
       JSON.stringify({
-        error: safeErrorMessage(error, t(locale, "error.failedToFetchRates"), locale),
+        error: safeErrorMessage(
+          error,
+          t(locale, "error.failedToFetchRates"),
+          locale
+        ),
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

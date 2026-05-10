@@ -41,49 +41,94 @@ describe("booking overlap detection", () => {
   };
 
   test("detects full overlap", () => {
-    const overlap = findOverlap([confirmed], "prop-1", "2025-07-06", "2025-07-09");
+    const overlap = findOverlap(
+      [confirmed],
+      "prop-1",
+      "2025-07-06",
+      "2025-07-09"
+    );
     expect(overlap).toBeDefined();
   });
 
   test("detects partial overlap at start", () => {
-    const overlap = findOverlap([confirmed], "prop-1", "2025-07-03", "2025-07-07");
+    const overlap = findOverlap(
+      [confirmed],
+      "prop-1",
+      "2025-07-03",
+      "2025-07-07"
+    );
     expect(overlap).toBeDefined();
   });
 
   test("detects partial overlap at end", () => {
-    const overlap = findOverlap([confirmed], "prop-1", "2025-07-08", "2025-07-12");
+    const overlap = findOverlap(
+      [confirmed],
+      "prop-1",
+      "2025-07-08",
+      "2025-07-12"
+    );
     expect(overlap).toBeDefined();
   });
 
   test("detects encompassing overlap", () => {
-    const overlap = findOverlap([confirmed], "prop-1", "2025-07-01", "2025-07-15");
+    const overlap = findOverlap(
+      [confirmed],
+      "prop-1",
+      "2025-07-01",
+      "2025-07-15"
+    );
     expect(overlap).toBeDefined();
   });
 
   test("no overlap when checkout equals existing checkIn (same-day turnover)", () => {
-    const overlap = findOverlap([confirmed], "prop-1", "2025-07-01", "2025-07-05");
+    const overlap = findOverlap(
+      [confirmed],
+      "prop-1",
+      "2025-07-01",
+      "2025-07-05"
+    );
     expect(overlap).toBeUndefined();
   });
 
   test("no overlap when checkIn equals existing checkOut (same-day turnover)", () => {
-    const overlap = findOverlap([confirmed], "prop-1", "2025-07-10", "2025-07-15");
+    const overlap = findOverlap(
+      [confirmed],
+      "prop-1",
+      "2025-07-10",
+      "2025-07-15"
+    );
     expect(overlap).toBeUndefined();
   });
 
   test("no overlap for different property", () => {
-    const overlap = findOverlap([confirmed], "prop-2", "2025-07-06", "2025-07-09");
+    const overlap = findOverlap(
+      [confirmed],
+      "prop-2",
+      "2025-07-06",
+      "2025-07-09"
+    );
     expect(overlap).toBeUndefined();
   });
 
   test("ignores cancelled bookings", () => {
     const cancelled: Booking = { ...confirmed, status: "cancelled" };
-    const overlap = findOverlap([cancelled], "prop-1", "2025-07-06", "2025-07-09");
+    const overlap = findOverlap(
+      [cancelled],
+      "prop-1",
+      "2025-07-06",
+      "2025-07-09"
+    );
     expect(overlap).toBeUndefined();
   });
 
   test("ignores pending bookings", () => {
     const pending: Booking = { ...confirmed, status: "pending" };
-    const overlap = findOverlap([pending], "prop-1", "2025-07-06", "2025-07-09");
+    const overlap = findOverlap(
+      [pending],
+      "prop-1",
+      "2025-07-06",
+      "2025-07-09"
+    );
     expect(overlap).toBeUndefined();
   });
 });
@@ -97,17 +142,23 @@ describe("webhook metadata parsing", () => {
 
   test("throws on missing key", () => {
     const meta = { totalPriceCents: "15000" };
-    expect(() => parseMetaCents(meta, "missing")).toThrow("Invalid or missing metadata value");
+    expect(() => parseMetaCents(meta, "missing")).toThrow(
+      "Invalid or missing metadata value"
+    );
   });
 
   test("throws on non-numeric value", () => {
     const meta = { totalPriceCents: "abc" };
-    expect(() => parseMetaCents(meta, "totalPriceCents")).toThrow("Invalid or missing metadata value");
+    expect(() => parseMetaCents(meta, "totalPriceCents")).toThrow(
+      "Invalid or missing metadata value"
+    );
   });
 
   test("throws on Infinity", () => {
     const meta = { totalPriceCents: "Infinity" };
-    expect(() => parseMetaCents(meta, "totalPriceCents")).toThrow("Invalid or missing metadata value");
+    expect(() => parseMetaCents(meta, "totalPriceCents")).toThrow(
+      "Invalid or missing metadata value"
+    );
   });
 
   test("handles zero correctly", () => {

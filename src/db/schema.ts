@@ -32,9 +32,7 @@ export const users = sqliteTable(
   },
   (table) => [
     uniqueIndex("idx_users_email").on(table.email),
-    uniqueIndex("idx_users_stripe_account").on(
-      table.stripeConnectedAccountId
-    ),
+    uniqueIndex("idx_users_stripe_account").on(table.stripeConnectedAccountId),
   ]
 );
 
@@ -59,6 +57,9 @@ export const pmsIntegrations = sqliteTable(
       .notNull()
       .references(() => users.id),
     provider: text("provider").notNull(), // "smoobu"
+    // TODO(security, BOO-prod): encrypt at rest (AES-256-GCM via Web Crypto,
+    // KEK from Worker secret PMS_KEK) before storing real production keys.
+    // Plaintext is acceptable today only because keys here are Smoobu test keys.
     apiKey: text("api_key").notNull(),
     pmsUserId: integer("pms_user_id"),
     pmsEmail: text("pms_email"),
@@ -263,7 +264,9 @@ export const bookings = sqliteTable(
 
     // Pricing breakdown
     baseTotal: integer("base_total").notNull(), // Nightly rates sum in cents
-    additionalCostsCents: integer("additional_costs_cents").notNull().default(0),
+    additionalCostsCents: integer("additional_costs_cents")
+      .notNull()
+      .default(0),
     extrasCents: integer("extras_cents").notNull().default(0),
     cityTaxCents: integer("city_tax_cents").notNull().default(0),
     platformFeeCents: integer("platform_fee_cents").notNull().default(0),
@@ -271,9 +274,11 @@ export const bookings = sqliteTable(
     totalPrice: integer("total_price").notNull(), // Guest total in cents
     currency: text("currency").notNull().default("eur"),
 
-    // Status
+    // Status. `pending_pms` is the post payment, pre PMS sync state.
     status: text("status")
-      .$type<"pending" | "confirmed" | "cancelled" | "completed">()
+      .$type<
+        "pending" | "pending_pms" | "confirmed" | "cancelled" | "completed"
+      >()
       .notNull()
       .default("pending"),
 
@@ -297,7 +302,12 @@ export const bookings = sqliteTable(
     index("idx_bookings_user").on(table.userId),
     index("idx_bookings_status").on(table.status),
     index("idx_bookings_dates").on(table.checkIn, table.checkOut),
-    index("idx_bookings_overlap").on(table.assetId, table.status, table.checkIn, table.checkOut),
+    index("idx_bookings_overlap").on(
+      table.assetId,
+      table.status,
+      table.checkIn,
+      table.checkOut
+    ),
     uniqueIndex("idx_bookings_stripe_session").on(table.stripeSessionId),
     index("idx_bookings_stripe_pi").on(table.stripePaymentIntentId),
   ]

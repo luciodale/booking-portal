@@ -54,10 +54,7 @@ export function AdditionalCostsEditor<P extends string>({
   showErrors = false,
 }: AdditionalCostsEditorProps<P>) {
   function addRow() {
-    onChange([
-      ...costs,
-      { label: "", amount: 0, per: perOptions[0].value },
-    ]);
+    onChange([...costs, { label: "", amount: 0, per: perOptions[0].value }]);
   }
 
   function removeRow(index: number) {
@@ -98,7 +95,9 @@ export function AdditionalCostsEditor<P extends string>({
                   onChange={(e) =>
                     updateRow(index, {
                       amount:
-                        e.target.value === "" ? 0 : toCents(Number(e.target.value)),
+                        e.target.value === ""
+                          ? 0
+                          : toCents(Number(e.target.value)),
                     })
                   }
                   disabled={disabled}
@@ -116,7 +115,9 @@ export function AdditionalCostsEditor<P extends string>({
               <div className="w-44">
                 <select
                   value={row.per}
-                  onChange={(e) => updateRow(index, { per: e.target.value as P })}
+                  onChange={(e) =>
+                    updateRow(index, { per: e.target.value as P })
+                  }
                   disabled={disabled}
                   className={cn("input w-full", disabled && "opacity-50")}
                 >
@@ -149,7 +150,10 @@ export function AdditionalCostsEditor<P extends string>({
                 </div>
               )}
 
-              <RemoveRowButton onClick={() => removeRow(index)} disabled={disabled} />
+              <RemoveRowButton
+                onClick={() => removeRow(index)}
+                disabled={disabled}
+              />
             </div>
             {errors.length > 0 && (
               <p className="text-xs text-error">{errors.join(". ")}</p>

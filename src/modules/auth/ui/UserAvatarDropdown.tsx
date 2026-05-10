@@ -1,6 +1,6 @@
-import type { Locale } from "@/i18n/types";
-import { t } from "@/i18n/t";
 import { localePath } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
+import type { Locale } from "@/i18n/types";
 import { $userStore } from "@clerk/astro/client";
 import { useAuth } from "@clerk/astro/react";
 import {

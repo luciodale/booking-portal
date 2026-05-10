@@ -1,5 +1,5 @@
-import { BrokerFeeOverrides } from "@/features/admin/settings/ui/BrokerFeeOverrides";
 import { DEFAULT_APPLICATION_FEE_PERCENT } from "@/features/admin/settings/domain/getApplicationFeePercent";
+import { BrokerFeeOverrides } from "@/features/admin/settings/ui/BrokerFeeOverrides";
 
 export function PlatformSettingsView() {
   return (

@@ -2,8 +2,8 @@
  * IconTagsInput - Multi-select tags with icons + custom input with icon picker
  */
 
-import type { Feature } from "@/modules/constants";
 import { kebabToDisplay } from "@/features/broker/property/domain/sync-features";
+import type { Feature } from "@/modules/constants";
 import { IconTextInput } from "@/modules/ui/react/form-inputs/IconTextInput";
 import { cn } from "@/modules/utils/cn";
 import { type LucideIcon, icons } from "lucide-react";

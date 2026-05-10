@@ -206,10 +206,18 @@ describe("computePaymentSplit", () => {
 
   test("invariant: guestTotal = nightly + additional + cityTax", () => {
     const inputs = [
-      { nightlyTotalCents: 80000, additionalCostsCents: 10000, cityTaxCents: 3000 },
+      {
+        nightlyTotalCents: 80000,
+        additionalCostsCents: 10000,
+        cityTaxCents: 3000,
+      },
       { nightlyTotalCents: 0, additionalCostsCents: 0, cityTaxCents: 0 },
       { nightlyTotalCents: 1, additionalCostsCents: 1, cityTaxCents: 1 },
-      { nightlyTotalCents: 999999, additionalCostsCents: 111111, cityTaxCents: 333333 },
+      {
+        nightlyTotalCents: 999999,
+        additionalCostsCents: 111111,
+        cityTaxCents: 333333,
+      },
     ];
 
     for (const input of inputs) {

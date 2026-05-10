@@ -3,11 +3,11 @@
  * Shows linked properties as chips + searchable dropdown to add more.
  */
 
-import { useProperties } from "@/features/broker/property/queries/useProperties";
 import {
   useLinkProperty,
   useUnlinkProperty,
 } from "@/features/broker/experience/queries/useLinkProperty";
+import { useProperties } from "@/features/broker/property/queries/useProperties";
 import type { LinkedProperty } from "@/schemas/experience";
 import { Plus, X } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
@@ -39,9 +39,7 @@ export function PropertyLinker({
     return propertyList.properties
       .filter((p) => !linkedIds.has(p.id))
       .filter(
-        (p) =>
-          !search ||
-          p.title.toLowerCase().includes(search.toLowerCase())
+        (p) => !search || p.title.toLowerCase().includes(search.toLowerCase())
       );
   }, [propertyList, linkedIds, search]);
 

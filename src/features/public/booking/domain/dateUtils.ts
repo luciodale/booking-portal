@@ -1,3 +1,4 @@
+import type { SmoobuRateDay } from "@/schemas/smoobu";
 import {
   addDays,
   addMonths,
@@ -9,7 +10,6 @@ import {
   subMonths,
 } from "date-fns";
 import { eachDayOfInterval } from "date-fns";
-import type { SmoobuRateDay } from "@/schemas/smoobu";
 
 export function getMonthDays(date: Date): Date[] {
   const start = startOfMonth(date);
@@ -87,10 +87,17 @@ export function getDayDisplayState(params: {
     dateStr < checkOut
   );
   const price = rate?.price ?? null;
-  const showPrice =
-    !ratesLoading && price != null && !past && currency != null;
+  const showPrice = !ratesLoading && price != null && !past && currency != null;
 
-  return { past, unavailable, isCheckIn, isCheckOut, inRange, showPrice, price };
+  return {
+    past,
+    unavailable,
+    isCheckIn,
+    isCheckOut,
+    inRange,
+    showPrice,
+    price,
+  };
 }
 
 export { addMonths, subMonths, startOfToday, startOfMonth };

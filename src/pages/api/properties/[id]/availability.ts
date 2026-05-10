@@ -4,6 +4,7 @@ import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoo
 import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { t } from "@/i18n/t";
+import { availabilityBodySchema } from "@/schemas/availability";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 
@@ -12,34 +13,36 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
   try {
     const { id } = params;
     if (!id) {
-      return new Response(JSON.stringify({ error: t(locale, "error.missingPropertyId") }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: t(locale, "error.missingPropertyId") }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
-    const body = (await request.json()) as {
-      arrivalDate?: string;
-      departureDate?: string;
-      guests?: number;
-    };
-
-    const { arrivalDate, departureDate, guests } = body;
-    if (!arrivalDate || !departureDate) {
+    const parsed = availabilityBodySchema.safeParse(await request.json());
+    if (!parsed.success) {
       return new Response(
         JSON.stringify({
           error: t(locale, "error.missingRequiredFields"),
+          details: parsed.error.issues,
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );
     }
+    const { arrivalDate, departureDate, guests } = parsed.data;
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return new Response(JSON.stringify({ error: t(locale, "error.dbNotAvailable") }), {
-        status: 503,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: t(locale, "error.dbNotAvailable") }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     const db = getDb(D1Database);
@@ -94,7 +97,11 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
     console.error("Error checking availability:", error);
     return new Response(
       JSON.stringify({
-        error: safeErrorMessage(error, t(locale, "error.failedToCheckAvailability"), locale),
+        error: safeErrorMessage(
+          error,
+          t(locale, "error.failedToCheckAvailability"),
+          locale
+        ),
       }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );

@@ -1,5 +1,5 @@
-import type { Locale } from "@/i18n/types";
 import { t } from "@/i18n/t";
+import type { Locale } from "@/i18n/types";
 import { SignedIn, SignedOut } from "@clerk/astro/react";
 import { UserAvatarDropdown } from "./UserAvatarDropdown";
 

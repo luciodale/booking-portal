@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "d4ffc343-7a05-45ff-a5d1-bd348af3082e",
+  "id": "792db703-0842-45ea-b640-e0d9684875e0",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "asset_experiences": {
@@ -131,7 +131,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'premium'"
+          "default": "'standard'"
         },
         "status": {
           "name": "status",
@@ -211,13 +211,6 @@
           "notNull": true,
           "autoincrement": false,
           "default": true
-        },
-        "cin": {
-          "name": "cin",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
         },
         "max_occupancy": {
           "name": "max_occupancy",
@@ -553,7 +546,7 @@
           "name": "stripe_session_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "stripe_payment_intent_id": {
@@ -628,30 +621,6 @@
           "columns": [
             "check_in",
             "check_out"
-          ],
-          "isUnique": false
-        },
-        "idx_bookings_overlap": {
-          "name": "idx_bookings_overlap",
-          "columns": [
-            "asset_id",
-            "status",
-            "check_in",
-            "check_out"
-          ],
-          "isUnique": false
-        },
-        "idx_bookings_stripe_session": {
-          "name": "idx_bookings_stripe_session",
-          "columns": [
-            "stripe_session_id"
-          ],
-          "isUnique": true
-        },
-        "idx_bookings_stripe_pi": {
-          "name": "idx_bookings_stripe_pi",
-          "columns": [
-            "stripe_payment_intent_id"
           ],
           "isUnique": false
         }
@@ -1183,13 +1152,6 @@
             "status"
           ],
           "isUnique": false
-        },
-        "idx_exp_bookings_stripe_session": {
-          "name": "idx_exp_bookings_stripe_session",
-          "columns": [
-            "stripe_session_id"
-          ],
-          "isUnique": true
         }
       },
       "foreignKeys": {
@@ -1972,22 +1934,7 @@
           "default": "CURRENT_TIMESTAMP"
         }
       },
-      "indexes": {
-        "idx_users_email": {
-          "name": "idx_users_email",
-          "columns": [
-            "email"
-          ],
-          "isUnique": true
-        },
-        "idx_users_stripe_account": {
-          "name": "idx_users_stripe_account",
-          "columns": [
-            "stripe_connected_account_id"
-          ],
-          "isUnique": true
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},

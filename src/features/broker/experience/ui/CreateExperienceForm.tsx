@@ -178,7 +178,9 @@ export function CreateExperienceForm({
             { value: "booking", label: "Per Booking" },
             { value: "participant", label: "Per Participant" },
           ]}
-          onChange={(costs) => setValue("additionalCosts", costs, { shouldDirty: true })}
+          onChange={(costs) =>
+            setValue("additionalCosts", costs, { shouldDirty: true })
+          }
           disabled={isLoading}
         />
       </FormSection>
@@ -188,7 +190,9 @@ export function CreateExperienceForm({
           <input
             type="checkbox"
             checked={instantBook}
-            onChange={(e) => setValue("instantBook", e.target.checked, { shouldDirty: true })}
+            onChange={(e) =>
+              setValue("instantBook", e.target.checked, { shouldDirty: true })
+            }
             disabled={isLoading}
             className="w-4 h-4 rounded border-border text-primary focus:ring-primary"
           />

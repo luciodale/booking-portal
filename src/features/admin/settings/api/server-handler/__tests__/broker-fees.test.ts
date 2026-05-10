@@ -95,8 +95,6 @@ describe("deleteBrokerFeeSchema", () => {
   });
 
   test("rejects empty userId", () => {
-    expect(deleteBrokerFeeSchema.safeParse({ userId: "" }).success).toBe(
-      false
-    );
+    expect(deleteBrokerFeeSchema.safeParse({ userId: "" }).success).toBe(false);
   });
 });

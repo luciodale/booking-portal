@@ -9,6 +9,7 @@ import { cn } from "@/modules/utils/cn";
 import type { SmoobuRateDay } from "@/schemas/smoobu";
 import { SwipeBarProvider, useSwipeBarContext } from "@luciodale/swipe-bar";
 import { useCallback, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 type SearchBarProps = {
   cities: string[];
@@ -182,7 +183,16 @@ function SearchBarInner({
             isHero ? "h-12 px-8 gap-2 inline-flex items-center" : "h-10 px-6"
           )}
         >
-          <svg aria-hidden="true" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg
+            aria-hidden="true"
+            className="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
             <circle cx="11" cy="11" r="8" />
             <line x1="21" x2="16.65" y1="21" y2="16.65" />
           </svg>
@@ -190,22 +200,24 @@ function SearchBarInner({
         </button>
       </div>
 
-      {isMobile && (
-        <MobileCalendarBottomSheet
-          isOpen={calendar.isCalendarOpen}
-          onOpenChange={calendar.setCalendarOpen}
-          currentMonth={calendar.currentMonth}
-          checkIn={calendar.checkIn}
-          checkOut={calendar.checkOut}
-          rateMap={EMPTY_RATE_MAP}
-          ratesLoading={false}
-          currency={null}
-          onDateClick={handleDateClick}
-          onPrevMonth={calendar.goPrevMonth}
-          onNextMonth={calendar.goNextMonth}
-          onConfirm={calendar.confirmCalendar}
-        />
-      )}
+      {isMobile &&
+        createPortal(
+          <MobileCalendarBottomSheet
+            isOpen={calendar.isCalendarOpen}
+            onOpenChange={calendar.setCalendarOpen}
+            currentMonth={calendar.currentMonth}
+            checkIn={calendar.checkIn}
+            checkOut={calendar.checkOut}
+            rateMap={EMPTY_RATE_MAP}
+            ratesLoading={false}
+            currency={null}
+            onDateClick={handleDateClick}
+            onPrevMonth={calendar.goPrevMonth}
+            onNextMonth={calendar.goNextMonth}
+            onConfirm={calendar.confirmCalendar}
+          />,
+          document.body
+        )}
     </form>
   );
 }

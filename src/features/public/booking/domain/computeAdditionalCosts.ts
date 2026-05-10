@@ -98,9 +98,7 @@ export function computeExtrasTotal(
   params: { nights: number; guests: number; currency: string }
 ): PriceLineItem[] {
   const indices =
-    selectedIndices instanceof Set
-      ? selectedIndices
-      : new Set(selectedIndices);
+    selectedIndices instanceof Set ? selectedIndices : new Set(selectedIndices);
   if (indices.size === 0) return [];
 
   const items: PriceLineItem[] = [];

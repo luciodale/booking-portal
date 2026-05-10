@@ -44,8 +44,6 @@ export const GETVerifyApiKey: APIRoute = async ({ request }) => {
     return jsonSuccess(parsed.data);
   } catch (error) {
     console.error("Error verifying Smoobu API key:", error);
-    return jsonError(
-      safeErrorMessage(error, "Failed to verify API key")
-    );
+    return jsonError(safeErrorMessage(error, "Failed to verify API key"));
   }
 };

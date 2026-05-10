@@ -1,5 +1,5 @@
-import { locales } from "../types";
 import { switchLocale } from "../locale-path";
+import { locales } from "../types";
 import { useLocale } from "./LocaleProvider";
 
 export function LanguageSwitcher() {

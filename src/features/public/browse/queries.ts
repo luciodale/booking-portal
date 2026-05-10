@@ -1,8 +1,8 @@
 import { assets, images, users } from "@/db/schema";
+import type * as schema from "@/db/schema";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import { and, count, desc, eq, isNotNull, sql } from "drizzle-orm";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
-import type * as schema from "@/db/schema";
 
 type Db = DrizzleD1Database<typeof schema>;
 type Tier = "elite" | "premium";
@@ -136,7 +136,7 @@ function obfuscateCoordinates(
     hash = (hash * 31 + id.charCodeAt(i)) | 0;
   }
   const angle = ((hash & 0xffff) / 0xffff) * Math.PI * 2;
-  const radius = 0.003 + ((hash >>> 16) & 0xfff) / 0xfff * 0.002;
+  const radius = 0.003 + (((hash >>> 16) & 0xfff) / 0xfff) * 0.002;
   return {
     latitude: lat + Math.sin(angle) * radius,
     longitude: lng + Math.cos(angle) * radius,

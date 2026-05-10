@@ -33,7 +33,10 @@ export function PriceBreakdown({
       ))}
 
       <div className="border-t border-border pt-2 mt-2">
-        <div data-testid="price-total" className="flex items-center justify-between">
+        <div
+          data-testid="price-total"
+          className="flex items-center justify-between"
+        >
           <span className="text-sm font-semibold text-foreground">
             {total.label}
           </span>

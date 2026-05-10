@@ -1,5 +1,5 @@
-import { test as base, type Page } from "@playwright/test";
 import { authenticateWithClerk } from "@e2e/helpers/clerk";
+import { type Page, test as base } from "@playwright/test";
 
 export const test = base.extend<{ authenticatedPage: Page }>({
   authenticatedPage: async ({ page }, use) => {

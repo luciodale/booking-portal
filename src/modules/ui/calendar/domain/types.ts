@@ -23,4 +23,3 @@ export type CalendarViewProps = {
   existingPeriods: PricingPeriod[];
   basePrice: number;
 };
-

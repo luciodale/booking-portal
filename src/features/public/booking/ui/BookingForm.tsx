@@ -1,20 +1,25 @@
+import { useLocale } from "@/i18n/react/LocaleProvider";
 import { cn } from "@/modules/utils/cn";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const bookingGuestSchema = z.object({
-  firstName: z.string().min(1, "Required"),
-  lastName: z.string().min(1, "Required"),
-  email: z.string().email("Invalid email"),
-  phone: z.string().optional(),
-  adults: z.number().int().min(1, "At least 1 adult"),
-  children: z.number().int().min(0),
-  guestNote: z.string().optional(),
-});
+function makeBookingGuestSchema(t: (key: string) => string) {
+  return z.object({
+    firstName: z.string().min(1, t("error.required")),
+    lastName: z.string().min(1, t("error.required")),
+    email: z.string().email(t("error.invalidEmail")),
+    phone: z.string().optional(),
+    adults: z.number().int().min(1, t("error.atLeastOneAdult")),
+    children: z.number().int().min(0),
+    guestNote: z.string().optional(),
+  });
+}
 
-export type BookingGuestInput = z.input<typeof bookingGuestSchema>;
+export type BookingGuestInput = z.input<
+  ReturnType<typeof makeBookingGuestSchema>
+>;
 
 type BookingFormProps = {
   maxGuests: number;
@@ -35,13 +40,18 @@ export function BookingForm({
   onGuestsChange,
   onValuesChange,
 }: BookingFormProps) {
+  const { t } = useLocale();
+  const schema = useMemo(
+    () => makeBookingGuestSchema((k) => t(k as never)),
+    [t]
+  );
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm<BookingGuestInput>({
-    resolver: zodResolver(bookingGuestSchema),
+    resolver: zodResolver(schema),
     defaultValues: { adults: 1, children: 0, ...savedValues },
   });
 
@@ -96,9 +106,7 @@ export function BookingForm({
             className="w-full px-3 py-2 rounded-lg bg-background border border-border text-foreground text-sm focus:outline-none focus:ring-1 focus:ring-primary"
           />
           {errors.lastName && (
-            <p className="text-xs text-error mt-1">
-              {errors.lastName.message}
-            </p>
+            <p className="text-xs text-error mt-1">{errors.lastName.message}</p>
           )}
         </div>
       </div>
@@ -197,7 +205,12 @@ export function BookingForm({
         data-testid="booking-submit"
         type="submit"
         disabled={!isAvailable || isSubmitting}
-        className={cn("w-full py-3 rounded-xl text-sm font-semibold transition-all", isAvailable && !isSubmitting ? "bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer" : "bg-muted text-muted-foreground cursor-not-allowed")}
+        className={cn(
+          "w-full py-3 rounded-xl text-sm font-semibold transition-all",
+          isAvailable && !isSubmitting
+            ? "bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+            : "bg-muted text-muted-foreground cursor-not-allowed"
+        )}
       >
         {isSubmitting ? (
           <span className="flex items-center justify-center gap-2">

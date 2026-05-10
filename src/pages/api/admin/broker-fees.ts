@@ -1,6 +1,6 @@
+import { DELETEBrokerFee } from "@/features/admin/settings/api/server-handler/DELETEBrokerFee";
 import { GETBrokerFees } from "@/features/admin/settings/api/server-handler/GETBrokerFees";
 import { PUTBrokerFee } from "@/features/admin/settings/api/server-handler/PUTBrokerFee";
-import { DELETEBrokerFee } from "@/features/admin/settings/api/server-handler/DELETEBrokerFee";
 import type { APIRoute } from "astro";
 
 export const GET: APIRoute = async ({ locals }) => {

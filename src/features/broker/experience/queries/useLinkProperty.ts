@@ -10,8 +10,7 @@ export function useLinkProperty(experienceId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (propertyId: string) =>
-      linkProperty(experienceId, propertyId),
+    mutationFn: (propertyId: string) => linkProperty(experienceId, propertyId),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: experienceQueryKeys.detail(experienceId),

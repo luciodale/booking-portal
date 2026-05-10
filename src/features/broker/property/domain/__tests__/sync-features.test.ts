@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { Feature } from "@/modules/constants";
+import { describe, expect, it } from "vitest";
 import {
   displayToKebab,
   isDefaultCollision,

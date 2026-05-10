@@ -25,7 +25,9 @@ function createAutoCloseTracker() {
 /**
  * Pure-logic mirror of handleDateClick from useBookingCalendar.
  */
-function createDateSelection(tracker: ReturnType<typeof createAutoCloseTracker>) {
+function createDateSelection(
+  tracker: ReturnType<typeof createAutoCloseTracker>
+) {
   let checkIn: string | null = null;
   let checkOut: string | null = null;
   let calendarOpen = true;

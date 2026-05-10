@@ -1,4 +1,4 @@
-import { useRef, useCallback } from "react";
+import { useCallback, useRef } from "react";
 
 const CODE_LENGTH = 6;
 const DIGIT_KEYS = Array.from({ length: CODE_LENGTH }, (_, i) => `digit-${i}`);
@@ -32,7 +32,10 @@ export function CodeInput({
     }
   }
 
-  function handleKeyDown(index: number, e: React.KeyboardEvent<HTMLInputElement>) {
+  function handleKeyDown(
+    index: number,
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) {
     if (e.key === "Backspace" && !digits[index] && index > 0) {
       focusInput(index - 1);
     }
@@ -48,7 +51,10 @@ export function CodeInput({
 
   function handlePaste(e: React.ClipboardEvent) {
     e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, CODE_LENGTH);
+    const pasted = e.clipboardData
+      .getData("text")
+      .replace(/\D/g, "")
+      .slice(0, CODE_LENGTH);
     if (!pasted) return;
     onChange(pasted);
     focusInput(Math.min(pasted.length, CODE_LENGTH - 1));

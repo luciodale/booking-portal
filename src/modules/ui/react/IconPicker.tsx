@@ -100,10 +100,7 @@ export function IconPicker({
               >
                 {virtualizer.getVirtualItems().map((virtualRow) => {
                   const startIdx = virtualRow.index * COLUMNS;
-                  const rowIcons = filtered.slice(
-                    startIdx,
-                    startIdx + COLUMNS
-                  );
+                  const rowIcons = filtered.slice(startIdx, startIdx + COLUMNS);
                   return (
                     <div
                       key={virtualRow.index}

@@ -1,3 +1,5 @@
+import { percentOfCents, sumCents } from "@/modules/money/money";
+
 type PaymentSplitInput = {
   nightlyTotalCents: number;
   additionalCostsCents: number;
@@ -6,7 +8,7 @@ type PaymentSplitInput = {
   withholdingPercent: number;
 };
 
-type PaymentSplit = {
+export type PaymentSplit = {
   taxableBaseCents: number;
   platformFeeCents: number;
   withholdingTaxCents: number;
@@ -15,7 +17,14 @@ type PaymentSplit = {
   hostPayoutCents: number;
 };
 
-import { percentOfCents, sumCents } from "@/modules/money/money";
+export class NegativeHostPayoutError extends Error {
+  constructor(public readonly split: PaymentSplit) {
+    super(
+      `Host payout would be negative: ${split.hostPayoutCents} cents (guest total ${split.guestTotalCents}, app fee ${split.applicationFeeCents}).`
+    );
+    this.name = "NegativeHostPayoutError";
+  }
+}
 
 export function computePaymentSplit(input: PaymentSplitInput): PaymentSplit {
   const taxableBaseCents = sumCents([
@@ -30,10 +39,7 @@ export function computePaymentSplit(input: PaymentSplitInput): PaymentSplit {
     input.withholdingPercent
   );
 
-  const applicationFeeCents = sumCents([
-    platformFeeCents,
-    withholdingTaxCents,
-  ]);
+  const applicationFeeCents = sumCents([platformFeeCents, withholdingTaxCents]);
 
   const guestTotalCents = sumCents([
     input.nightlyTotalCents,
@@ -43,7 +49,7 @@ export function computePaymentSplit(input: PaymentSplitInput): PaymentSplit {
 
   const hostPayoutCents = guestTotalCents - applicationFeeCents;
 
-  return {
+  const split: PaymentSplit = {
     taxableBaseCents,
     platformFeeCents,
     withholdingTaxCents,
@@ -51,4 +57,10 @@ export function computePaymentSplit(input: PaymentSplitInput): PaymentSplit {
     guestTotalCents,
     hostPayoutCents,
   };
+
+  if (hostPayoutCents < 0) {
+    throw new NegativeHostPayoutError(split);
+  }
+
+  return split;
 }

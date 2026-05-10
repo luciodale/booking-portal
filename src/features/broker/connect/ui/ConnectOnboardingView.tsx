@@ -1,13 +1,8 @@
 import { useConnectStatus } from "@/features/broker/connect/queries/useConnectStatus";
-import { useCreateConnectAccount } from "@/features/broker/connect/queries/useCreateConnectAccount";
 import { useCreateAccountLink } from "@/features/broker/connect/queries/useCreateAccountLink";
+import { useCreateConnectAccount } from "@/features/broker/connect/queries/useCreateConnectAccount";
 import { useCreateLoginLink } from "@/features/broker/connect/queries/useCreateLoginLink";
-import {
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  ExternalLink,
-} from "lucide-react";
+import { AlertTriangle, CheckCircle, Clock, ExternalLink } from "lucide-react";
 
 export function ConnectOnboardingView() {
   const { data: connectStatus, isLoading } = useConnectStatus();
@@ -96,8 +91,8 @@ export function ConnectOnboardingView() {
             </h2>
           </div>
           <p className="text-sm text-info">
-            Your details have been submitted. Stripe is verifying your account
-            — this usually takes a few moments.
+            Your details have been submitted. Stripe is verifying your account —
+            this usually takes a few moments.
           </p>
           <div className="mt-4 flex items-center gap-2 text-sm text-info">
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-info border-t-transparent" />
@@ -118,10 +113,7 @@ export function ConnectOnboardingView() {
       {isRevoked && (
         <div className="rounded-lg border border-error/30 bg-error/10 p-4 mb-6">
           <div className="flex items-center gap-2 mb-1">
-            <AlertTriangle
-              className="text-error"
-              size={16}
-            />
+            <AlertTriangle className="text-error" size={16} />
             <p className="text-sm font-medium text-error">
               Previous connection is no longer valid
             </p>

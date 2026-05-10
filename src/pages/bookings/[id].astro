@@ -2,10 +2,10 @@
 import { getDb } from "@/db";
 import { fetchBookingById } from "@/features/public/bookings/queries";
 import { fetchExperiencesByCity } from "@/features/public/browse/experience-queries";
+import { localePath } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { t } from "@/i18n/t";
-import { localePath } from "@/i18n/locale-path";
 import PageLayout from "@/layouts/PageLayout.astro";
 import { requireAuth } from "@/modules/auth/auth";
 
@@ -31,9 +31,10 @@ const today = new Date().toISOString().split("T")[0];
 const isFuture = booking.checkIn >= today;
 const isNew = Astro.url.searchParams.get("new") === "true";
 
-const cityExperiences = isFuture && booking.property.city
-  ? (await fetchExperiencesByCity(db, booking.property.city, 1)).experiences
-  : [];
+const cityExperiences =
+  isFuture && booking.property.city
+    ? (await fetchExperiencesByCity(db, booking.property.city, 1)).experiences
+    : [];
 
 const statusColors: Record<string, string> = {
   pending: "bg-warning/10 text-warning border-warning/20",
@@ -42,9 +43,12 @@ const statusColors: Record<string, string> = {
   completed: "bg-info/10 text-info border-info/20",
 };
 
-const propertyHref = localePath(locale, booking.property.tier === "elite"
-  ? `/elite/${booking.property.id}`
-  : `/property/${booking.property.id}`);
+const propertyHref = localePath(
+  locale,
+  booking.property.tier === "elite"
+    ? `/elite/${booking.property.id}`
+    : `/property/${booking.property.id}`
+);
 
 import { formatCentsAsPrice } from "@/modules/money/money";
 

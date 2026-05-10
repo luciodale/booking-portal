@@ -68,7 +68,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error checking Smoobu availability:", error);
     return jsonError(
-      safeErrorMessage(error, t(locale, "error.failedToCheckAvailability"), locale)
+      safeErrorMessage(
+        error,
+        t(locale, "error.failedToCheckAvailability"),
+        locale
+      )
     );
   }
 };

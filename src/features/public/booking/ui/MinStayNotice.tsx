@@ -24,7 +24,8 @@ export function MinStayNotice({ minStayNights }: MinStayNoticeProps) {
         <line x1="12" x2="12.01" y1="8" y2="8" />
       </svg>
       <span className="text-xs text-muted-foreground">
-        Minimum stay: <strong className="text-foreground">{minStayNights} nights</strong>
+        Minimum stay:{" "}
+        <strong className="text-foreground">{minStayNights} nights</strong>
       </span>
     </div>
   );

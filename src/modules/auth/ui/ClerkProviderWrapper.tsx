@@ -6,7 +6,10 @@ type ClerkProviderWrapperProps = PropsWithChildren<{
   locale?: Locale;
 }>;
 
-export function ClerkProviderWrapper({ locale, children }: ClerkProviderWrapperProps) {
+export function ClerkProviderWrapper({
+  locale,
+  children,
+}: ClerkProviderWrapperProps) {
   return (
     <ClerkProvider
       publishableKey={import.meta.env.PUBLIC_CLERK_PUBLISHABLE_KEY}

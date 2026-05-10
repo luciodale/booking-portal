@@ -1,5 +1,4 @@
 import { getDateRange } from "@/features/public/booking/domain/computeStayPrice";
-import { sumCents, toCents } from "@/modules/money/money";
 import {
   addMonths,
   computeRateRange,
@@ -11,6 +10,7 @@ import { useBookingDatesFromUrl } from "@/features/public/booking/hooks/useBooki
 import { useCalendarAutoClose } from "@/features/public/booking/hooks/useCalendarAutoClose";
 import { usePropertyAvailability } from "@/features/public/booking/hooks/usePropertyAvailability";
 import { usePropertyRates } from "@/features/public/booking/hooks/usePropertyRates";
+import { sumCents, toCents } from "@/modules/money/money";
 import type {
   SmoobuAvailabilityResponse,
   SmoobuRateDay,
@@ -80,7 +80,11 @@ export function useBookingCalendar(
     (arrival: string, departure: string, guestCount: number | null) => {
       setAvailLoading(true);
       availabilityMutation.mutate(
-        { arrivalDate: arrival, departureDate: departure, guests: guestCount ?? undefined },
+        {
+          arrivalDate: arrival,
+          departureDate: departure,
+          guests: guestCount ?? undefined,
+        },
         {
           onSuccess: (data) => {
             setAvailData(data);
@@ -178,8 +182,7 @@ export function useBookingCalendar(
   }, [checkIn, checkOut, smoobuPropertyId, rateMap, availData]);
 
   const totalPriceCents = useMemo(
-    () =>
-      nightPriceCents ? sumCents(Object.values(nightPriceCents)) : null,
+    () => (nightPriceCents ? sumCents(Object.values(nightPriceCents)) : null),
     [nightPriceCents]
   );
 

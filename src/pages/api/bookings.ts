@@ -13,10 +13,13 @@ export const GET: APIRoute = async ({ request, locals }) => {
 
     const D1Database = locals.runtime?.env?.DB;
     if (!D1Database) {
-      return new Response(JSON.stringify({ error: t(locale, "error.dbNotAvailable") }), {
-        status: 503,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: t(locale, "error.dbNotAvailable") }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     const db = getDb(D1Database);
@@ -47,14 +50,20 @@ export const GET: APIRoute = async ({ request, locals }) => {
   } catch (error) {
     console.error("Error fetching bookings:", error);
     if (error instanceof Error && error.message === "Unauthorized") {
-      return new Response(JSON.stringify({ error: t(locale, "error.signInRequired") }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: t(locale, "error.signInRequired") }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
-    return new Response(JSON.stringify({ error: t(locale, "error.failedToFetchBookings") }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: t(locale, "error.failedToFetchBookings") }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 };

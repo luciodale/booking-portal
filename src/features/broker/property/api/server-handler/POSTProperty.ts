@@ -2,9 +2,9 @@ import { getDb } from "@/db";
 import { assets } from "@/db/schema";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import { displayToKebab } from "@/features/broker/property/domain/sync-features";
-import type { Feature } from "@/modules/constants";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { t } from "@/i18n/t";
+import type { Feature } from "@/modules/constants";
 import { genUniqueId } from "@/modules/utils/id";
 import type { PropertyWithDetails } from "@/schemas/property";
 import { createPropertySchema } from "@/schemas/property";
@@ -35,7 +35,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const validationResult = createPropertySchema.safeParse(body);
 
     if (!validationResult.success) {
-      return jsonError(t(locale, "error.invalidRequest"), 400, validationResult.error.issues);
+      return jsonError(
+        t(locale, "error.invalidRequest"),
+        400,
+        validationResult.error.issues
+      );
     }
 
     const data = validationResult.data;

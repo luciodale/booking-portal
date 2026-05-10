@@ -7,11 +7,7 @@ function futureDate(daysFromNow: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-function buildRates(
-  smoobuId: string,
-  startDate: string,
-  endDate: string
-) {
+function buildRates(smoobuId: string, startDate: string, endDate: string) {
   const rates: Record<
     string,
     { price: number; min_length_of_stay: number; available: number }
@@ -73,9 +69,7 @@ async function discoverPropertyHref(page: Page): Promise<string> {
   await page.waitForLoadState("networkidle");
 
   const propertyLink = page.locator("a[href*='/elite/']").first();
-  if (
-    !(await propertyLink.isVisible({ timeout: 10000 }).catch(() => false))
-  ) {
+  if (!(await propertyLink.isVisible({ timeout: 10000 }).catch(() => false))) {
     return "";
   }
   return (await propertyLink.getAttribute("href")) ?? "";

@@ -884,7 +884,9 @@ const server = Bun.serve({
 });
 
 console.log(`Mock Smoobu API running on http://localhost:${server.port}`);
-console.log(`  Price: ${PRICE_PER_NIGHT} EUR/night (min stay: ${MIN_LENGTH_OF_STAY} nights)`);
+console.log(
+  `  Price: ${PRICE_PER_NIGHT} EUR/night (min stay: ${MIN_LENGTH_OF_STAY} nights)`
+);
 console.log(`  Bookings in memory: ${bookings.length}`);
 console.log(
   `  Apartments: ${MOCK_APARTMENTS.map((a) => `${a.id} (${a.name})`).join(", ")}`

@@ -1,11 +1,17 @@
 import { fetchPropertyRates } from "@/features/public/booking/api/fetchPropertyRates";
-import type { PropertyPrice, SearchProperty } from "@/features/public/search/types";
+import type {
+  PropertyPrice,
+  SearchProperty,
+} from "@/features/public/search/types";
 import { useQueries } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 function computeRatesSummary(
-  ratesData: Record<string, Record<string, { price: number | null; available: number }>>,
-  checkOut: string,
+  ratesData: Record<
+    string,
+    Record<string, { price: number | null; available: number }>
+  >,
+  checkOut: string
 ): { avg: number; count: number; available: boolean } {
   let total = 0;
   let count = 0;
@@ -28,14 +34,15 @@ function computeRatesSummary(
 export function useSearchPrices(
   properties: SearchProperty[],
   checkIn: string | null,
-  checkOut: string | null,
+  checkOut: string | null
 ): Map<string, PropertyPrice> {
   const enabled = checkIn != null && checkOut != null;
 
   const queries = useQueries({
     queries: properties.map((p) => ({
       queryKey: ["search-rates", p.asset.id, checkIn, checkOut] as const,
-      queryFn: () => fetchPropertyRates(p.asset.id, checkIn ?? "", checkOut ?? ""),
+      queryFn: () =>
+        fetchPropertyRates(p.asset.id, checkIn ?? "", checkOut ?? ""),
       enabled,
       staleTime: 5 * 60 * 1000,
     })),
@@ -49,11 +56,26 @@ export function useSearchPrices(
 
       const propertyId = properties[i].asset.id;
       if (query.isLoading) {
-        map.set(propertyId, { avgNightlyRate: 0, currency: "EUR", loading: true, error: false, available: true });
+        map.set(propertyId, {
+          avgNightlyRate: 0,
+          currency: "EUR",
+          loading: true,
+          error: false,
+          available: true,
+        });
       } else if (query.isError) {
-        map.set(propertyId, { avgNightlyRate: 0, currency: "EUR", loading: false, error: true, available: true });
+        map.set(propertyId, {
+          avgNightlyRate: 0,
+          currency: "EUR",
+          loading: false,
+          error: true,
+          available: true,
+        });
       } else if (query.data) {
-        const { avg, available } = computeRatesSummary(query.data.rates.data, checkOut ?? "");
+        const { avg, available } = computeRatesSummary(
+          query.data.rates.data,
+          checkOut ?? ""
+        );
         map.set(propertyId, {
           avgNightlyRate: Math.round(avg),
           currency: query.data.currency,

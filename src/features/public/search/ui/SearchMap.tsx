@@ -1,8 +1,9 @@
-import { formatPrice } from "@/modules/money/money";
 import type {
   PropertyPrice,
   SearchProperty,
 } from "@/features/public/search/types";
+import { formatPrice } from "@/modules/money/money";
+import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useRef } from "react";
 
@@ -19,12 +20,18 @@ function tileUrl(dark: boolean) {
   return `https://{s}.basemaps.cartocdn.com/${variant}/{z}/{x}/{y}{r}.png`;
 }
 
-function createPriceIcon(price: string, selected: boolean, unavailable: boolean) {
+function createPriceIcon(
+  price: string,
+  selected: boolean,
+  unavailable: boolean
+) {
   const cls = [
     "search-pin search-pin--price",
     selected ? "search-pin--selected" : "",
     unavailable ? "search-pin--unavailable" : "",
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
   return L.divIcon({
     className: "search-pin-wrapper",
     html: `<div class="${cls}">${price}</div>`,
@@ -38,7 +45,9 @@ function createHomeIcon(selected: boolean, unavailable: boolean) {
     "search-pin search-pin--home",
     selected ? "search-pin--selected" : "",
     unavailable ? "search-pin--unavailable" : "",
-  ].filter(Boolean).join(" ");
+  ]
+    .filter(Boolean)
+    .join(" ");
   return L.divIcon({
     className: "search-pin-wrapper",
     html: `<div class="${cls}">

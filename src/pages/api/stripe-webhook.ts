@@ -9,10 +9,16 @@ import {
 } from "@/db/schema";
 import { SmoobuApiError } from "@/features/broker/pms/integrations/smoobu/SmoobuApiError";
 import { createSmoobuBooking } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCreateBooking";
-import { centsToUnit } from "@/modules/money/money";
 import { createEventLogger } from "@/modules/logging/eventLogger";
+import { centsToUnit } from "@/modules/money/money";
+import { sanitizeFreeText } from "@/modules/sanitize/text";
+import {
+  type PropertyBookingMeta,
+  experienceBookingMetaSchema,
+  propertyBookingMetaSchema,
+} from "@/schemas/stripeWebhook";
 import type { APIRoute } from "astro";
-import { and, eq, lt, gt } from "drizzle-orm";
+import { and, eq, gt, lt } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import Stripe from "stripe";
 
@@ -38,15 +44,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   let event: Stripe.Event;
-
   try {
-    event = await stripe.webhooks.constructEventAsync(
-      body,
-      sig,
-      webhookSecret
-    );
+    event = await stripe.webhooks.constructEventAsync(body, sig, webhookSecret);
   } catch (err) {
-    console.error("Webhook signature verification failed:", err);
     await log.error({
       source: "stripe-webhook",
       message: "Webhook signature verification failed",
@@ -87,11 +87,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
         });
       }
     }
-
     return new Response("OK", { status: 200 });
   }
 
-  // ── account.updated — log Connect account status changes ──────────────
+  // ── account.updated ───────────────────────────────────────────────────
   if (event.type === "account.updated") {
     const account = event.data.object as Stripe.Account;
     const db = getDb(D1Database);
@@ -117,7 +116,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
       await log.info({
         source: "stripe-webhook",
-        message: `Connected account ${account.id} updated: charges_enabled=${account.charges_enabled}, payouts_enabled=${account.payouts_enabled}`,
+        message: `Connected account ${account.id} updated`,
         metadata: {
           userId: user.id,
           accountId: account.id,
@@ -128,7 +127,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
         },
       });
     }
-
     return new Response("OK", { status: 200 });
   }
 
@@ -141,49 +139,57 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
   const session = event.data.object as Stripe.Checkout.Session;
   const db = getDb(D1Database);
+  const rawMeta = session.metadata ?? {};
 
   try {
-    const meta = session.metadata ?? {};
-
-    // ── Experience booking ────────────────────────────────────────────────
-    if (meta.type === "experience") {
-      if (!meta.experienceId || !meta.userId || !meta.bookingDate) {
+    // ── Experience booking branch ─────────────────────────────────────────
+    if (rawMeta.type === "experience") {
+      const parsed = experienceBookingMetaSchema.safeParse(rawMeta);
+      if (!parsed.success) {
         await log.error({
           source: "stripe-webhook",
-          message: "Experience booking missing required metadata",
-          metadata: { stripeSessionId: session.id, meta },
+          message: "Experience booking metadata invalid",
+          metadata: {
+            stripeSessionId: session.id,
+            issues: parsed.error.issues,
+          },
         });
-        return new Response("Missing metadata", { status: 400 });
+        // 400 prevents Stripe retries for malformed metadata.
+        return new Response("Invalid metadata", { status: 400 });
       }
+      const meta = parsed.data;
+
+      // Idempotency: pre select rather than relying on UNIQUE error message.
+      const [existing] = await db
+        .select({ id: experienceBookings.id })
+        .from(experienceBookings)
+        .where(eq(experienceBookings.stripeSessionId, session.id))
+        .limit(1);
+
+      if (existing) return new Response("OK", { status: 200 });
 
       const expBookingId = nanoid();
-      try {
-        await db.insert(experienceBookings).values({
-          id: expBookingId,
-          experienceId: meta.experienceId,
-          userId: meta.userId,
-          bookingDate: meta.bookingDate,
-          participants: Number(meta.participants),
-          totalPrice: Number(meta.totalPriceCents),
-          currency: meta.currency ?? "eur",
-          status: "confirmed",
-          stripeSessionId: session.id,
-          stripePaymentIntentId:
-            (session.payment_intent as string) ?? null,
-          paidAt: new Date().toISOString(),
-          firstName: meta.guestFirstName ?? "",
-          lastName: meta.guestLastName ?? "",
-          email: meta.guestEmail ?? "",
-          phone: meta.guestPhone || null,
-          guestNote: meta.guestNote || null,
-        });
-      } catch (insertError) {
-        const isDuplicate =
-          insertError instanceof Error &&
-          insertError.message.includes("UNIQUE constraint failed");
-        if (isDuplicate) return new Response("OK", { status: 200 });
-        throw insertError;
-      }
+      await db.insert(experienceBookings).values({
+        id: expBookingId,
+        experienceId: meta.experienceId,
+        userId: meta.userId,
+        bookingDate: meta.bookingDate,
+        participants: meta.participants,
+        totalPrice: meta.totalPriceCents,
+        currency: meta.currency ?? "eur",
+        status: "confirmed",
+        stripeSessionId: session.id,
+        stripePaymentIntentId:
+          typeof session.payment_intent === "string"
+            ? session.payment_intent
+            : null,
+        paidAt: new Date().toISOString(),
+        firstName: sanitizeFreeText(meta.guestFirstName, 120) ?? "",
+        lastName: sanitizeFreeText(meta.guestLastName, 120) ?? "",
+        email: meta.guestEmail ?? "",
+        phone: sanitizeFreeText(meta.guestPhone, 40),
+        guestNote: sanitizeFreeText(meta.guestNote, 2000),
+      });
 
       await log.info({
         source: "stripe-webhook",
@@ -198,22 +204,113 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return new Response("OK", { status: 200 });
     }
 
-    // ── Property booking (existing flow) ──────────────────────────────────
+    // ── Property booking branch ───────────────────────────────────────────
+    const parsedProperty = propertyBookingMetaSchema.safeParse(rawMeta);
+    if (!parsedProperty.success) {
+      await log.error({
+        source: "stripe-webhook",
+        message: "Property booking metadata invalid",
+        metadata: {
+          stripeSessionId: session.id,
+          issues: parsedProperty.error.issues,
+        },
+      });
+      return new Response("Invalid metadata", { status: 400 });
+    }
+    const meta = parsedProperty.data;
+    const paymentIntentId =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : null;
+
+    // ── Idempotency check ───────────────────────────────────────────────
+    // Pre select rather than catching a UNIQUE constraint error string. This
+    // is resilient to driver / version changes and lets us know whether to
+    // resume sync, return OK, or do nothing.
+    const [existing] = await db
+      .select({
+        id: bookings.id,
+        status: bookings.status,
+        smoobuReservationId: bookings.smoobuReservationId,
+      })
+      .from(bookings)
+      .where(eq(bookings.stripeSessionId, session.id))
+      .limit(1);
+
+    if (existing && existing.status === "confirmed") {
+      return new Response("OK", { status: 200 });
+    }
+    if (existing && existing.status === "cancelled") {
+      return new Response("OK", { status: 200 });
+    }
+
+    // ── Connect account drift check ──────────────────────────────────────
+    // Re-verify the broker is still able to accept charges/payouts at the
+    // time of webhook processing. The checkout flow checked this earlier
+    // but state can flip in between.
+    const [propertyAsset] = await db
+      .select()
+      .from(assets)
+      .where(eq(assets.id, meta.propertyId))
+      .limit(1);
+
+    if (!propertyAsset) {
+      await log.error({
+        source: "stripe-webhook",
+        message: `Asset ${meta.propertyId} not found at webhook time`,
+        metadata: { stripeSessionId: session.id, propertyId: meta.propertyId },
+      });
+      // Refund and stop. The asset disappeared between checkout and webhook
+      // which is unrecoverable without manual intervention.
+      if (paymentIntentId) {
+        try {
+          await stripe.refunds.create({ payment_intent: paymentIntentId });
+        } catch (refundErr) {
+          await log.error({
+            source: "stripe-webhook",
+            message: "Refund for missing asset failed",
+            metadata: {
+              paymentIntentId,
+              error:
+                refundErr instanceof Error
+                  ? refundErr.message
+                  : String(refundErr),
+            },
+          });
+        }
+      }
+      return new Response("OK", { status: 200 });
+    }
+
+    const [broker] = await db
+      .select({
+        id: users.id,
+        stripeSetupComplete: users.stripeSetupComplete,
+        stripeConnectedAccountId: users.stripeConnectedAccountId,
+      })
+      .from(users)
+      .where(eq(users.id, propertyAsset.userId))
+      .limit(1);
+
     if (
-      !meta.propertyId ||
-      !meta.userId ||
-      !meta.checkIn ||
-      !meta.checkOut
+      !broker ||
+      !broker.stripeSetupComplete ||
+      !broker.stripeConnectedAccountId
     ) {
       await log.error({
         source: "stripe-webhook",
-        message: "Property booking missing required metadata",
-        metadata: { stripeSessionId: session.id, meta },
+        message: `Broker ${propertyAsset.userId} Connect setup incomplete at webhook time`,
+        metadata: {
+          stripeSessionId: session.id,
+          brokerId: propertyAsset.userId,
+        },
       });
-      return new Response("Missing metadata", { status: 400 });
+      // Return 500 so Stripe retries — the broker may recover their Connect
+      // account quickly. If not, manual operator intervention is required.
+      return new Response("Broker payout state invalid", { status: 500 });
     }
 
-    // Check for overlapping confirmed bookings on same property
+    // ── Overlap check ────────────────────────────────────────────────────
     const [overlap] = await db
       .select({ id: bookings.id })
       .from(bookings)
@@ -230,223 +327,246 @@ export const POST: APIRoute = async ({ request, locals }) => {
     if (overlap) {
       await log.error({
         source: "stripe-webhook",
-        message: `Overlapping booking rejected for property ${meta.propertyId} (${meta.checkIn} - ${meta.checkOut}), existing: ${overlap.id}`,
-        metadata: { stripeSessionId: session.id, overlapBookingId: overlap.id },
+        message: `Overlapping booking rejected for property ${meta.propertyId}`,
+        metadata: {
+          stripeSessionId: session.id,
+          overlapBookingId: overlap.id,
+        },
       });
 
-      const pi =
-        typeof session.payment_intent === "string"
-          ? session.payment_intent
-          : null;
-      if (pi) {
+      if (paymentIntentId) {
         try {
-          await stripe.refunds.create({ payment_intent: pi });
+          await stripe.refunds.create({ payment_intent: paymentIntentId });
           await log.info({
             source: "stripe-webhook",
-            message: `Auto-refund issued for overlapping booking on property ${meta.propertyId}`,
-            metadata: { paymentIntentId: pi, overlapBookingId: overlap.id },
+            message: `Auto refund issued for overlapping booking on property ${meta.propertyId}`,
+            metadata: {
+              paymentIntentId,
+              overlapBookingId: overlap.id,
+            },
           });
         } catch (refundErr) {
           await log.error({
             source: "stripe-webhook",
-            message: `Auto-refund failed for overlapping booking: ${refundErr instanceof Error ? refundErr.message : "Unknown"}`,
-            metadata: { paymentIntentId: pi },
+            message: "Auto refund failed for overlapping booking",
+            metadata: {
+              paymentIntentId,
+              error:
+                refundErr instanceof Error
+                  ? refundErr.message
+                  : String(refundErr),
+            },
           });
         }
       }
-
       return new Response("Booking rejected: dates overlap", { status: 409 });
     }
 
-    const bookingId = nanoid();
-    const paymentIntentId =
-      typeof session.payment_intent === "string"
-        ? session.payment_intent
-        : null;
+    // ── Saga: insert as pending_pms, sync Smoobu, flip to confirmed ──────
+    const bookingId = existing?.id ?? nanoid();
 
-    function metaCents(key: string): number {
-      const val = Number(meta[key]);
-      if (!Number.isFinite(val)) {
-        throw new Error(`Invalid or missing metadata value for "${key}"`);
-      }
-      return val;
-    }
-
-    try {
+    if (!existing) {
       await db.insert(bookings).values({
         id: bookingId,
         assetId: meta.propertyId,
         userId: meta.userId,
         checkIn: meta.checkIn,
         checkOut: meta.checkOut,
-        nights: metaCents("nights"),
-        guests: metaCents("guests"),
-        baseTotal: metaCents("nightlyTotalCents"),
-        additionalCostsCents: metaCents("additionalCostsCents"),
-        extrasCents: metaCents("extrasCents"),
-        cityTaxCents: metaCents("cityTaxCents"),
-        platformFeeCents: metaCents("platformFeeCents"),
-        withholdingTaxCents: metaCents("withholdingTaxCents"),
-        totalPrice: metaCents("totalPriceCents"),
+        nights: meta.nights,
+        guests: meta.guests,
+        baseTotal: meta.nightlyTotalCents,
+        additionalCostsCents: meta.additionalCostsCents,
+        extrasCents: meta.extrasCents,
+        cityTaxCents: meta.cityTaxCents,
+        platformFeeCents: meta.platformFeeCents,
+        withholdingTaxCents: meta.withholdingTaxCents,
+        totalPrice: meta.totalPriceCents,
         currency: meta.currency ?? "eur",
-        status: "confirmed",
+        status: "pending_pms",
         stripeSessionId: session.id,
         stripePaymentIntentId: paymentIntentId,
         paidAt: new Date().toISOString(),
-        guestNote: meta.guestNote || null,
-      });
-    } catch (insertError) {
-      const isDuplicate =
-        insertError instanceof Error &&
-        insertError.message.includes("UNIQUE constraint failed");
-      if (isDuplicate) return new Response("OK", { status: 200 });
-      throw insertError;
-    }
-
-    // Fetch asset + integration for Smoobu booking creation
-    const [asset] = await db
-      .select()
-      .from(assets)
-      .where(eq(assets.id, meta.propertyId ?? ""))
-      .limit(1);
-
-    if (!asset?.smoobuPropertyId) {
-      console.error(
-        `Asset ${meta.propertyId} not found or missing smoobuPropertyId`
-      );
-      await log.error({
-        source: "stripe-webhook",
-        message: `Asset ${meta.propertyId} not found or missing smoobuPropertyId`,
-        metadata: { bookingId, assetId: meta.propertyId },
-      });
-      return new Response("OK", { status: 200 });
-    }
-
-    const [integration] = await db
-      .select()
-      .from(pmsIntegrations)
-      .where(eq(pmsIntegrations.userId, asset.userId))
-      .limit(1);
-
-    if (!integration || integration.provider !== "smoobu") {
-      console.error(`No Smoobu integration for user ${asset.userId}`);
-      await log.error({
-        source: "stripe-webhook",
-        message: `No Smoobu integration for user ${asset.userId}`,
-        metadata: { bookingId, userId: asset.userId },
-      });
-      return new Response("OK", { status: 200 });
-    }
-
-    // Create Smoobu reservation
-    try {
-      const smoobuResult = await createSmoobuBooking(integration.apiKey, {
-        arrivalDate: meta.checkIn ?? "",
-        departureDate: meta.checkOut ?? "",
-        channelId: SMOOBU_CHANNEL_ID,
-        apartmentId: asset.smoobuPropertyId,
-        firstName: meta.guestFirstName,
-        lastName: meta.guestLastName,
-        email: meta.guestEmail,
-        phone: meta.guestPhone || undefined,
-        adults: meta.adults ? Number(meta.adults) : undefined,
-        children: meta.children ? Number(meta.children) : undefined,
-        notice: meta.guestNote || undefined,
-        price: centsToUnit(metaCents("totalPriceCents")),
-        priceStatus: 1,
-      });
-
-      // Update booking with Smoobu reservation ID
-      await db
-        .update(bookings)
-        .set({
-          smoobuReservationId: smoobuResult.id,
-          updatedAt: new Date().toISOString(),
-        })
-        .where(eq(bookings.id, bookingId));
-
-      await log.info({
-        source: "stripe-webhook",
-        message: `Booking ${bookingId} confirmed, Smoobu reservation ${smoobuResult.id} created`,
-        metadata: {
-          bookingId,
-          smoobuReservationId: smoobuResult.id,
-          stripeSessionId: session.id,
-        },
-      });
-
-      // Log success
-      await db.insert(brokerLogs).values({
-        id: nanoid(),
-        userId: asset.userId,
-        eventType: "smoobu_booking_success",
-        relatedEntityId: bookingId,
-        message: `Smoobu reservation ${smoobuResult.id} created for booking ${bookingId}`,
-        metadata: {
-          smoobuReservationId: smoobuResult.id,
-          stripeSessionId: session.id,
-        },
-      });
-    } catch (smoobuError) {
-      const errMsg =
-        smoobuError instanceof Error ? smoobuError.message : "Unknown error";
-      console.error("Smoobu booking creation failed:", smoobuError);
-      await log.error({
-        source: "stripe-webhook",
-        message: `Smoobu booking creation failed for booking ${bookingId}: ${errMsg}`,
-        metadata: { bookingId, stripeSessionId: session.id },
-      });
-
-      // Transient Smoobu errors (429, 5xx): return 500 so Stripe retries
-      if (
-        smoobuError instanceof SmoobuApiError &&
-        smoobuError.retryable
-      ) {
-        return new Response("Smoobu temporarily unavailable", {
-          status: 500,
-        });
-      }
-
-      // Permanent Smoobu error: cancel booking and refund
-      await db
-        .update(bookings)
-        .set({ status: "cancelled", updatedAt: new Date().toISOString() })
-        .where(eq(bookings.id, bookingId));
-
-      if (paymentIntentId) {
-        try {
-          const stripe = new Stripe(stripeKey);
-          await stripe.refunds.create({ payment_intent: paymentIntentId });
-          await log.info({
-            source: "stripe-webhook",
-            message: `Auto-refund issued for failed booking ${bookingId}`,
-            metadata: { bookingId, paymentIntentId },
-          });
-        } catch (refundError) {
-          await log.error({
-            source: "stripe-webhook",
-            message: `Auto-refund failed for booking ${bookingId}: ${refundError instanceof Error ? refundError.message : "Unknown"}`,
-            metadata: { bookingId, paymentIntentId },
-          });
-          return new Response("Refund failed, retry needed", {
-            status: 500,
-          });
-        }
-      }
-
-      await db.insert(brokerLogs).values({
-        id: nanoid(),
-        userId: asset.userId,
-        eventType: "smoobu_booking_failure",
-        relatedEntityId: bookingId,
-        message: `Failed to create Smoobu reservation for booking ${bookingId}: ${errMsg}`,
-        metadata: { stripeSessionId: session.id },
+        guestNote: sanitizeFreeText(meta.guestNote, 2000),
       });
     }
 
-    return new Response("OK", { status: 200 });
+    return await syncSmoobuAndConfirm({
+      db,
+      stripe,
+      log,
+      meta,
+      bookingId,
+      paymentIntentId,
+      stripeSessionId: session.id,
+      asset: propertyAsset,
+    });
   } catch (error) {
-    console.error("Webhook processing error:", error);
+    await log.error({
+      source: "stripe-webhook",
+      message: `Webhook processing error: ${error instanceof Error ? error.message : "Unknown"}`,
+      metadata: {
+        eventType: event.type,
+        stripeSessionId: session.id,
+      },
+    });
     return new Response("Internal error", { status: 500 });
   }
 };
+
+type SyncContext = {
+  db: ReturnType<typeof getDb>;
+  stripe: Stripe;
+  log: ReturnType<typeof createEventLogger>;
+  meta: PropertyBookingMeta;
+  bookingId: string;
+  paymentIntentId: string | null;
+  stripeSessionId: string;
+  asset: typeof assets.$inferSelect;
+};
+
+async function syncSmoobuAndConfirm(ctx: SyncContext): Promise<Response> {
+  const {
+    db,
+    stripe,
+    log,
+    meta,
+    bookingId,
+    paymentIntentId,
+    stripeSessionId,
+    asset,
+  } = ctx;
+
+  if (!asset.smoobuPropertyId) {
+    await log.error({
+      source: "stripe-webhook",
+      message: `Asset ${asset.id} missing smoobuPropertyId`,
+      metadata: { bookingId, assetId: asset.id },
+    });
+    return new Response("OK", { status: 200 });
+  }
+
+  const [integration] = await db
+    .select()
+    .from(pmsIntegrations)
+    .where(eq(pmsIntegrations.userId, asset.userId))
+    .limit(1);
+
+  if (!integration || integration.provider !== "smoobu") {
+    await log.error({
+      source: "stripe-webhook",
+      message: `No Smoobu integration for broker ${asset.userId}`,
+      metadata: { bookingId, brokerId: asset.userId },
+    });
+    return new Response("OK", { status: 200 });
+  }
+
+  try {
+    const smoobuResult = await createSmoobuBooking(integration.apiKey, {
+      arrivalDate: meta.checkIn,
+      departureDate: meta.checkOut,
+      channelId: SMOOBU_CHANNEL_ID,
+      apartmentId: asset.smoobuPropertyId,
+      firstName: meta.guestFirstName,
+      lastName: meta.guestLastName,
+      email: meta.guestEmail,
+      phone: meta.guestPhone || undefined,
+      adults: meta.adults,
+      children: meta.children,
+      notice: meta.guestNote || undefined,
+      price: centsToUnit(meta.totalPriceCents),
+      priceStatus: 1,
+    });
+
+    // Saga step: only flip to confirmed once Smoobu has accepted.
+    await db
+      .update(bookings)
+      .set({
+        status: "confirmed",
+        smoobuReservationId: smoobuResult.id,
+        updatedAt: new Date().toISOString(),
+      })
+      .where(eq(bookings.id, bookingId));
+
+    await log.info({
+      source: "stripe-webhook",
+      message: `Booking ${bookingId} confirmed, Smoobu reservation ${smoobuResult.id} created`,
+      metadata: {
+        bookingId,
+        smoobuReservationId: smoobuResult.id,
+        stripeSessionId,
+      },
+    });
+
+    await db.insert(brokerLogs).values({
+      id: nanoid(),
+      userId: asset.userId,
+      eventType: "smoobu_booking_success",
+      relatedEntityId: bookingId,
+      message: `Smoobu reservation ${smoobuResult.id} created for booking ${bookingId}`,
+      metadata: {
+        smoobuReservationId: smoobuResult.id,
+        stripeSessionId,
+      },
+    });
+
+    return new Response("OK", { status: 200 });
+  } catch (smoobuError) {
+    const errMsg =
+      smoobuError instanceof Error ? smoobuError.message : "Unknown error";
+
+    await log.error({
+      source: "stripe-webhook",
+      message: `Smoobu booking creation failed for booking ${bookingId}: ${errMsg}`,
+      metadata: { bookingId, stripeSessionId },
+    });
+
+    if (smoobuError instanceof SmoobuApiError && smoobuError.retryable) {
+      // Transient. Booking remains in pending_pms. Stripe will retry the
+      // webhook. If retries exhaust, an operator can call the resync
+      // endpoint or cancel manually.
+      return new Response("Smoobu temporarily unavailable", { status: 500 });
+    }
+
+    // Permanent failure. Cancel booking and refund.
+    await db
+      .update(bookings)
+      .set({ status: "cancelled", updatedAt: new Date().toISOString() })
+      .where(eq(bookings.id, bookingId));
+
+    if (paymentIntentId) {
+      try {
+        await stripe.refunds.create({ payment_intent: paymentIntentId });
+        await log.info({
+          source: "stripe-webhook",
+          message: `Auto refund issued for failed booking ${bookingId}`,
+          metadata: { bookingId, paymentIntentId },
+        });
+      } catch (refundError) {
+        await log.error({
+          source: "stripe-webhook",
+          message: `Auto refund failed for booking ${bookingId}`,
+          metadata: {
+            bookingId,
+            paymentIntentId,
+            error:
+              refundError instanceof Error
+                ? refundError.message
+                : String(refundError),
+          },
+        });
+        return new Response("Refund failed, retry needed", { status: 500 });
+      }
+    }
+
+    await db.insert(brokerLogs).values({
+      id: nanoid(),
+      userId: asset.userId,
+      eventType: "smoobu_booking_failure",
+      relatedEntityId: bookingId,
+      message: `Failed to create Smoobu reservation for booking ${bookingId}: ${errMsg}`,
+      metadata: { stripeSessionId },
+    });
+
+    return new Response("OK", { status: 200 });
+  }
+}

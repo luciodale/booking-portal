@@ -1,11 +1,20 @@
 import type { errors as en } from "../en/errors";
 
 export const errors: Record<keyof typeof en, string> = {
+  "error.required": "Obbligatorio",
+  "error.invalidEmail": "Email non valida",
+  "error.atLeastOneAdult": "Almeno 1 adulto",
+  "error.fileTypeInvalid": "Tipo di file non valido. Accettati: JPG, PNG, WebP",
+  "error.fileTooLarge": "File troppo grande. Massimo: {maxMB}MB",
+  "error.bookingTooSmall": "Totale prenotazione inferiore al minimo consentito",
+  "error.ratesTemporarilyUnavailable":
+    "Le tariffe in tempo reale non sono al momento disponibili. Riprova tra poco.",
+  "error.refundFailedRetryRequired":
+    "Rimborso non elaborato. Un operatore ti contatterà.",
   "error.dbNotAvailable": "Database non disponibile",
   "error.stripeNotConfigured": "Stripe non configurato",
   "error.invalidRequest": "Richiesta non valida",
-  "error.propertyNotFound":
-    "Proprietà non trovata o non collegata al PMS",
+  "error.propertyNotFound": "Proprietà non trovata o non collegata al PMS",
   "error.noPmsIntegration": "Nessuna integrazione PMS trovata",
   "error.minStay":
     "Il soggiorno minimo è di {nights} notti per le date selezionate",
@@ -13,8 +22,7 @@ export const errors: Record<keyof typeof en, string> = {
     "La proprietà non è più disponibile per queste date",
   "error.unableToComputePrice":
     "Impossibile calcolare il prezzo per questo soggiorno",
-  "error.priceChanged":
-    "Il prezzo è cambiato. Aggiorna la pagina e riprova.",
+  "error.priceChanged": "Il prezzo è cambiato. Aggiorna la pagina e riprova.",
   "error.cityTaxChanged":
     "La tassa di soggiorno è cambiata. Aggiorna la pagina e riprova.",
   "error.mockWebhookFailed": "Webhook di test fallito",
@@ -25,8 +33,7 @@ export const errors: Record<keyof typeof en, string> = {
     "Questa esperienza non supporta la prenotazione online",
   "error.maxGuests": "Massimo {count} ospiti consentiti per questa proprietà",
   "error.maxParticipants": "Massimo {count} partecipanti consentiti",
-  "error.failedToFetchBookings":
-    "Impossibile caricare le prenotazioni",
+  "error.failedToFetchBookings": "Impossibile caricare le prenotazioni",
   "error.recordAlreadyExists": "Questo record esiste già",
   "error.requiredFieldMissing": "Un campo obbligatorio è mancante",
   "error.nightPriceMismatch":
@@ -43,16 +50,17 @@ export const errors: Record<keyof typeof en, string> = {
   "error.missingBookingId": "ID prenotazione mancante",
   "error.bookingNotFound": "Prenotazione non trovata",
   "error.forbiddenNotYourProperty": "Accesso negato: non è la tua proprietà",
-  "error.cannotCancelBooking": "Impossibile cancellare la prenotazione con stato \"{status}\"",
+  "error.cannotCancelBooking":
+    'Impossibile cancellare la prenotazione con stato "{status}"',
   "error.cancellationTooLate":
     "Le cancellazioni devono essere effettuate almeno {hours} ore prima del check-in",
   "error.failedToCancelBooking": "Impossibile cancellare la prenotazione",
   "error.failedToListBookings": "Impossibile elencare le prenotazioni",
-  "error.instantBookNotAvailable": "La prenotazione online non è disponibile per questa proprietà",
+  "error.instantBookNotAvailable":
+    "La prenotazione online non è disponibile per questa proprietà",
   "error.missingExperienceId": "ID esperienza mancante",
   "error.validationFailed": "Validazione fallita",
   "error.maxImagesExceeded": "Massimo 20 immagini per caricamento",
   "error.noImagesProvided": "Nessuna immagine fornita",
   "error.invalidImageType": "Tipo di immagine non valido",
-  "error.fileTooLarge": "File troppo grande",
 };

@@ -4,23 +4,29 @@ import {
   getApplicationFeePercent,
   getWithholdingTaxPercent,
 } from "@/features/admin/settings/domain/getApplicationFeePercent";
+import { isCountrySupported } from "@/features/admin/settings/domain/getSupportedCountries";
 import { resolveConnectAccount } from "@/features/broker/connect/domain/resolveConnectAccount";
 import { fetchSmoobuRates } from "@/features/broker/pms/integrations/smoobu/server-service/GETRates";
 import { checkSmoobuAvailability } from "@/features/broker/pms/integrations/smoobu/server-service/POSTCheckAvailability";
 import { safeErrorMessage } from "@/features/broker/property/api/server-handler/responseHelpers";
 import { computePropertyAdditionalCosts } from "@/features/public/booking/domain/computeAdditionalCosts";
-import { computePaymentSplit } from "@/features/public/booking/domain/computePaymentSplit";
-import { multiplyCents, sumCents, toCents } from "@/modules/money/money";
+import {
+  NegativeHostPayoutError,
+  type PaymentSplit,
+  computePaymentSplit,
+} from "@/features/public/booking/domain/computePaymentSplit";
 import { localePath } from "@/i18n/locale-path";
 import { getRequestLocale } from "@/i18n/request-locale";
 import { t } from "@/i18n/t";
 import { type Locale, locales } from "@/i18n/types";
-import { isItalyCountry } from "@/modules/countries";
 import { requireAuth } from "@/modules/auth/auth";
 import { createEventLogger } from "@/modules/logging/eventLogger";
+import { MIN_BOOKING_CENTS } from "@/modules/money/limits";
+import { multiplyCents, sumCents, toCents } from "@/modules/money/money";
+import { checkoutBodySchema } from "@/schemas/checkout";
+import { propertyAdditionalCostsSchema, safeParseJson } from "@/schemas/dbJson";
 import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
-import { checkoutBodySchema } from "@/schemas/checkout";
 import Stripe from "stripe";
 
 function jsonResponse(data: unknown, status = 200) {
@@ -62,6 +68,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       cityTaxCents,
       guestInfo,
       locale: bodyLocale,
+      requestNonce,
     } = body.data;
     const locale: Locale =
       bodyLocale && locales.includes(bodyLocale as Locale)
@@ -80,8 +87,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
       return jsonResponse({ error: t(locale, "error.propertyNotFound") }, 404);
     }
 
-    if (!isItalyCountry(asset.country)) {
-      return jsonResponse({ error: t(locale, "error.instantBookNotAvailable") }, 403);
+    if (!(await isCountrySupported(db, asset.country))) {
+      return jsonResponse(
+        { error: t(locale, "error.instantBookNotAvailable") },
+        403
+      );
     }
 
     const [integration] = await db
@@ -109,8 +119,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       );
     }
 
-    const connectedAccount =
-      await stripe.accounts.retrieve(connectedAccountId);
+    const connectedAccount = await stripe.accounts.retrieve(connectedAccountId);
     if (
       !connectedAccount.charges_enabled ||
       !connectedAccount.payouts_enabled
@@ -212,6 +221,26 @@ export const POST: APIRoute = async ({ request, locals }) => {
     );
     const rateMap = ratesResponse.data[propId] ?? {};
 
+    // Fail fast if the PMS gave us no rates at all for the requested window.
+    // Otherwise every per night check below reports a generic "price changed"
+    // error, which hides the real cause (rate fetch failure / archived
+    // property / outage).
+    if (clientDates.some((date) => rateMap[date] == null)) {
+      await log.error({
+        source: "checkout",
+        message: `Smoobu returned incomplete rate map for property ${propertyId} (${checkIn} - ${checkOut})`,
+        metadata: {
+          propertyId,
+          smoobuPropertyId: asset.smoobuPropertyId,
+          missingDates: clientDates.filter((d) => rateMap[d] == null),
+        },
+      });
+      return jsonResponse(
+        { error: t(locale, "error.ratesTemporarilyUnavailable") },
+        503
+      );
+    }
+
     // Belt-and-suspenders: check min_length_of_stay from rates data
     const minStayValues = clientDates
       .map((date) => rateMap[date]?.min_length_of_stay)
@@ -260,9 +289,22 @@ export const POST: APIRoute = async ({ request, locals }) => {
     }
     const serverPriceCents = sumCents(verifiedNightCents);
 
-    // Compute additional costs server-side
+    // Compute additional costs server-side. Validate JSON column on read
+    // so a corrupt row cannot crash the checkout flow.
+    const additionalCostsParsed = safeParseJson(
+      propertyAdditionalCostsSchema,
+      asset.additionalCosts ?? [],
+      []
+    );
+    if (!additionalCostsParsed.ok) {
+      await log.warn({
+        source: "checkout",
+        message: `Asset ${propertyId} additionalCosts column failed validation; treating as empty`,
+        metadata: { propertyId },
+      });
+    }
     const additionalCostItems = computePropertyAdditionalCosts(
-      asset.additionalCosts ?? null,
+      additionalCostsParsed.data,
       { nights, guests, currency: currency.toLowerCase() }
     );
     const additionalTotalCents = sumCents(
@@ -308,13 +350,39 @@ export const POST: APIRoute = async ({ request, locals }) => {
       getWithholdingTaxPercent(db),
     ]);
 
-    const split = computePaymentSplit({
-      nightlyTotalCents: serverPriceCents,
-      additionalCostsCents: additionalTotalCents,
-      cityTaxCents: serverCityTaxCents,
-      feePercent,
-      withholdingPercent,
-    });
+    let split: PaymentSplit;
+    try {
+      split = computePaymentSplit({
+        nightlyTotalCents: serverPriceCents,
+        additionalCostsCents: additionalTotalCents,
+        cityTaxCents: serverCityTaxCents,
+        feePercent,
+        withholdingPercent,
+      });
+    } catch (err) {
+      if (err instanceof NegativeHostPayoutError) {
+        await log.error({
+          source: "checkout",
+          message:
+            "Refusing checkout: payment split would produce negative host payout",
+          metadata: {
+            propertyId,
+            split: err.split,
+          },
+        });
+        return jsonResponse({ error: t(locale, "error.bookingTooSmall") }, 400);
+      }
+      throw err;
+    }
+
+    if (split.guestTotalCents < MIN_BOOKING_CENTS) {
+      await log.error({
+        source: "checkout",
+        message: `Refusing checkout: guest total ${split.guestTotalCents}¢ below minimum ${MIN_BOOKING_CENTS}¢`,
+        metadata: { propertyId, guestTotalCents: split.guestTotalCents },
+      });
+      return jsonResponse({ error: t(locale, "error.bookingTooSmall") }, 400);
+    }
 
     const origin = new URL(request.url).origin;
 
@@ -400,7 +468,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
         cancel_url: `${origin}${localePath(locale, `/elite/${propertyId}`)}`,
       },
       {
-        idempotencyKey: `checkout-${authContext.userId}-${propertyId}-${checkIn}-${checkOut}-${Math.floor(Date.now() / 300_000)}`,
+        // Idempotency: bound to the client supplied per attempt nonce so a
+        // retried submit collapses to the same Stripe session but a new submit
+        // always produces a fresh one. No time bucketing.
+        idempotencyKey: `checkout-${authContext.userId}-${propertyId}-${checkIn}-${checkOut}-${requestNonce}`,
       }
     );
 

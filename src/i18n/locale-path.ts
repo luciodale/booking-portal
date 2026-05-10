@@ -1,13 +1,19 @@
 import type { Locale } from "./types";
 import { defaultLocale, locales } from "./types";
 
-export function localePath(locale: Locale | string | undefined, path: string): string {
+export function localePath(
+  locale: Locale | string | undefined,
+  path: string
+): string {
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
   if (!locale || locale === defaultLocale) return normalizedPath;
   return `/${locale}${normalizedPath}`;
 }
 
-export function switchLocale(currentPath: string, targetLocale: Locale): string {
+export function switchLocale(
+  currentPath: string,
+  targetLocale: Locale
+): string {
   const stripped = stripLocalePrefix(currentPath);
   return localePath(targetLocale, stripped);
 }

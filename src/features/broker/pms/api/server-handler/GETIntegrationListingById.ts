@@ -3,12 +3,12 @@ import { pmsIntegrations } from "@/db/schema";
 import { resolveBrokerContext } from "@/features/broker/auth/resolveBrokerContext";
 import type { TGetIntegrationListingDetailResponse } from "@/features/broker/pms/api/types";
 import { fetchApartmentById } from "@/features/broker/pms/integrations/smoobu/server-service/GETApartmentById";
-import { getRequestLocale } from "@/i18n/request-locale";
-import { t } from "@/i18n/t";
 import {
   mapErrorToStatus,
   safeErrorMessage,
 } from "@/features/broker/property/api/server-handler/responseHelpers";
+import { getRequestLocale } from "@/i18n/request-locale";
+import { t } from "@/i18n/t";
 import type { APIRoute } from "astro";
 import { eq } from "drizzle-orm";
 import { jsonError, jsonSuccess } from "./responseHelpers";
@@ -18,7 +18,9 @@ export const GET: APIRoute = async ({ params, locals, request }) => {
   try {
     const idParam = params?.id;
     const id = idParam ? Number(idParam) : Number.NaN;
-    if (!Number.isInteger(id) || id < 1) {
+    // Smoobu apartment IDs fit in a signed 32 bit int. Reject anything else
+    // up front so we never round trip a pathological value to the PMS.
+    if (!Number.isInteger(id) || id < 1 || id > 2_147_483_647) {
       return jsonError(t(locale, "error.invalidRequest"), 400);
     }
 

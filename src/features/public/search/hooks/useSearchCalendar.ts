@@ -7,10 +7,17 @@ import {
 } from "@/features/public/booking/domain/dateUtils";
 import { useCallback, useState } from "react";
 
-export function useSearchCalendar(defaultCheckIn: string, defaultCheckOut: string) {
-  const [currentMonth, setCurrentMonth] = useState(() => startOfMonth(new Date()));
+export function useSearchCalendar(
+  defaultCheckIn: string,
+  defaultCheckOut: string
+) {
+  const [currentMonth, setCurrentMonth] = useState(() =>
+    startOfMonth(new Date())
+  );
   const [checkIn, setCheckIn] = useState<string | null>(defaultCheckIn || null);
-  const [checkOut, setCheckOut] = useState<string | null>(defaultCheckOut || null);
+  const [checkOut, setCheckOut] = useState<string | null>(
+    defaultCheckOut || null
+  );
   const [isCalendarOpen, setCalendarOpen] = useState(false);
 
   const goPrevMonth = useCallback(() => {
@@ -36,7 +43,7 @@ export function useSearchCalendar(defaultCheckIn: string, defaultCheckOut: strin
         setCheckOut(null);
       }
     },
-    [checkIn, checkOut],
+    [checkIn, checkOut]
   );
 
   const confirmCalendar = useCallback(() => {

@@ -27,7 +27,10 @@ export type CalendarPopoverProps = {
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onConfirm: () => void;
-  renderTrigger?: (props: { ref: React.Ref<HTMLButtonElement>; getReferenceProps: () => Record<string, unknown> }) => React.ReactNode;
+  renderTrigger?: (props: {
+    ref: React.Ref<HTMLButtonElement>;
+    getReferenceProps: () => Record<string, unknown>;
+  }) => React.ReactNode;
 };
 
 export function CalendarPopover({
@@ -78,11 +81,15 @@ export function CalendarPopover({
 
       {isOpen && (
         <FloatingPortal>
-          <FloatingFocusManager context={context} modal={false} closeOnFocusOut={false}>
+          <FloatingFocusManager
+            context={context}
+            modal={false}
+            closeOnFocusOut={false}
+          >
             <div
               ref={refs.setFloating}
               style={floatingStyles}
-              className="z-50 min-w-[600px] p-5 rounded-2xl bg-card border border-border shadow-2xl shadow-black/40"
+              className="z-50 min-w-calendar-popover p-5 rounded-2xl bg-card border border-border shadow-2xl shadow-black/40"
               {...getFloatingProps()}
             >
               <CalendarGrid

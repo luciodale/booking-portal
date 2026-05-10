@@ -16,6 +16,7 @@ import {
 } from "@/features/public/booking/ui/mobile/MobileCalendarSheet";
 import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
+import { ErrorBoundary } from "@/modules/ui/react/ErrorBoundary";
 import { useIsMobile } from "@/modules/ui/useIsMobile";
 import { useAuth } from "@clerk/astro/react";
 import { SwipeBarProvider, useSwipeBarContext } from "@luciodale/swipe-bar";
@@ -39,11 +40,13 @@ type BookingWidgetProps = {
 
 export function BookingWidget(props: BookingWidgetProps) {
   return (
-    <QueryClientProvider client={queryClient}>
-      <SwipeBarProvider>
-        <BookingWidgetInner {...props} />
-      </SwipeBarProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <SwipeBarProvider>
+          <BookingWidgetInner {...props} />
+        </SwipeBarProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
@@ -131,7 +134,10 @@ function BookingWidgetInner({
   }
 
   return (
-    <div data-testid={variant ? `booking-widget-${variant}` : "booking-widget"} className="space-y-5 z-20">
+    <div
+      data-testid={variant ? `booking-widget-${variant}` : "booking-widget"}
+      className="space-y-5 z-20"
+    >
       <div className="p-5 rounded-2xl bg-card border border-border space-y-4">
         {isMobile ? (
           <MobileCalendarTrigger

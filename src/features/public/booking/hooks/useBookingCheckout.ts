@@ -3,6 +3,7 @@ import type { CityTax } from "@/features/public/booking/domain/pricingTypes";
 import { buildSignInRedirect } from "@/modules/auth/redirect";
 import { multiplyCents } from "@/modules/money/money";
 import { showError } from "@/modules/ui/react/stores/notificationStore";
+import { nanoid } from "nanoid";
 import { useState } from "react";
 
 type BookingGuestInput = {
@@ -76,6 +77,9 @@ export function useBookingCheckout(params: {
           children: data.children,
           guestNote: data.guestNote,
         },
+        // Per submit nonce. Submit retries on the same nonce hit the Stripe
+        // idempotency cache; a fresh submit always creates a new session.
+        requestNonce: nanoid(),
       });
       window.location.href = result.url;
     } catch (error) {

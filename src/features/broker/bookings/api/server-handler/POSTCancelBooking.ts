@@ -34,7 +34,6 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       return jsonError(t(locale, "error.missingBookingId"), 400);
     }
 
-    // Fetch booking with asset ownership check
     const [booking] = await db
       .select({
         id: bookings.id,
@@ -54,7 +53,6 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       return jsonError(t(locale, "error.bookingNotFound"), 404);
     }
 
-    // Ownership check
     if (!ctx.isAdmin && booking.assetUserId !== ctx.userId) {
       return jsonError(t(locale, "error.forbiddenNotYourProperty"), 403);
     }
@@ -66,10 +64,12 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       );
     }
 
-    // Cancellation policy: no free cancellation within 48h of check-in
+    // 48h cancellation cutoff. Using property local interpretation of the
+    // check in date (YYYY-MM-DD anchored to noon UTC) avoids edge of day
+    // ambiguities while we operate in a single timezone (IT).
     const MIN_CANCEL_HOURS = 48;
     const [y, m, d] = booking.checkIn.split("-").map(Number);
-    const checkInMs = Date.UTC(y, m - 1, d);
+    const checkInMs = Date.UTC(y, m - 1, d, 12);
     const hoursUntilCheckIn = (checkInMs - Date.now()) / (1000 * 60 * 60);
 
     if (!ctx.isAdmin && hoursUntilCheckIn < MIN_CANCEL_HOURS) {
@@ -81,16 +81,106 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       );
     }
 
-    // Stripe refund
     if (!stripeKey) {
       return jsonError(t(locale, "error.stripeNotConfigured"), 503);
     }
 
+    // Cancellation order: Smoobu first, Stripe refund second, DB status flip
+    // last. If Smoobu cancel fails the broker keeps a confirmed PMS booking
+    // matched by the still confirmed DB row, instead of an unrefundable
+    // booking. The DB transition only happens after both sides settle.
+    if (booking.smoobuReservationId) {
+      const [integration] = await db
+        .select({ apiKey: pmsIntegrations.apiKey })
+        .from(pmsIntegrations)
+        .where(eq(pmsIntegrations.userId, booking.assetUserId))
+        .limit(1);
+
+      if (!integration) {
+        await log.error({
+          source: "cancel-booking",
+          message: `Missing PMS integration during cancel of booking ${bookingId}`,
+          metadata: { bookingId },
+        });
+        return jsonError(t(locale, "error.failedToCancelBooking"), 500);
+      }
+
+      let smoobuRes: Response;
+      try {
+        smoobuRes = await fetch(
+          `https://login.smoobu.com/api/reservations/${booking.smoobuReservationId}`,
+          {
+            method: "DELETE",
+            headers: { "Api-Key": integration.apiKey },
+          }
+        );
+      } catch (smoobuErr) {
+        await log.error({
+          source: "cancel-booking",
+          message: `Smoobu cancel network error for reservation ${booking.smoobuReservationId}`,
+          metadata: {
+            bookingId,
+            error:
+              smoobuErr instanceof Error
+                ? smoobuErr.message
+                : String(smoobuErr),
+          },
+        });
+        return jsonError(t(locale, "error.failedToCancelBooking"), 503);
+      }
+
+      // 404 is treated as already gone — proceed.
+      if (!smoobuRes.ok && smoobuRes.status !== 404) {
+        await log.error({
+          source: "cancel-booking",
+          message: `Smoobu cancel returned ${smoobuRes.status} for reservation ${booking.smoobuReservationId}`,
+          metadata: { bookingId, smoobuStatus: smoobuRes.status },
+        });
+        const retryable = smoobuRes.status >= 500 || smoobuRes.status === 429;
+        return jsonError(
+          t(locale, "error.failedToCancelBooking"),
+          retryable ? 503 : 502
+        );
+      }
+
+      await log.info({
+        source: "cancel-booking",
+        message: `Smoobu reservation ${booking.smoobuReservationId} cancelled`,
+        metadata: { bookingId },
+      });
+    }
+
     if (booking.stripePaymentIntentId) {
       const stripe = new Stripe(stripeKey);
-      await stripe.refunds.create({
-        payment_intent: booking.stripePaymentIntentId,
-      });
+      try {
+        await stripe.refunds.create({
+          payment_intent: booking.stripePaymentIntentId,
+        });
+      } catch (refundErr) {
+        await log.error({
+          source: "cancel-booking",
+          message: `Stripe refund failed for booking ${bookingId}`,
+          metadata: {
+            bookingId,
+            paymentIntentId: booking.stripePaymentIntentId,
+            error:
+              refundErr instanceof Error
+                ? refundErr.message
+                : String(refundErr),
+          },
+        });
+        // PMS has already cancelled the reservation. We cannot leave the DB
+        // in confirmed because it would mismatch PMS. We flip to cancelled
+        // and require operator intervention for the refund.
+        await db
+          .update(bookings)
+          .set({
+            status: "cancelled",
+            updatedAt: new Date().toISOString(),
+          })
+          .where(eq(bookings.id, bookingId));
+        return jsonError(t(locale, "error.refundFailedRetryRequired"), 502);
+      }
 
       await log.info({
         source: "cancel-booking",
@@ -102,48 +192,6 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
       });
     }
 
-    // Smoobu cancel
-    if (booking.smoobuReservationId) {
-      const [integration] = await db
-        .select({ apiKey: pmsIntegrations.apiKey })
-        .from(pmsIntegrations)
-        .where(eq(pmsIntegrations.userId, booking.assetUserId))
-        .limit(1);
-
-      if (integration) {
-        try {
-          const smoobuRes = await fetch(
-            `https://login.smoobu.com/api/reservations/${booking.smoobuReservationId}`,
-            {
-              method: "DELETE",
-              headers: { "Api-Key": integration.apiKey },
-            }
-          );
-
-          if (!smoobuRes.ok) {
-            await log.warn({
-              source: "cancel-booking",
-              message: `Smoobu cancel returned ${smoobuRes.status} for reservation ${booking.smoobuReservationId}`,
-              metadata: { bookingId, smoobuStatus: smoobuRes.status },
-            });
-          } else {
-            await log.info({
-              source: "cancel-booking",
-              message: `Smoobu reservation ${booking.smoobuReservationId} cancelled`,
-              metadata: { bookingId },
-            });
-          }
-        } catch (smoobuErr) {
-          await log.error({
-            source: "cancel-booking",
-            message: `Smoobu cancel failed for reservation ${booking.smoobuReservationId}: ${smoobuErr instanceof Error ? smoobuErr.message : "Unknown"}`,
-            metadata: { bookingId },
-          });
-        }
-      }
-    }
-
-    // Update booking status
     await db
       .update(bookings)
       .set({
@@ -154,13 +202,12 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 
     await log.info({
       source: "cancel-booking",
-      message: `Booking ${bookingId} cancelled by broker`,
+      message: `Booking ${bookingId} cancelled`,
       metadata: { bookingId, cancelledBy: ctx.userId },
     });
 
     return jsonSuccess({ bookingId, status: "cancelled" });
   } catch (error) {
-    console.error("Error cancelling booking:", error);
     return jsonError(
       safeErrorMessage(error, t(locale, "error.failedToCancelBooking"), locale),
       mapErrorToStatus(error)

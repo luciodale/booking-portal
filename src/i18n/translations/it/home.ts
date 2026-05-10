@@ -10,8 +10,7 @@ export const home: Record<keyof typeof en, string> = {
     "Proprietà di lusso selezionate per il viaggiatore più esigente",
   "home.eliteTagline": "Dove il lusso incontra la perfezione",
   "home.eliteCta": "Esplora Elite",
-  "home.premiumDescription":
-    "Soggiorni di qualità a un valore eccezionale",
+  "home.premiumDescription": "Soggiorni di qualità a un valore eccezionale",
   "home.premiumTagline": "Comfort senza compromessi",
   "home.premiumFeature1": "Qualità verificata",
   "home.premiumFeature2": "Miglior prezzo garantito",

@@ -10,7 +10,6 @@ import { useIntegrationListings } from "@/features/broker/pms/queries/useIntegra
 import { useIsPmsIntegrated } from "@/features/broker/pms/queries/useIsPmsIntegrated";
 import { mapSmoobuListingToCreatePropertyPartial } from "@/features/broker/property/domain/mapIntegrationListingToPrefill";
 import { displayToKebab } from "@/features/broker/property/domain/sync-features";
-import type { Feature } from "@/modules/constants";
 import { useUpsertCityTax } from "@/features/broker/property/hooks/useUpsertCityTax";
 import { useCreateProperty } from "@/features/broker/property/queries/useCreateProperty";
 import { createSectionRoute } from "@/features/broker/property/routes/CreateSection";
@@ -19,9 +18,10 @@ import {
   type CreatePropertyFormData,
 } from "@/features/broker/property/ui/CreatePropertyForm";
 import { BackofficePageHeader } from "@/features/broker/ui/BackofficePageHeader";
+import type { Feature } from "@/modules/constants";
 import { Select } from "@/modules/ui/Select";
-import { cn } from "@/modules/utils/cn";
 import { showError } from "@/modules/ui/react/stores/notificationStore";
+import { cn } from "@/modules/utils/cn";
 import { getErrorMessages } from "@/modules/utils/errors";
 import { Link, createRoute, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
@@ -47,11 +47,19 @@ function TierCard({
     <button
       type="button"
       onClick={onSelect}
-      className={cn("text-left p-6 rounded-xl border-2 transition-all", selected ? "border-primary bg-primary/5" : "border-border hover:border-primary/40 bg-card")}
+      className={cn(
+        "text-left p-6 rounded-xl border-2 transition-all",
+        selected
+          ? "border-primary bg-primary/5"
+          : "border-border hover:border-primary/40 bg-card"
+      )}
     >
       <div className="flex items-center gap-3 mb-2">
         <div
-          className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center", selected ? "border-primary" : "border-muted-foreground")}
+          className={cn(
+            "w-4 h-4 rounded-full border-2 flex items-center justify-center",
+            selected ? "border-primary" : "border-muted-foreground"
+          )}
         >
           {selected && <div className="w-2 h-2 rounded-full bg-primary" />}
         </div>
@@ -100,7 +108,10 @@ function CreatePropertyPage() {
     try {
       const { images, cityTaxAmount, cityTaxMaxNights, ...propertyData } = data;
       const normalizeFeatures = (features: Feature[] | undefined) =>
-        features?.map((f) => ({ name: displayToKebab(f.name), icon: f.icon })) ?? [];
+        features?.map((f) => ({
+          name: displayToKebab(f.name),
+          icon: f.icon,
+        })) ?? [];
 
       const normalizedData = {
         ...propertyData,
@@ -111,7 +122,12 @@ function CreatePropertyPage() {
 
       const newProperty = await createProperty.mutateAsync(normalizedData);
 
-      if (cityTaxAmount != null && cityTaxAmount > 0 && propertyData.city && propertyData.country) {
+      if (
+        cityTaxAmount != null &&
+        cityTaxAmount > 0 &&
+        propertyData.city &&
+        propertyData.country
+      ) {
         await upsertCityTax.mutateAsync({
           city: propertyData.city,
           country: propertyData.country,

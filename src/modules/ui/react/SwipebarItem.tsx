@@ -6,7 +6,11 @@ type SwipebarItemProps = {
   isActive?: boolean;
 };
 
-export function SwipebarItem({ icon, label, isActive = false }: SwipebarItemProps) {
+export function SwipebarItem({
+  icon,
+  label,
+  isActive = false,
+}: SwipebarItemProps) {
   return (
     <span
       className={`flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors ${

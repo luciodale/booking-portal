@@ -8,9 +8,9 @@ import {
   syncFeatureFields,
 } from "@/features/broker/property/domain/sync-features";
 import { useCityTaxDefault } from "@/features/broker/property/hooks/useCityTaxDefault";
-import { isItalyCountry } from "@/modules/countries";
 import type { Feature } from "@/modules/constants";
 import { getFacilityOptions } from "@/modules/constants";
+import { isItalyCountry } from "@/modules/countries";
 import { AdditionalCostsEditor } from "@/modules/ui/react/AdditionalCostsEditor";
 import { ExtrasEditor } from "@/modules/ui/react/ExtrasEditor";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
@@ -407,7 +407,8 @@ export function CreatePropertyForm({
       {/* City Tax */}
       <FormSection title="City Tax">
         <p className="text-sm text-muted-foreground">
-          Tourist tax per person per night (EUR). Saved as a default for this city.
+          Tourist tax per person per night (EUR). Saved as a default for this
+          city.
         </p>
         {cityTaxQuery.data && (
           <p className="text-xs text-primary">

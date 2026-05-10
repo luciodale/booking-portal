@@ -16,7 +16,9 @@ describe("getSafeRedirectUrl", () => {
 
   it("preserves query params on a relative path", () => {
     expect(
-      getSafeRedirectUrl("/properties/123?checkIn=2026-03-01&checkOut=2026-03-05")
+      getSafeRedirectUrl(
+        "/properties/123?checkIn=2026-03-01&checkOut=2026-03-05"
+      )
     ).toBe("/properties/123?checkIn=2026-03-01&checkOut=2026-03-05");
   });
 

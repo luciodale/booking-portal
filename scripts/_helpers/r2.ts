@@ -147,7 +147,9 @@ export async function seedImages(
   const allImages = [...manifest.propertyImages, ...manifest.experienceImages];
   const total = allImages.length;
 
-  console.log(`\n📤 Uploading ${total} images to R2 (${mode}) [concurrency=${MAX_CONCURRENCY}]...`);
+  console.log(
+    `\n📤 Uploading ${total} images to R2 (${mode}) [concurrency=${MAX_CONCURRENCY}]...`
+  );
 
   let success = 0;
   let failed = 0;

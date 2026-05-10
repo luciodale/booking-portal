@@ -1,6 +1,6 @@
+import { percentOfCents } from "@/modules/money/money";
 import { describe, expect, test } from "vitest";
 import { z } from "zod";
-import { percentOfCents } from "@/modules/money/money";
 
 const applicationFeePercentSchema = z.string().refine(
   (v) => {

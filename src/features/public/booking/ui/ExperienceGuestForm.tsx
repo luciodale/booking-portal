@@ -83,9 +83,7 @@ export function ExperienceGuestForm({
             className={inputCls}
           />
           {errors.lastName && (
-            <p className="text-xs text-error mt-1">
-              {errors.lastName.message}
-            </p>
+            <p className="text-xs text-error mt-1">{errors.lastName.message}</p>
           )}
         </div>
       </div>
@@ -138,7 +136,12 @@ export function ExperienceGuestForm({
       <button
         type="submit"
         disabled={!hasDate || isSubmitting}
-        className={cn("w-full py-3 rounded-xl text-sm font-semibold transition-all", hasDate && !isSubmitting ? "bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer" : "bg-muted text-muted-foreground cursor-not-allowed")}
+        className={cn(
+          "w-full py-3 rounded-xl text-sm font-semibold transition-all",
+          hasDate && !isSubmitting
+            ? "bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
+            : "bg-muted text-muted-foreground cursor-not-allowed"
+        )}
       >
         {isSubmitting ? (
           <span className="flex items-center justify-center gap-2">

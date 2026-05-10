@@ -20,7 +20,7 @@ const cities = await fetchAllCities(db);
 <PageLayout title={t(locale, "home.pageTitle")}>
   <!-- Video banner -->
   <section
-    class="relative h-[70vh] overflow-hidden flex items-center justify-center"
+    class="relative h-hero overflow-hidden flex items-center justify-center"
   >
     <video
       class="absolute inset-0 w-full h-full object-cover"
@@ -44,7 +44,7 @@ const cities = await fetchAllCities(db);
         </span>
       </div>
       <h1
-        class="text-4xl sm:text-5xl md:text-7xl font-bold text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] animate-slide-up opacity-0 leading-tight uppercase tracking-wide"
+        class="text-4xl sm:text-5xl md:text-7xl font-bold text-white drop-shadow-hero animate-slide-up opacity-0 leading-tight uppercase tracking-wide"
         style="animation-delay: 0.2s"
       >
         {t(locale, "home.title")}<br />{t(locale, "home.titleLine2")}

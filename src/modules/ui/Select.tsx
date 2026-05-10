@@ -106,7 +106,8 @@ export function Select({
         className={cn(
           "w-full flex items-center justify-between transition-all duration-200",
           variant === "default" && "input",
-          variant === "inline" && "rounded-xl border-0 bg-secondary/50 shadow-none text-base px-4 py-3",
+          variant === "inline" &&
+            "rounded-xl border-0 bg-secondary/50 shadow-none text-base px-4 py-3",
           error && "border-error",
           disabled && "opacity-50 cursor-not-allowed",
           !selectedOption && "text-muted-foreground",

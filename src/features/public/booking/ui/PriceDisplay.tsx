@@ -1,11 +1,11 @@
-import { formatPrice } from "@/modules/money/money";
 import type {
   CityTax,
   PropertyAdditionalCost,
 } from "@/features/public/booking/domain/pricingTypes";
-import { centsToUnit } from "@/modules/money/money";
 import { usePriceDisplay } from "@/features/public/booking/hooks/usePriceDisplay";
 import { PriceBreakdown } from "@/features/public/booking/ui/PriceBreakdown";
+import { formatPrice } from "@/modules/money/money";
+import { centsToUnit } from "@/modules/money/money";
 import type { SmoobuAvailabilityResponse } from "@/schemas/smoobu";
 
 type PriceDisplayProps = {
@@ -76,9 +76,7 @@ export function PriceDisplay({ onRetry, ...props }: PriceDisplayProps) {
     case "unavailable":
       return (
         <div className="space-y-2">
-          <div className="text-sm text-error font-medium">
-            {state.message}
-          </div>
+          <div className="text-sm text-error font-medium">{state.message}</div>
           <div className="text-xs text-muted-foreground">
             Try selecting different dates
           </div>
@@ -103,13 +101,16 @@ export function PriceDisplay({ onRetry, ...props }: PriceDisplayProps) {
               className="flex items-baseline gap-1"
             >
               <span className="text-2xl font-bold text-foreground">
-                {formatPrice(centsToUnit(state.totalPriceCents), state.currency)}
+                {formatPrice(
+                  centsToUnit(state.totalPriceCents),
+                  state.currency
+                )}
               </span>
               <span className="text-sm text-muted-foreground">total</span>
             </div>
             <div className="text-sm text-muted-foreground">
-              {formatPrice(centsToUnit(state.perNightCents), state.currency)}/night x{" "}
-              {state.nights} night
+              {formatPrice(centsToUnit(state.perNightCents), state.currency)}
+              /night x {state.nights} night
               {state.nights !== 1 ? "s" : ""}
             </div>
           </div>

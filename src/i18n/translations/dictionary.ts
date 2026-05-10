@@ -9,9 +9,9 @@ import { elite as enElite } from "./en/elite";
 import { errors as enErrors } from "./en/errors";
 import { experiences as enExperiences } from "./en/experiences";
 import { home as enHome } from "./en/home";
+import { premium as enPremium } from "./en/premium";
 import { property as enProperty } from "./en/property";
 import { search as enSearch } from "./en/search";
-import { premium as enPremium } from "./en/premium";
 import { about as itAbout } from "./it/about";
 import { auth as itAuth } from "./it/auth";
 import { backoffice as itBackoffice } from "./it/backoffice";
@@ -22,9 +22,9 @@ import { elite as itElite } from "./it/elite";
 import { errors as itErrors } from "./it/errors";
 import { experiences as itExperiences } from "./it/experiences";
 import { home as itHome } from "./it/home";
+import { premium as itPremium } from "./it/premium";
 import { property as itProperty } from "./it/property";
 import { search as itSearch } from "./it/search";
-import { premium as itPremium } from "./it/premium";
 
 const en = {
   ...enCommon,

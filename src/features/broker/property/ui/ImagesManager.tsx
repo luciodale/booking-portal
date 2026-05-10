@@ -1,3 +1,4 @@
+import { useLocale } from "@/i18n/react/LocaleProvider";
 import { processImage } from "@/modules/images/processImage";
 import { generateImageUrl } from "@/modules/r2/r2-helpers";
 import { cn } from "@/modules/utils/cn";
@@ -37,7 +38,10 @@ export function ImagesManager({
   endpoints,
   title = "Images",
 }: ImagesManagerProps) {
-  const [uploadingSlot, setUploadingSlot] = useState<"primary" | "gallery" | null>(null);
+  const { t } = useLocale();
+  const [uploadingSlot, setUploadingSlot] = useState<
+    "primary" | "gallery" | null
+  >(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [settingPrimaryId, setSettingPrimaryId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -49,11 +53,11 @@ export function ImagesManager({
 
   function validateFile(file: File): string | null {
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      return "Invalid file type. Accepted: JPG, PNG, WebP";
+      return t("error.fileTypeInvalid");
     }
     if (file.size > MAX_FILE_SIZE) {
       const maxMB = Math.round(MAX_FILE_SIZE / 1024 / 1024);
-      return `File too large. Maximum: ${maxMB}MB`;
+      return t("error.fileTooLarge", { maxMB });
     }
     return null;
   }
@@ -166,9 +170,7 @@ export function ImagesManager({
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-foreground">
-          {title}
-        </h3>
+        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
         <p className="text-sm text-muted-foreground mt-1">
           Upload high-quality images. The main image will be used as the cover
           photo.
@@ -279,7 +281,8 @@ export function ImagesManager({
             Gallery Images
           </span>
           <span className="text-xs text-muted-foreground">
-            ({galleryImages.length} image{galleryImages.length !== 1 ? "s" : ""})
+            ({galleryImages.length} image{galleryImages.length !== 1 ? "s" : ""}
+            )
           </span>
         </div>
 

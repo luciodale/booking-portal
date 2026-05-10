@@ -33,7 +33,11 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const validationResult = createExperienceSchema.safeParse(body);
 
     if (!validationResult.success) {
-      return jsonError(t(locale, "error.validationFailed"), 400, validationResult.error.issues);
+      return jsonError(
+        t(locale, "error.validationFailed"),
+        400,
+        validationResult.error.issues
+      );
     }
 
     const data = validationResult.data;
@@ -45,7 +49,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
         ...data,
         id: experienceId,
         userId: ctx.userId,
-        status: (data.status || "published") as "draft" | "published" | "archived",
+        status: (data.status || "published") as
+          | "draft"
+          | "published"
+          | "archived",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       })

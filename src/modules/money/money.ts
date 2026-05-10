@@ -15,7 +15,11 @@ export function multiplyCents(cents: number, factor: number): number {
 }
 
 export function percentOfCents(cents: number, percent: number): number {
-  return new Decimal(cents).times(percent).dividedBy(100).toDecimalPlaces(0).toNumber();
+  return new Decimal(cents)
+    .times(percent)
+    .dividedBy(100)
+    .toDecimalPlaces(0)
+    .toNumber();
 }
 
 export function sumCents(values: number[]): number {

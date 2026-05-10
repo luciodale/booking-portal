@@ -1,8 +1,8 @@
 ---
+import { switchLocale } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
 import type { Locale } from "@/i18n/types";
 import { defaultLocale } from "@/i18n/types";
-import { t } from "@/i18n/t";
-import { switchLocale } from "@/i18n/locale-path";
 import GalleryLightbox from "@/modules/ui/astro/GalleryLightbox.astro";
 import { GlobalToaster } from "@/modules/ui/react/GlobalToaster";
 
@@ -84,7 +84,7 @@ const origin = Astro.url.origin;
   <body class="min-h-screen bg-background text-foreground antialiased">
     <slot />
     <GalleryLightbox />
-    <GlobalToaster client:load />
+    <GlobalToaster client:idle />
   </body>
 </html>
 

@@ -1,11 +1,7 @@
 /** Validates a raw redirect string is a safe relative path; falls back to "/" */
 export function getSafeRedirectUrl(raw: string | null): string {
   if (!raw) return "/";
-  if (
-    raw.startsWith("//") ||
-    raw.startsWith("\\") ||
-    raw.includes("://")
-  ) {
+  if (raw.startsWith("//") || raw.startsWith("\\") || raw.includes("://")) {
     return "/";
   }
   if (!raw.startsWith("/")) return "/";

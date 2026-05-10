@@ -5,9 +5,9 @@
 
 import { usePhotonAddressSearch } from "@/features/broker/property/hooks/usePhotonAddressSearch";
 import { COUNTRY_NAMES } from "@/modules/countries";
-import { cn } from "@/modules/utils/cn";
 import { FormSection } from "@/modules/ui/react/form-inputs/FormSection";
 import { TextInput } from "@/modules/ui/react/form-inputs/TextInput";
+import { cn } from "@/modules/utils/cn";
 import type { CreatePropertyInput } from "@/schemas/property";
 import { SearchableDropdown } from "@luciodale/react-searchable-dropdown";
 import { ChevronDown, MapPin } from "lucide-react";
@@ -57,10 +57,7 @@ export function LocationSection({
     setCountryQuery(countryValue);
   }, [countryValue]);
 
-  const options = useMemo(
-    () => suggestions.map((s) => s.label),
-    [suggestions]
-  );
+  const options = useMemo(() => suggestions.map((s) => s.label), [suggestions]);
 
   function handleSelect(option: string) {
     const match = suggestions.find((s) => s.label === option);
@@ -143,7 +140,10 @@ export function LocationSection({
           classNameSearchableDropdownContainer="relative"
           DropdownIcon={({ toggled }: { toggled: boolean }) => (
             <ChevronDown
-              className={cn("w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform", toggled && "rotate-180")}
+              className={cn(
+                "w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform",
+                toggled && "rotate-180"
+              )}
             />
           )}
           classNameSearchQueryInput="input pr-9"
@@ -206,7 +206,10 @@ export function LocationSection({
                 classNameSearchableDropdownContainer="relative"
                 DropdownIcon={({ toggled }: { toggled: boolean }) => (
                   <ChevronDown
-                    className={cn("w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform", toggled && "rotate-180")}
+                    className={cn(
+                      "w-4 h-4 shrink-0 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none transition-transform",
+                      toggled && "rotate-180"
+                    )}
                   />
                 )}
                 classNameSearchQueryInput="input pr-9"

@@ -1,7 +1,6 @@
 export const booking = {
   "booking.interestedInProperty": "Interested in this property?",
-  "booking.contactForAvailability":
-    "Contact us for availability and pricing",
+  "booking.contactForAvailability": "Contact us for availability and pricing",
   "booking.optionalExtras": "Optional Extras",
   "booking.guestInformation": "Guest Information",
   "booking.perNight": "/night",

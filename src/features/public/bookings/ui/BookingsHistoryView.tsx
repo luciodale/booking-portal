@@ -1,8 +1,8 @@
-import type { Locale } from "@/i18n/types";
-import { t } from "@/i18n/t";
-import { localePath } from "@/i18n/locale-path";
 import { fetchBookings } from "@/features/public/bookings/api/fetchBookings";
 import type { BookingListItem } from "@/features/public/bookings/api/fetchBookings";
+import { localePath } from "@/i18n/locale-path";
+import { t } from "@/i18n/t";
+import type { Locale } from "@/i18n/types";
 import { centsToUnit } from "@/modules/money/money";
 import { cn } from "@/modules/utils/cn";
 import {
@@ -19,7 +19,9 @@ type BookingsHistoryViewProps = {
   locale?: Locale;
 };
 
-export function BookingsHistoryView({ locale = "en" }: BookingsHistoryViewProps) {
+export function BookingsHistoryView({
+  locale = "en",
+}: BookingsHistoryViewProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <BookingsHistoryInner locale={locale} />
@@ -79,9 +81,19 @@ function BookingsHistoryInner({ locale }: { locale: Locale }) {
   return (
     <div className="space-y-10">
       {upcoming.length > 0 && (
-        <BookingSection title={t(locale, "bookings.upcoming")} bookings={upcoming} locale={locale} />
+        <BookingSection
+          title={t(locale, "bookings.upcoming")}
+          bookings={upcoming}
+          locale={locale}
+        />
       )}
-      {past.length > 0 && <BookingSection title={t(locale, "bookings.past")} bookings={past} locale={locale} />}
+      {past.length > 0 && (
+        <BookingSection
+          title={t(locale, "bookings.past")}
+          bookings={past}
+          locale={locale}
+        />
+      )}
     </div>
   );
 }
@@ -103,7 +115,10 @@ function BookingSection({
   );
 }
 
-function BookingCard({ booking, locale }: { booking: BookingListItem; locale: Locale }) {
+function BookingCard({
+  booking,
+  locale,
+}: { booking: BookingListItem; locale: Locale }) {
   const statusColors: Record<string, string> = {
     pending: "bg-warning/10 text-warning",
     confirmed: "bg-success/10 text-success",
@@ -125,7 +140,10 @@ function BookingCard({ booking, locale }: { booking: BookingListItem; locale: Lo
           </h3>
           <p className="text-sm text-muted-foreground">
             {booking.checkIn} &rarr; {booking.checkOut} &middot;{" "}
-            {booking.nights} {booking.nights !== 1 ? t(locale, "bookings.nights") : t(locale, "bookings.night")}
+            {booking.nights}{" "}
+            {booking.nights !== 1
+              ? t(locale, "bookings.nights")
+              : t(locale, "bookings.night")}
           </p>
         </div>
         <div className="text-right shrink-0 space-y-1">
@@ -134,7 +152,10 @@ function BookingCard({ booking, locale }: { booking: BookingListItem; locale: Lo
             {booking.currency.toUpperCase()}
           </div>
           <span
-            className={cn("inline-block px-2 py-0.5 rounded-full text-xs font-medium", statusColors[booking.status])}
+            className={cn(
+              "inline-block px-2 py-0.5 rounded-full text-xs font-medium",
+              statusColors[booking.status]
+            )}
           >
             {t(locale, statusKey)}
           </span>

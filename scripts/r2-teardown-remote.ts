@@ -86,20 +86,34 @@ function deleteObjects(keys: string[]): void {
   }
 }
 
+function confirmDestroy(objectCount: number): boolean {
+  if (process.env.R2_TEARDOWN_CONFIRM === "DESTROY") return true;
+  const answer = prompt(
+    `\nAbout to delete ${objectCount} objects from remote bucket ${BUCKET_NAME}.\nType DESTROY (uppercase) to proceed:`
+  );
+  return answer?.trim() === "DESTROY";
+}
+
 function main() {
-  console.log("🔥 R2 Teardown Remote");
+  console.log("R2 Teardown Remote");
   console.log(`   Bucket: ${BUCKET_NAME}`);
-  console.log("\n🧹 Tearing down remote R2 bucket...");
 
   const objects = listObjects();
   console.log(`  Found ${objects.length} objects`);
 
-  if (objects.length > 0) {
-    deleteObjects(objects);
-    console.log(`  ✅ Deleted ${objects.length} objects`);
+  if (objects.length === 0) {
+    console.log("\nNothing to delete.");
+    return;
   }
 
-  console.log("\n✅ Teardown complete");
+  if (!confirmDestroy(objects.length)) {
+    console.log("Aborted.");
+    process.exit(1);
+  }
+
+  deleteObjects(objects);
+  console.log(`  Deleted ${objects.length} objects`);
+  console.log("\nTeardown complete");
 }
 
 try {

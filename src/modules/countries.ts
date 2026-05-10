@@ -213,7 +213,9 @@ for (const [code, name] of Object.entries(COUNTRY_MAP)) {
 }
 
 /** Get ISO country code from a display name. Returns undefined if not found. */
-export function countryNameToCode(name: string | null | undefined): string | undefined {
+export function countryNameToCode(
+  name: string | null | undefined
+): string | undefined {
   if (!name) return undefined;
   return nameToCode.get(name.toLowerCase());
 }

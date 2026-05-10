@@ -1,9 +1,9 @@
-import { formatPrice } from "@/modules/money/money";
 import type {
   PropertyPrice,
   SearchProperty,
 } from "@/features/public/search/types";
 import { useLocale } from "@/i18n/react/LocaleProvider";
+import { formatPrice } from "@/modules/money/money";
 import { cn } from "@/modules/utils/cn";
 import { formatAddress } from "@/utils/formatLocation";
 import {

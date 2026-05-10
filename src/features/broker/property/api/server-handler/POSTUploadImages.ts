@@ -114,7 +114,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
       throw r2Error;
     }
 
-    // Phase 3: batch insert all DB records
+    // Phase 3: batch insert all DB records. On failure, undo phase 2.
     const dbRows = prepared.map((item, i) => ({
       id: item.imageId,
       assetId,
@@ -125,7 +125,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
       createdAt: new Date().toISOString(),
     }));
 
-    const savedImages = await db.insert(images).values(dbRows).returning();
+    const savedImages = await (async () => {
+      try {
+        return await db.insert(images).values(dbRows).returning();
+      } catch (dbError) {
+        for (const key of uploadedR2Keys) {
+          try {
+            await R2Bucket.delete(key);
+          } catch {}
+        }
+        throw dbError;
+      }
+    })();
 
     const response: UploadImagesResponse = {
       images: savedImages.map((img) => ({
@@ -136,7 +147,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
 
     return jsonSuccess(response, 201);
   } catch (error) {
-    console.error("Error uploading images:", error);
     return jsonError(
       safeErrorMessage(error, "Failed to upload images", locale),
       mapErrorToStatus(error)
